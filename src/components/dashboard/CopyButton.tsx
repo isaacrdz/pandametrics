@@ -1,0 +1,47 @@
+"use client";
+
+import { CopyIcon, LinkIcon } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+
+const ICONS = {
+  copy: CopyIcon,
+  link: LinkIcon,
+};
+
+const COPY_ERROR = "No se pudo copiar";
+
+interface CopyButtonProps {
+  value: string;
+  // Tooltip text and accessible name
+  label: string;
+  successMessage: string;
+  icon?: keyof typeof ICONS;
+  className?: string;
+}
+
+export function CopyButton({ value, label, successMessage, icon = "copy", className }: CopyButtonProps) {
+  const Icon = ICONS[icon];
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success(successMessage, { description: value });
+    } catch {
+      toast.error(COPY_ERROR);
+    }
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label={label} onClick={handleCopy} className={cn(className)}>
+          <Icon aria-hidden />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
