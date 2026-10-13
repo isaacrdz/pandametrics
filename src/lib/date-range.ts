@@ -1,15 +1,11 @@
 import type { DateRange } from "@/types/survey";
 
-export type RangeKey = "7d" | "30d" | "90d" | "month";
+// Labels live in the messages under dateRange.<key>
+export const RANGE_KEYS = ["7d", "30d", "90d", "month"] as const;
+
+export type RangeKey = (typeof RANGE_KEYS)[number];
 
 export const DEFAULT_RANGE: RangeKey = "30d";
-
-export const RANGE_OPTIONS: { value: RangeKey; label: string }[] = [
-  { value: "7d", label: "Últimos 7 días" },
-  { value: "30d", label: "Últimos 30 días" },
-  { value: "90d", label: "Últimos 90 días" },
-  { value: "month", label: "Este mes" },
-];
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -20,12 +16,7 @@ const RANGE_DAYS: Record<Exclude<RangeKey, "month">, number> = {
 };
 
 export function parseRange(value: string | string[] | undefined): RangeKey {
-  const option = RANGE_OPTIONS.find((o) => o.value === value);
-  return option ? option.value : DEFAULT_RANGE;
-}
-
-export function getRangeLabel(key: RangeKey): string {
-  return RANGE_OPTIONS.find((o) => o.value === key)?.label ?? "";
+  return RANGE_KEYS.find((key) => key === value) ?? DEFAULT_RANGE;
 }
 
 function startOfDay(date: Date): Date {

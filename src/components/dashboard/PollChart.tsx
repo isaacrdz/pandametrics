@@ -1,6 +1,6 @@
-import { getBarLabel, getOptionLabel, sortOptions } from "@/components/dashboard/charts";
+import { useTranslations } from "next-intl";
+import { sortOptions, useChartLabels } from "@/components/dashboard/charts";
 import { MetricBar } from "@/components/dashboard/MetricBar";
-import { formatResponses } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { QuestionMetrics } from "@/types/survey";
 
@@ -9,6 +9,9 @@ interface PollChartProps {
 }
 
 export function PollChart({ question }: PollChartProps) {
+  const t = useTranslations("common");
+  const { getOptionLabel, getBarLabel } = useChartLabels();
+
   return (
     <ul className="flex flex-col gap-4">
       {sortOptions(question.options).map((option) => (
@@ -18,7 +21,9 @@ export function PollChart({ question }: PollChartProps) {
         >
           <div className="flex items-baseline justify-between gap-4 text-sm">
             <span className="min-w-0 text-foreground/80">{getOptionLabel(option)}</span>
-            <span className="shrink-0 font-semibold text-primary">{formatResponses(option.count)}</span>
+            <span className="shrink-0 font-semibold text-primary">
+              {t("responses", { count: option.count })}
+            </span>
           </div>
           <MetricBar
             share={option.share}

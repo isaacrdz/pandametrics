@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react";
-import { getBarLabel, getOptionLabel, sortOptions } from "@/components/dashboard/charts";
+import { useFormatter } from "next-intl";
+import { sortOptions, useChartLabels } from "@/components/dashboard/charts";
 import { MetricBar } from "@/components/dashboard/MetricBar";
 import { ReactionFace } from "@/components/surveys/ReactionFace";
-import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { QuestionMetrics, ReactionValue } from "@/types/survey";
 
@@ -11,6 +11,8 @@ interface SatisfactionChartProps {
 }
 
 export function SatisfactionChart({ question }: SatisfactionChartProps) {
+  const format = useFormatter();
+  const { getOptionLabel, getBarLabel } = useChartLabels();
   const options = sortOptions(question.options);
   const faces = options.filter((option) => !option.archived);
 
@@ -43,7 +45,7 @@ export function SatisfactionChart({ question }: SatisfactionChartProps) {
             </span>
             <MetricBar share={option.share} color={option.color} label={getBarLabel(option)} />
             <span className="min-w-8 text-right text-muted-foreground tabular-nums">
-              {formatNumber(option.count)}
+              {format.number(option.count)}
             </span>
           </li>
         ))}

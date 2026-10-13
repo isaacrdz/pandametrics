@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronsUpDownIcon, MoonIcon, SunIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -19,18 +20,13 @@ import {
 } from "@/components/ui/sidebar";
 import { getInitials } from "@/lib/format";
 
-const COPY = {
-  account: "Mi cuenta",
-  darkMode: "Modo oscuro",
-  lightMode: "Modo claro",
-};
-
 interface NavUserProps {
   name: string | null;
   email: string | null;
 }
 
 export function NavUser({ name, email }: NavUserProps) {
+  const t = useTranslations("userMenu");
   const { isMobile } = useSidebar();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -61,11 +57,11 @@ export function NavUser({ name, email }: NavUserProps) {
             align="end"
             className="min-w-56 rounded-xl"
           >
-            <DropdownMenuLabel>{COPY.account}</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("account")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => setTheme(isDark ? "light" : "dark")}>
               {isDark ? <SunIcon aria-hidden /> : <MoonIcon aria-hidden />}
-              {isDark ? COPY.lightMode : COPY.darkMode}
+              {isDark ? t("lightMode") : t("darkMode")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

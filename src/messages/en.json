@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "title": "Panda Metrics",
+    "description": "Collect feedback by kiosk, link or QR, manage surveys and analyze their metrics."
+  },
+  "common": {
+    "copyError": "Couldn't copy",
+    "loading": "Loading overview",
+    "responses": "{count, plural, one {# response} other {# responses}}"
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "manage": "Manage",
+    "dashboard": "Dashboard",
+    "surveys": "Surveys",
+    "history": "History",
+    "settings": "Settings",
+    "comingSoon": "{title} · Coming soon"
+  },
+  "userMenu": {
+    "account": "My account",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode"
+  },
+  "topBar": {
+    "newSurvey": "New survey",
+    "organizations": "Organizations",
+    "organizationLabel": "Organization: {name}",
+    "language": "Language",
+    "languageLabel": "Language: {name}"
+  },
+  "greeting": {
+    "hello": "{period, select, morning {Good morning} afternoon {Good afternoon} evening {Good evening} other {Hello}}, {name}"
+  },
+  "dashboard": {
+    "stats": {
+      "totalResponses": "Total responses",
+      "activeSurveys": "Active surveys",
+      "todayResponses": "Responses today",
+      "todayHint": "Received since midnight",
+      "remaining": "{count, plural, =0 {Limit reached} one {One spot remaining} other {# spots remaining}}"
+    },
+    "surveys": {
+      "title": "Your surveys",
+      "subtitle": "A snapshot of how your customers are feeling."
+    },
+    "toolbar": {
+      "search": "Search surveys",
+      "range": "Date range"
+    },
+    "empty": {
+      "title": "You don't have active surveys yet",
+      "description": "Activate a survey or create a new one to see its results here."
+    },
+    "noResults": {
+      "title": "No matching surveys",
+      "description": "We couldn't find active surveys with “{query}” in the name or code.",
+      "clear": "Clear search"
+    },
+    "callout": {
+      "title": "Have another question in mind?",
+      "description": "Create a survey and start collecting feedback.",
+      "action": "Create survey"
+    },
+    "footer": "Panda Metrics · Your feedback, made measurable"
+  },
+  "surveyCard": {
+    "copyLink": "Copy public link",
+    "linkCopied": "Link copied",
+    "edit": "View / Edit survey",
+    "editLabel": "View / Edit survey: {name}"
+  },
+  "results": {
+    "title": "Response summary",
+    "code": "code:",
+    "copyCode": "Copy code",
+    "codeCopied": "Code copied",
+    "active": "Active",
+    "inactive": "Inactive",
+    "previous": "Previous question",
+    "next": "Next question",
+    "questionOf": "Question {current} of {total}",
+    "total": "Total responses",
+    "noQuestions": "This survey has no questions.",
+    "carousel": "carousel"
+  },
+  "charts": {
+    "archived": "{label} (removed)",
+    "stars": "{count, plural, one {# star} other {# stars}}",
+    "barLabel": "{label}: {count, plural, one {# response} other {# responses}} ({share, number, percent})"
+  },
+  "dateRange": {
+    "7d": "Last 7 days",
+    "30d": "Last 30 days",
+    "90d": "Last 90 days",
+    "month": "This month"
+  },
+  "a11y": {
+    "toggleSidebar": "Toggle sidebar",
+    "sidebarTitle": "Menu",
+    "sidebarDescription": "Displays the navigation menu.",
+    "close": "Close"
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español"
+  }
+}

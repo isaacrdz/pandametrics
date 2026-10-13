@@ -1,7 +1,7 @@
-import { getBarLabel, getOptionLabel, sortOptions } from "@/components/dashboard/charts";
+import { useFormatter } from "next-intl";
+import { sortOptions, useChartLabels } from "@/components/dashboard/charts";
 import { MetricBar } from "@/components/dashboard/MetricBar";
 import { StarRow } from "@/components/surveys/StarRow";
-import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { QuestionMetrics } from "@/types/survey";
 
@@ -10,6 +10,9 @@ interface RatingChartProps {
 }
 
 export function RatingChart({ question }: RatingChartProps) {
+  const format = useFormatter();
+  const { getOptionLabel, getBarLabel } = useChartLabels();
+
   return (
     <ul className="flex flex-col gap-3.5">
       {sortOptions(question.options).map((option) => (
@@ -27,7 +30,7 @@ export function RatingChart({ question }: RatingChartProps) {
           )}
           <MetricBar share={option.share} color="var(--star)" label={getBarLabel(option)} />
           <span className="min-w-8 text-right text-muted-foreground tabular-nums">
-            {formatNumber(option.count)}
+            {format.number(option.count)}
           </span>
         </li>
       ))}

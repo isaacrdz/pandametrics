@@ -70,6 +70,17 @@ Example v4 configuration:
 - No inline styles
 - Light mode first, dark mode as option
 
+## Internationalization
+
+- All user-facing text lives in `src/messages/en.json` and `es.json` and is read with next-intl (`useTranslations`); no hardcoded strings in JSX (`react/jsx-no-literals` enforces it)
+- Both message files must have the same keys (`yarn lint` runs `scripts/check-messages.mjs`)
+- Use ICU plurals and selects (`{count, plural, one {# response} other {# responses}}`); never build sentences by concatenation
+- The language lives in the browser (`localStorage`, key `panda-metrics:locale`, default `en`); URLs never carry it
+- The server always renders English, so any component that shows translated text must be a Client Component; Server Components fetch data and pass it as props
+- Format numbers, percentages and dates with `useFormatter`, never with a hardcoded locale
+- Server Actions or route handlers that need the language receive `locale` from the client (`useAppLocale()`)
+- User content (survey names, questions, option labels) and names are never translated
+
 ## Database
 
 - Use Prisma ORM for all database operations

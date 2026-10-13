@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SearchIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,12 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DEFAULT_RANGE, RANGE_OPTIONS, parseRange, type RangeKey } from "@/lib/date-range";
-
-const COPY = {
-  search: "Buscar encuestas",
-  range: "Rango de fechas",
-};
+import { DEFAULT_RANGE, RANGE_KEYS, parseRange, type RangeKey } from "@/lib/date-range";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -26,6 +22,8 @@ interface CollectionsToolbarProps {
 }
 
 export function CollectionsToolbar({ query, range }: CollectionsToolbarProps) {
+  const t = useTranslations("dashboard.toolbar");
+  const tRange = useTranslations("dateRange");
   const router = useRouter();
   const pathname = usePathname();
   const [search, setSearch] = useState(query);
@@ -33,7 +31,7 @@ export function CollectionsToolbar({ query, range }: CollectionsToolbarProps) {
   const [pushedQuery, setPushedQuery] = useState(query);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // The URL changed from outside (e.g. "Limpiar búsqueda"): sync the input
+  // The URL changed from outside (e.g. "Clear search"): sync the input
   if (query !== pushedQuery) {
     setPushedQuery(query);
     setSearch(query);
@@ -66,23 +64,23 @@ export function CollectionsToolbar({ query, range }: CollectionsToolbarProps) {
           type="search"
           value={search}
           onChange={(event) => handleSearch(event.target.value)}
-          placeholder={COPY.search}
-          aria-label={COPY.search}
+          placeholder={t("search")}
+          aria-label={t("search")}
           className="h-11 w-full rounded-full bg-card pl-10 text-[0.95rem] sm:w-60"
         />
       </div>
       <Select value={range} onValueChange={(value) => updateUrl({ q: search, range: parseRange(value) })}>
         <SelectTrigger
-          aria-label={COPY.range}
+          aria-label={t("range")}
           className="h-11! w-full gap-2 rounded-full bg-card px-4 text-[0.95rem] sm:w-48"
         >
           <span aria-hidden className="size-2 shrink-0 rounded-full bg-highlight" />
           <SelectValue />
         </SelectTrigger>
         <SelectContent align="end" className="rounded-xl">
-          {RANGE_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
+          {RANGE_KEYS.map((key) => (
+            <SelectItem key={key} value={key}>
+              {tRange(key)}
             </SelectItem>
           ))}
         </SelectContent>

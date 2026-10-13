@@ -1,27 +1,4 @@
-const LOCALE = "es-MX";
-
-const numberFormat = new Intl.NumberFormat(LOCALE);
-
-const percentFormat = new Intl.NumberFormat(LOCALE, {
-  style: "percent",
-  maximumFractionDigits: 0,
-});
-
-export function formatNumber(value: number): string {
-  return numberFormat.format(value);
-}
-
-export function formatPercent(share: number): string {
-  return percentFormat.format(share);
-}
-
-export function formatResponses(count: number): string {
-  return `${formatNumber(count)} ${count === 1 ? "respuesta" : "respuestas"}`;
-}
-
-export function formatLongDate(date: Date): string {
-  return new Intl.DateTimeFormat(LOCALE, { dateStyle: "full" }).format(date);
-}
+// Locale-independent helpers. Numbers, percentages and dates go through next-intl's useFormatter.
 
 export function getInitials(name: string | null): string {
   if (!name) return "?";

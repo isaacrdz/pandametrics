@@ -1,9 +1,11 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { formatLongDate } from "@/lib/format";
+import { useFormatter, useTranslations } from "next-intl";
 
 const MINUTE_MS = 60 * 1000;
+
+type Period = "morning" | "afternoon" | "evening" | "other";
 
 function subscribe(onChange: () => void) {
   const interval = setInterval(onChange, MINUTE_MS);
@@ -20,10 +22,12 @@ function getServerSnapshot(): null {
   return null;
 }
 
-function getGreeting(hour: number): string {
-  if (hour < 12) return "Buenos días";
-  if (hour < 19) return "Buenas tardes";
-  return "Buenas noches";
+function getPeriod(date: Date | null): Period {
+  if (!date) return "other";
+  const hour = date.getHours();
+  if (hour < 12) return "morning";
+  if (hour < 19) return "afternoon";
+  return "evening";
 }
 
 interface GreetingProps {
@@ -31,6 +35,8 @@ interface GreetingProps {
 }
 
 export function Greeting({ name }: GreetingProps) {
+  const t = useTranslations("greeting");
+  const format = useFormatter();
   const now = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const firstName = name?.split(" ")[0] ?? "";
   const date = now === null ? null : new Date(now);
@@ -38,10 +44,10 @@ export function Greeting({ name }: GreetingProps) {
   return (
     <div className="min-w-0">
       <p className="hidden h-5 text-sm text-muted-foreground first-letter:uppercase sm:block">
-        {date ? formatLongDate(date) : ""}
+        {date ? format.dateTime(date, { dateStyle: "full" }) : ""}
       </p>
       <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
-        {date ? getGreeting(date.getHours()) : "Hola"}, {firstName}
+        {t("hello", { period: getPeriod(date), name: firstName })}
       </h1>
     </div>
   );

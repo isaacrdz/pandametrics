@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function SurveyCardSkeleton() {
@@ -22,8 +25,10 @@ function SurveyCardSkeleton() {
 }
 
 export function DashboardSkeleton() {
+  const t = useTranslations("common");
+
   return (
-    <div role="status" aria-label="Cargando resumen" className="flex flex-col gap-10">
+    <div role="status" aria-label={t("loading")} className="flex flex-col gap-10">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         {Array.from({ length: 3 }, (_, i) => (
           <Skeleton key={i} className="h-40 rounded-2xl" />

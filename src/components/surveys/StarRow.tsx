@@ -1,4 +1,5 @@
 import { StarIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface StarRowProps {
@@ -9,6 +10,7 @@ interface StarRowProps {
 }
 
 export function StarRow({ filled, total = 5, showEmpty = false, className }: StarRowProps) {
+  const t = useTranslations("charts");
   const count = showEmpty ? total : filled;
 
   return (
@@ -20,7 +22,7 @@ export function StarRow({ filled, total = 5, showEmpty = false, className }: Sta
           className={cn("size-4 fill-current", i < filled ? "text-star" : "text-star-empty")}
         />
       ))}
-      <span className="sr-only">{filled === 1 ? "1 estrella" : `${filled} estrellas`}</span>
+      <span className="sr-only">{t("stars", { count: filled })}</span>
     </span>
   );
 }

@@ -1,20 +1,19 @@
+"use client";
+
 import Link from "next/link";
 import { PencilIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { CopyButton } from "@/components/dashboard/CopyButton";
 import { SurveyResults } from "@/components/dashboard/SurveyResults";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { SurveyCardData } from "@/lib/dashboard";
 
-const COPY = {
-  copyLink: "Copiar enlace público",
-  linkCopied: "Enlace copiado",
-  edit: "Ver / Editar encuesta",
-};
-
 const ICON_BUTTON_CLASS = "size-11 rounded-xl [&_svg:not([class*='size-'])]:size-5";
 
 export function SurveyCard({ survey, metrics, publicUrl }: SurveyCardData) {
+  const t = useTranslations("surveyCard");
+
   return (
     <article
       aria-labelledby={`survey-${survey.id}`}
@@ -31,8 +30,8 @@ export function SurveyCard({ survey, metrics, publicUrl }: SurveyCardData) {
           <CopyButton
             icon="link"
             value={publicUrl}
-            label={COPY.copyLink}
-            successMessage={COPY.linkCopied}
+            label={t("copyLink")}
+            successMessage={t("linkCopied")}
             className={`${ICON_BUTTON_CLASS} border border-card-border bg-card text-primary hover:bg-accent hover:text-primary`}
           />
           <Tooltip>
@@ -42,12 +41,12 @@ export function SurveyCard({ survey, metrics, publicUrl }: SurveyCardData) {
                 size="icon"
                 className={`${ICON_BUTTON_CLASS} shadow-[0_10px_24px_-12px_var(--primary)]`}
               >
-                <Link href={`/surveys/${survey.id}`} aria-label={`${COPY.edit}: ${survey.name}`}>
+                <Link href={`/surveys/${survey.id}`} aria-label={t("editLabel", { name: survey.name })}>
                   <PencilIcon aria-hidden />
                 </Link>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{COPY.edit}</TooltipContent>
+            <TooltipContent>{t("edit")}</TooltipContent>
           </Tooltip>
         </div>
       </header>

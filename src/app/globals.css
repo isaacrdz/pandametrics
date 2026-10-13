@@ -152,6 +152,11 @@
   --star-empty: #4b5563;
 }
 
+/* Set by the inline locale script until LocaleProvider applies a non-default language */
+.locale-pending body {
+  visibility: hidden;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

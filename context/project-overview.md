@@ -128,6 +128,21 @@ Data flow rules
 5. Database credentials, S3 keys and auth secrets stay on the server.
 6. `publicUrl` is derived from `PANDA_PUBLIC_URL`; the QR is generated on the client. Neither is stored.
 
+### Internationalization
+
+The UI is available in English (default) and Spanish with next-intl. Full research in `docs/i18n.md`.
+
+- **URLs never change with the language**: no `/en` or `/es` prefix, no `[locale]` segment and no `proxy.ts`. Printed QR codes and shared links stay the same; a link does not carry a language.
+- **Persistence in `localStorage`**: the choice is stored in the browser under `panda-metrics:locale` (`"en"` or `"es"`). A missing, invalid or blocked value means English. It is per browser and device, so a kiosk tablet keeps the language its operator chose. Later `User.locale` can be synced into it after login.
+- **Client-side locale**: a client `LocaleProvider` reads `localStorage` with `useSyncExternalStore` (server snapshot `en`), wraps the app in `NextIntlClientProvider`, keeps `<html lang>` in sync and follows other tabs through the `storage` event. The first time the stored locale differs from the server's, it mounts its children again on the client (instead of hydrating English HTML with Spanish text), so streamed Suspense boundaries never mismatch.
+- **Server renders English**: the server cannot read `localStorage`, so HTML, metadata and Server Components are always English (`src/i18n/request.ts` returns `en`). Components that show translated text are Client Components; Server Components fetch data and pass it as props. Server Actions and route handlers that need the language receive `locale` from the client.
+- **No flash of English**: an inline script in `<head>` reads `localStorage` before the first paint. If Spanish was chosen, it sets `lang` and hides the body until the provider applies Spanish, with a 3-second safety timeout.
+- **Cache Components**: nothing reads cookies, headers or params for the language, so pages keep their static shell with no extra `<Suspense>`.
+- **Formatting locales**: `en` → `en-US`, `es` → `es-MX`, so numbers and dates keep the regional format (`3,062`, `Tuesday, October 13, 2026` / `martes, 13 de octubre de 2026`). Numbers, percentages and dates go through next-intl (`useFormatter`), never a hardcoded locale. The timezone is independent of the language (`America/Mexico_City` by default, later per user / `?tz=`).
+- **Messages**: `src/messages/en.json` and `es.json`, both bundled in the client for instant switching, namespaced by feature, ICU plurals (`{count, plural, one {# response} other {# responses}}`), typed keys through next-intl's `AppConfig` so an unknown key fails `tsc`, and a script that checks both files have the same keys.
+- **Language switcher**: in the admin top bar, between the organization switcher and "New survey". It shows the active code (`EN` / `ES`), lists "English" / "Español" in their own language, and switches in place by writing `localStorage`. There is no navigation, so the path, search params and scroll are kept.
+- **Not translated**: user content (survey names, descriptions, questions, poll options) and the labels stored in each `AnswerOption`. Default reaction and rating labels are generated in the creator's language when a survey is created and stored with it; responses keep their snapshot.
+
 ## 4. Data model and database design
 
 ### Core design decisions
@@ -634,6 +649,8 @@ Recommended content order:
 └── /settings
 ```
 
+The same URLs serve both languages; the language comes from the browser's `localStorage` (see Internationalization in section 3).
+
 Dashboard filters live in the URL (`/dashboard?range=this-month&tz=America/Mexico_City&days=mon,tue,wed,thu,fri`), so a view can be shared.
 
 ## 11. Visual design system
@@ -672,7 +689,9 @@ These colors live as CSS variables in `globals.css` (exposed through `@theme`), 
 
 ```
 src/
+├── i18n/             config.ts, request.ts, LocaleProvider.tsx, locale-script.ts
 ├── app/
+│   ├── layout.tsx    root layout: inline locale script, LocaleProvider, theme
 │   ├── (public)/
 │   │   └── s/page.tsx
 │   ├── (app)/
@@ -699,7 +718,7 @@ src/
 │   └── auth.ts
 ├── components/ui/    shadcn/ui components (generated, edited in place)
 ├── shared/           http client, DateRangeMenu, toaster, layout
-└── messages/         es.json, en.json
+└── messages/         en.json, es.json (next-intl, same keys in both)
 
 prisma/
 ├── schema.prisma
@@ -716,6 +735,7 @@ This structure is a starting point, not a requirement to create every folder imm
 ### Foundation
 
 - [ ] Initialize Next.js, TypeScript, Tailwind CSS v4, shadcn/ui (`npx shadcn@latest init`), TanStack Query and next-intl
+- [ ] next-intl without URL routing: language in `localStorage` (English default, Spanish), messages for every screen and the language switcher in the top bar
 - [ ] Configure MongoDB (Atlas or local replica set) and Prisma ORM 6
 - [ ] Sync collections and indexes with `prisma db push`
 - [ ] Configure Auth.js, organizations and roles
@@ -767,7 +787,7 @@ The first production release should meet these criteria:
 - Editing a survey never changes or drops the metrics of past responses.
 - Dashboard and per-survey metrics match the stored responses for any date range, timezone and day-of-week filter, for active and inactive surveys.
 - Users cannot read or change another organization's data by changing ids in API requests.
-- Spanish and English are complete; pages are responsive and accessible.
+- English and Spanish are complete, the language choice survives reloads, and pages are responsive and accessible.
 - If historical data is migrated, per-option counts match Kraquen for the same filters.
 - Schema changes come from the committed Prisma schema, and data changes run as versioned, reviewed scripts.
 
@@ -777,6 +797,7 @@ The first production release should meet these criteria:
 - Support emoji as reaction values (the Kraquen API allows it, the Kraquen UI rejects it)?
 - Must a public submission answer every question?
 - Migrate Kraquen's historical data or start empty?
+- Should a survey store its own `locale`, so the kiosk UI defaults to the language the questions are written in?
 - Final public domain for links and QR codes.
 - Standalone Next.js backend (this overview) or keep extending the existing Node/Express API?
 

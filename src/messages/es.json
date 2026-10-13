@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "title": "Panda Metrics",
+    "description": "Recibe opiniones por kiosco, enlace o QR, administra encuestas y analiza sus métricas."
+  },
+  "common": {
+    "copyError": "No se pudo copiar",
+    "loading": "Cargando resumen",
+    "responses": "{count, plural, one {# respuesta} other {# respuestas}}"
+  },
+  "nav": {
+    "workspace": "Espacio de trabajo",
+    "manage": "Administrar",
+    "dashboard": "Dashboard",
+    "surveys": "Encuestas",
+    "history": "Historial",
+    "settings": "Configuración",
+    "comingSoon": "{title} · Próximamente"
+  },
+  "userMenu": {
+    "account": "Mi cuenta",
+    "darkMode": "Modo oscuro",
+    "lightMode": "Modo claro"
+  },
+  "topBar": {
+    "newSurvey": "Nueva encuesta",
+    "organizations": "Organizaciones",
+    "organizationLabel": "Organización: {name}",
+    "language": "Idioma",
+    "languageLabel": "Idioma: {name}"
+  },
+  "greeting": {
+    "hello": "{period, select, morning {Buenos días} afternoon {Buenas tardes} evening {Buenas noches} other {Hola}}, {name}"
+  },
+  "dashboard": {
+    "stats": {
+      "totalResponses": "Respuestas totales",
+      "activeSurveys": "Encuestas activas",
+      "todayResponses": "Respuestas hoy",
+      "todayHint": "Recibidas desde la medianoche",
+      "remaining": "{count, plural, =0 {Límite alcanzado} one {Queda # lugar disponible} other {Quedan # lugares disponibles}}"
+    },
+    "surveys": {
+      "title": "Tus encuestas",
+      "subtitle": "Así se sienten tus clientes."
+    },
+    "toolbar": {
+      "search": "Buscar encuestas",
+      "range": "Rango de fechas"
+    },
+    "empty": {
+      "title": "Todavía no tienes encuestas activas",
+      "description": "Activa una encuesta o crea una nueva para ver aquí sus resultados."
+    },
+    "noResults": {
+      "title": "No hay encuestas que coincidan",
+      "description": "No encontramos encuestas activas con «{query}» en el nombre o el código.",
+      "clear": "Limpiar búsqueda"
+    },
+    "callout": {
+      "title": "¿Tienes otra pregunta en mente?",
+      "description": "Crea una encuesta y empieza a recibir opiniones.",
+      "action": "Crear encuesta"
+    },
+    "footer": "Panda Metrics · Tus opiniones, medibles"
+  },
+  "surveyCard": {
+    "copyLink": "Copiar enlace público",
+    "linkCopied": "Enlace copiado",
+    "edit": "Ver / Editar encuesta",
+    "editLabel": "Ver / Editar encuesta: {name}"
+  },
+  "results": {
+    "title": "Resumen de respuestas",
+    "code": "código:",
+    "copyCode": "Copiar código",
+    "codeCopied": "Código copiado",
+    "active": "Activa",
+    "inactive": "Inactiva",
+    "previous": "Pregunta anterior",
+    "next": "Pregunta siguiente",
+    "questionOf": "Pregunta {current} de {total}",
+    "total": "Respuestas totales",
+    "noQuestions": "Esta encuesta no tiene preguntas.",
+    "carousel": "carrusel"
+  },
+  "charts": {
+    "archived": "{label} (eliminada)",
+    "stars": "{count, plural, one {# estrella} other {# estrellas}}",
+    "barLabel": "{label}: {count, plural, one {# respuesta} other {# respuestas}} ({share, number, percent})"
+  },
+  "dateRange": {
+    "7d": "Últimos 7 días",
+    "30d": "Últimos 30 días",
+    "90d": "Últimos 90 días",
+    "month": "Este mes"
+  },
+  "a11y": {
+    "toggleSidebar": "Mostrar u ocultar menú",
+    "sidebarTitle": "Menú",
+    "sidebarDescription": "Muestra el menú de navegación.",
+    "close": "Cerrar"
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español"
+  }
+}

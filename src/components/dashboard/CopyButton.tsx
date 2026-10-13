@@ -1,6 +1,7 @@
 "use client";
 
 import { CopyIcon, LinkIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -10,8 +11,6 @@ const ICONS = {
   copy: CopyIcon,
   link: LinkIcon,
 };
-
-const COPY_ERROR = "No se pudo copiar";
 
 interface CopyButtonProps {
   value: string;
@@ -23,6 +22,7 @@ interface CopyButtonProps {
 }
 
 export function CopyButton({ value, label, successMessage, icon = "copy", className }: CopyButtonProps) {
+  const t = useTranslations("common");
   const Icon = ICONS[icon];
 
   async function handleCopy() {
@@ -30,7 +30,7 @@ export function CopyButton({ value, label, successMessage, icon = "copy", classN
       await navigator.clipboard.writeText(value);
       toast.success(successMessage, { description: value });
     } catch {
-      toast.error(COPY_ERROR);
+      toast.error(t("copyError"));
     }
   }
 

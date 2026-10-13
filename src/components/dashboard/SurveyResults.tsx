@@ -2,28 +2,15 @@
 
 import { useState, type KeyboardEvent } from "react";
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { CopyButton } from "@/components/dashboard/CopyButton";
 import { PollChart } from "@/components/dashboard/PollChart";
 import { RatingChart } from "@/components/dashboard/RatingChart";
 import { SatisfactionChart } from "@/components/dashboard/SatisfactionChart";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { formatNumber, formatResponses } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { QuestionMetrics, SurveyCategory, SurveyMetrics } from "@/types/survey";
-
-const COPY = {
-  code: "código:",
-  copyCode: "Copiar código",
-  codeCopied: "Código copiado",
-  active: "Activa",
-  inactive: "Inactiva",
-  title: "Resumen de respuestas",
-  previous: "Pregunta anterior",
-  next: "Pregunta siguiente",
-  total: "Respuestas totales",
-  noQuestions: "Esta encuesta no tiene preguntas.",
-};
 
 function CategoryChart({ category, question }: { category: SurveyCategory; question: QuestionMetrics }) {
   if (category === "SATISFACTION") return <SatisfactionChart question={question} />;
@@ -38,9 +25,11 @@ interface QuestionPagerProps {
 }
 
 function QuestionPager({ count, index, onChange }: QuestionPagerProps) {
+  const t = useTranslations("results");
+
   return (
     <div className="flex items-center justify-center gap-3">
-      <Button variant="ghost" size="icon-sm" aria-label={COPY.previous} disabled={index === 0} onClick={() => onChange(index - 1)}>
+      <Button variant="ghost" size="icon-sm" aria-label={t("previous")} disabled={index === 0} onClick={() => onChange(index - 1)}>
         <ChevronLeftIcon aria-hidden />
       </Button>
       <div className="flex items-center gap-2">
@@ -48,7 +37,7 @@ function QuestionPager({ count, index, onChange }: QuestionPagerProps) {
           <button
             key={i}
             type="button"
-            aria-label={`Pregunta ${i + 1} de ${count}`}
+            aria-label={t("questionOf", { current: i + 1, total: count })}
             aria-current={i === index ? "true" : undefined}
             onClick={() => onChange(i)}
             className={cn(
@@ -58,7 +47,7 @@ function QuestionPager({ count, index, onChange }: QuestionPagerProps) {
           />
         ))}
       </div>
-      <Button variant="ghost" size="icon-sm" aria-label={COPY.next} disabled={index === count - 1} onClick={() => onChange(index + 1)}>
+      <Button variant="ghost" size="icon-sm" aria-label={t("next")} disabled={index === count - 1} onClick={() => onChange(index + 1)}>
         <ChevronRightIcon aria-hidden />
       </Button>
     </div>
@@ -73,6 +62,9 @@ interface SurveyResultsProps {
 }
 
 export function SurveyResults({ category, code, isActive, metrics }: SurveyResultsProps) {
+  const t = useTranslations("results");
+  const tCommon = useTranslations("common");
+  const format = useFormatter();
   const [index, setIndex] = useState(0);
   const count = metrics.questions.length;
   const question = metrics.questions[Math.min(index, count - 1)];
@@ -84,18 +76,18 @@ export function SurveyResults({ category, code, isActive, metrics }: SurveyResul
 
   return (
     <section
-      aria-roledescription="carrusel"
-      aria-label={COPY.title}
+      aria-roledescription={t("carousel")}
+      aria-label={t("title")}
       onKeyDown={handleKeyDown}
       className="flex flex-col gap-6 rounded-2xl border border-card-border bg-card p-5 sm:p-8"
     >
       <div className="flex items-center justify-between gap-4 text-sm">
         <span className="flex items-center gap-1 font-mono tracking-wide text-muted-foreground">
-          {COPY.code} {code}
+          {t("code")} {code}
           <CopyButton
             value={code}
-            label={COPY.copyCode}
-            successMessage={COPY.codeCopied}
+            label={t("copyCode")}
+            successMessage={t("codeCopied")}
             className="size-7 text-muted-foreground hover:text-primary"
           />
         </span>
@@ -107,11 +99,11 @@ export function SurveyResults({ category, code, isActive, metrics }: SurveyResul
               isActive ? "bg-success shadow-[0_0_8px_var(--success)]" : "bg-muted-foreground/50",
             )}
           />
-          {isActive ? COPY.active : COPY.inactive}
+          {isActive ? t("active") : t("inactive")}
         </span>
       </div>
 
-      <h3 className="text-center text-xl font-bold text-foreground sm:text-2xl">{COPY.title}</h3>
+      <h3 className="text-center text-xl font-bold text-foreground sm:text-2xl">{t("title")}</h3>
 
       {count > 1 && <QuestionPager count={count} index={index} onChange={setIndex} />}
 
@@ -125,25 +117,27 @@ export function SurveyResults({ category, code, isActive, metrics }: SurveyResul
               {question.average !== null && (
                 <>
                   <StarIcon aria-hidden className="size-3.5 fill-current text-star" />
-                  <span className="font-semibold text-foreground">{question.average.toFixed(1)}</span>
+                  <span className="font-semibold text-foreground">
+                    {format.number(question.average, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                  </span>
                   <span aria-hidden>·</span>
                 </>
               )}
-              {formatResponses(question.totalAnswers)}
+              {tCommon("responses", { count: question.totalAnswers })}
             </span>
           </div>
           <CategoryChart category={category} question={question} />
         </div>
       ) : (
-        <p className="text-center text-sm text-muted-foreground">{COPY.noQuestions}</p>
+        <p className="text-center text-sm text-muted-foreground">{t("noQuestions")}</p>
       )}
 
       <Separator />
 
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground">{COPY.total}</span>
+        <span className="text-muted-foreground">{t("total")}</span>
         <span className="text-2xl font-bold text-foreground tabular-nums">
-          {formatNumber(metrics.totalResponses)}
+          {format.number(metrics.totalResponses)}
         </span>
       </div>
     </section>

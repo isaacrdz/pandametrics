@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/sidebar";
 import type { User } from "@/types/survey";
 
+// Brand name, the same in every language
+const BRAND_NAME = "panda metrics";
+
 interface AppSidebarProps {
   user: User;
 }
@@ -29,7 +32,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
               <SparklesIcon aria-hidden className="size-5 fill-current" />
             </span>
             <span className="truncate text-lg font-bold text-foreground group-data-[collapsible=icon]:hidden">
-              panda metrics
+              {BRAND_NAME}
             </span>
           </Link>
           <SidebarTrigger className="text-muted-foreground group-data-[collapsible=icon]:hidden" />
