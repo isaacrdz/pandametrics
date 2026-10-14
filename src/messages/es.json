@@ -75,7 +75,13 @@
     "subtitle": "Administra tus encuestas y sigue cada respuesta.",
     "caption": "Todas las encuestas",
     "toolbar": {
-      "range": "Rango de fechas"
+      "range": "Rango de fechas",
+      "search": "Buscar encuestas",
+      "type": "Tipo",
+      "typeLabel": "Filtro de tipo, {count, plural, =0 {todos los tipos} one {# seleccionado} other {# seleccionados}}",
+      "status": "Estado",
+      "statusAll": "Todas",
+      "statusLabel": "Filtro de estado, {status}"
     },
     "columns": {
       "survey": "Encuesta",
@@ -99,7 +105,19 @@
       "description": "Crea tu primera encuesta para empezar a recibir feedback.",
       "cta": "Crear encuesta"
     },
-    "loading": "Cargando encuestas"
+    "loading": "Cargando encuestas",
+    "pagination": {
+      "label": "Paginación",
+      "previous": "Página anterior",
+      "next": "Página siguiente",
+      "page": "Página {page}",
+      "showing": "Mostrando {from}–{to} de {total, plural, one {# encuesta} other {# encuestas}}"
+    },
+    "noResults": {
+      "title": "Ninguna encuesta coincide con tus filtros",
+      "description": "Prueba otra búsqueda o limpia los filtros.",
+      "clear": "Limpiar filtros"
+    }
   },
   "results": {
     "title": "Resumen de respuestas",

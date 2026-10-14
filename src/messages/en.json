@@ -75,7 +75,13 @@
     "subtitle": "Manage your surveys and keep track of every response.",
     "caption": "All surveys",
     "toolbar": {
-      "range": "Date range"
+      "range": "Date range",
+      "search": "Search surveys",
+      "type": "Type",
+      "typeLabel": "Type filter, {count, plural, =0 {all types} one {# selected} other {# selected}}",
+      "status": "Status",
+      "statusAll": "All",
+      "statusLabel": "Status filter, {status}"
     },
     "columns": {
       "survey": "Survey",
@@ -99,7 +105,19 @@
       "description": "Create your first survey to start collecting feedback.",
       "cta": "Create survey"
     },
-    "loading": "Loading surveys"
+    "loading": "Loading surveys",
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page}",
+      "showing": "Showing {from}–{to} of {total, plural, one {# survey} other {# surveys}}"
+    },
+    "noResults": {
+      "title": "No surveys match your filters",
+      "description": "Try another search or clear the filters.",
+      "clear": "Clear filters"
+    }
   },
   "results": {
     "title": "Response summary",

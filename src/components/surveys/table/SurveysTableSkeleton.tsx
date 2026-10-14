@@ -18,6 +18,13 @@ export function SurveysTableSkeleton() {
         <Skeleton className="h-11 w-full rounded-full sm:w-48" />
       </div>
       <div className="@container overflow-hidden rounded-3xl border border-card-border bg-card">
+        <div className="flex flex-col gap-3 border-b border-card-border p-4 @2xl:flex-row @2xl:justify-between @2xl:px-6">
+          <Skeleton className="h-11 w-full rounded-xl @2xl:max-w-sm" />
+          <div className="flex gap-3">
+            <Skeleton className="h-11 flex-1 rounded-xl @2xl:w-28 @2xl:flex-none" />
+            <Skeleton className="h-11 flex-1 rounded-xl @2xl:w-28 @2xl:flex-none" />
+          </div>
+        </div>
         <div className="hidden h-12 items-center gap-6 border-b border-card-border px-6 @2xl:flex">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="ml-auto h-3 w-16" />
@@ -36,6 +43,10 @@ export function SurveysTableSkeleton() {
             <Skeleton className="hidden h-4 w-32 @2xl:block" />
           </div>
         ))}
+        <div className="flex justify-center border-t border-card-border px-4 py-5 @2xl:justify-between @2xl:px-6">
+          <Skeleton className="h-4 w-44" />
+          <Skeleton className="hidden h-10 w-40 rounded-xl @2xl:block" />
+        </div>
       </div>
     </div>
   );

@@ -1,34 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { CalendarIcon, ClipboardListIcon, PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CalendarIcon, ClipboardListIcon, PlusIcon, SearchXIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { SurveysList } from "@/components/surveys/table/SurveysList";
+import { SurveysPagination } from "@/components/surveys/table/SurveysPagination";
 import { SurveysTable } from "@/components/surveys/table/SurveysTable";
+import { SurveysToolbar } from "@/components/surveys/table/SurveysToolbar";
 import { Button } from "@/components/ui/button";
+import { useUrlSearch } from "@/hooks/use-url-search";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DEFAULT_RANGE, RANGE_KEYS, parseRange, type RangeKey } from "@/lib/date-range";
+import { RANGE_KEYS, parseRange } from "@/lib/date-range";
 import type { SurveyListResult } from "@/lib/surveys/list";
+import { DEFAULT_SURVEY_LIST_QUERY, buildSurveysHref, withFilters, type SurveyListQuery } from "@/lib/surveys/list-params";
 
 interface SurveysTableSectionProps {
   data: SurveyListResult;
-  range: RangeKey;
+  params: SurveyListQuery;
 }
 
-export function SurveysTableSection({ data, range }: SurveysTableSectionProps) {
+export function SurveysTableSection({ data, params }: SurveysTableSectionProps) {
   const t = useTranslations("surveys");
   const tRange = useTranslations("dateRange");
   const format = useFormatter();
   const router = useRouter();
-  const pathname = usePathname();
+
+  function navigate(next: SurveyListQuery) {
+    router.replace(buildSurveysHref(next), { scroll: false });
+  }
+
+  const { search, handleChange, commit } = useUrlSearch(params.query, (query) =>
+    navigate(withFilters(params, { query })),
+  );
 
   // The range only sets the window of the Responses column; it never hides rows
   function handleRangeChange(value: string) {
-    const next = parseRange(value);
-    router.replace(next === DEFAULT_RANGE ? pathname : `${pathname}?range=${next}`, { scroll: false });
+    navigate(withFilters(params, { range: parseRange(value), query: commit(search) }));
   }
+
+  // Clearing the filters keeps the range: it is not a filter, it is the responses window
+  const clearFiltersHref = buildSurveysHref({ ...DEFAULT_SURVEY_LIST_QUERY, range: params.range });
 
   return (
     <section aria-labelledby="surveys-title" className="flex flex-col gap-6">
@@ -40,7 +53,7 @@ export function SurveysTableSection({ data, range }: SurveysTableSectionProps) {
           </h1>
           <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Select value={range} onValueChange={handleRangeChange}>
+        <Select value={params.range} onValueChange={handleRangeChange}>
           <SelectTrigger
             aria-label={t("toolbar.range")}
             className="h-11! w-full gap-2 rounded-full bg-card px-4 text-[0.95rem] sm:w-48"
@@ -76,12 +89,40 @@ export function SurveysTableSection({ data, range }: SurveysTableSectionProps) {
         // Container queries, not viewport breakpoints: the sidebar takes part of the width,
         // so at a 768px viewport the card is only ~450px wide
         <div className="@container overflow-hidden rounded-3xl border border-card-border bg-card">
-          <div className="hidden @2xl:block">
-            <SurveysTable rows={data.rows} now={data.now} range={range} />
-          </div>
-          <div className="@2xl:hidden">
-            <SurveysList rows={data.rows} now={data.now} />
-          </div>
+          <SurveysToolbar params={params} search={search} onSearchChange={handleChange} commitSearch={commit} />
+          {data.total === 0 ? (
+            <EmptyState
+              icon={SearchXIcon}
+              title={t("noResults.title")}
+              description={t("noResults.description")}
+              className="rounded-none border-0"
+              action={
+                <Button asChild variant="outline" className="rounded-xl">
+                  <Link href={clearFiltersHref} scroll={false}>
+                    {t("noResults.clear")}
+                  </Link>
+                </Button>
+              }
+            />
+          ) : (
+            <>
+              <div className="hidden @2xl:block">
+                <SurveysTable rows={data.rows} now={data.now} range={params.range} />
+              </div>
+              <div className="@2xl:hidden">
+                <SurveysList rows={data.rows} now={data.now} />
+              </div>
+            </>
+          )}
+          {data.total > 0 && (
+            <SurveysPagination
+              params={params}
+              page={data.page}
+              pageCount={data.pageCount}
+              pageSize={data.pageSize}
+              total={data.total}
+            />
+          )}
         </div>
       )}
     </section>

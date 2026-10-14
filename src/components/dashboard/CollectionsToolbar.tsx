@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -12,9 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUrlSearch } from "@/hooks/use-url-search";
 import { DEFAULT_RANGE, RANGE_KEYS, parseRange, type RangeKey } from "@/lib/date-range";
-
-const SEARCH_DEBOUNCE_MS = 300;
 
 interface CollectionsToolbarProps {
   query: string;
@@ -26,31 +24,14 @@ export function CollectionsToolbar({ query, range }: CollectionsToolbarProps) {
   const tRange = useTranslations("dateRange");
   const router = useRouter();
   const pathname = usePathname();
-  const [search, setSearch] = useState(query);
-  // Last query this toolbar wrote to the URL
-  const [pushedQuery, setPushedQuery] = useState(query);
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  // The URL changed from outside (e.g. "Clear search"): sync the input
-  if (query !== pushedQuery) {
-    setPushedQuery(query);
-    setSearch(query);
-  }
+  const { search, handleChange, commit } = useUrlSearch(query, (q) => updateUrl({ q, range }));
 
   function updateUrl(next: { q: string; range: RangeKey }) {
-    const q = next.q.trim();
-    setPushedQuery(q);
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
+    if (next.q) params.set("q", next.q);
     if (next.range !== DEFAULT_RANGE) params.set("range", next.range);
     const queryString = params.toString();
     router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
-  }
-
-  function handleSearch(value: string) {
-    setSearch(value);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => updateUrl({ q: value, range }), SEARCH_DEBOUNCE_MS);
   }
 
   return (
@@ -63,13 +44,13 @@ export function CollectionsToolbar({ query, range }: CollectionsToolbarProps) {
         <Input
           type="search"
           value={search}
-          onChange={(event) => handleSearch(event.target.value)}
+          onChange={(event) => handleChange(event.target.value)}
           placeholder={t("search")}
           aria-label={t("search")}
           className="h-11 w-full rounded-full bg-card pl-10 text-[0.95rem] sm:w-60"
         />
       </div>
-      <Select value={range} onValueChange={(value) => updateUrl({ q: search, range: parseRange(value) })}>
+      <Select value={range} onValueChange={(value) => updateUrl({ q: commit(search), range: parseRange(value) })}>
         <SelectTrigger
           aria-label={t("range")}
           className="h-11! w-full gap-2 rounded-full bg-card px-4 text-[0.95rem] sm:w-48"

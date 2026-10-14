@@ -1,18 +1,16 @@
 import "server-only";
 
 import { getPublicSurveyUrl } from "@/lib/dashboard";
-import { getDateRange, type RangeKey } from "@/lib/date-range";
+import { getDateRange } from "@/lib/date-range";
 import { MOCK_NOW, countMockResponses } from "@/lib/mock-data";
 import { getSurveyColorIndex } from "@/lib/surveys/colors";
+import { SURVEYS_PAGE_SIZE, type SurveyListQuery } from "@/lib/surveys/list-params";
+import { matchesQuery } from "@/lib/surveys/search";
 import { listSurveys as listStoredSurveys } from "@/lib/surveys/service";
 import type { SurveyCategory } from "@/types/survey";
 
-// Data for the survey table (/surveys), with the shape of the future GET /api/v1/surveys.
-// Phase 2 adds query, categories, status and paging to the params; the result keeps its shape.
-
-export interface SurveyListParams {
-  range: RangeKey;
-}
+// Data for the survey table (/surveys), with the shape of the future GET /api/v1/surveys:
+// filters, sort and paging happen here, the client only renders the rows.
 
 // Plain data: exactly what the client renders, no Date objects and no questions
 export interface SurveyRow {
@@ -30,19 +28,39 @@ export interface SurveyRow {
 
 export interface SurveyListResult {
   rows: SurveyRow[];
+  // After filters
+  total: number;
   // Before filters: tells "no surveys yet" apart from "no results"
   totalAll: number;
+  // Clamped to [1, pageCount]
+  page: number;
+  pageCount: number;
+  pageSize: number;
   activeCount: number;
   // Reference for relative dates ("Today", "Yesterday"); the mock clock until the database exists
   now: string;
 }
 
-export function listSurveys(organizationId: string, params: SurveyListParams): SurveyListResult {
+export function listSurveys(
+  organizationId: string,
+  params: SurveyListQuery,
+  pageSize = SURVEYS_PAGE_SIZE,
+): SurveyListResult {
   const range = getDateRange(params.range, MOCK_NOW);
   const surveys = listStoredSurveys(organizationId);
+  const categories = new Set(params.categories);
 
-  const rows = surveys
-    .toSorted((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime() || a.name.localeCompare(b.name))
+  const filtered = surveys
+    .filter((survey) => matchesQuery(survey, params.query))
+    .filter((survey) => categories.size === 0 || categories.has(survey.category))
+    .filter((survey) => params.status === "all" || survey.isActive === (params.status === "active"))
+    .toSorted((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime() || a.name.localeCompare(b.name));
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const page = Math.min(Math.max(1, params.page), pageCount);
+
+  const rows = filtered
+    .slice((page - 1) * pageSize, page * pageSize)
     .map((survey) => ({
       id: survey.id,
       code: survey.code,
@@ -57,7 +75,11 @@ export function listSurveys(organizationId: string, params: SurveyListParams): S
 
   return {
     rows,
+    total: filtered.length,
     totalAll: surveys.length,
+    page,
+    pageCount,
+    pageSize,
     activeCount: surveys.filter((survey) => survey.isActive).length,
     now: MOCK_NOW.toISOString(),
   };

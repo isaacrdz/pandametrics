@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import { SurveysTableSection } from "@/components/surveys/table/SurveysTableSection";
 import { SurveysTableSkeleton } from "@/components/surveys/table/SurveysTableSkeleton";
 import { getAppContext } from "@/lib/dashboard";
-import { parseRange } from "@/lib/date-range";
 import { listSurveys } from "@/lib/surveys/list";
+import { parseSurveyListParams } from "@/lib/surveys/list-params";
 
 export const metadata: Metadata = {
   title: "Surveys · Panda Metrics",
@@ -12,12 +12,11 @@ export const metadata: Metadata = {
 
 // searchParams is runtime data under Cache Components, so it is read inside Suspense
 async function SurveysContent({ searchParams }: Pick<PageProps<"/surveys">, "searchParams">) {
-  const params = await searchParams;
-  const range = parseRange(params.range);
+  const params = parseSurveyListParams(await searchParams);
   const { organization } = getAppContext();
-  const data = listSurveys(organization.id, { range });
+  const data = listSurveys(organization.id, params);
 
-  return <SurveysTableSection data={data} range={range} />;
+  return <SurveysTableSection data={data} params={params} />;
 }
 
 export default function SurveysPage({ searchParams }: PageProps<"/surveys">) {

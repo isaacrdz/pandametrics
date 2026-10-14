@@ -35,7 +35,7 @@ export function SurveysList({ rows, now }: SurveysListProps) {
               {row.responses === 0 ? t("noResponses") : tCommon("responses", { count: row.responses })}
             </span>
           </div>
-          <p className="flex gap-1.5 pl-5 text-sm text-muted-foreground">
+          <p className="flex flex-wrap gap-x-1.5 pl-5 text-sm text-muted-foreground">
             <span>{t("columns.updated")}</span>
             <span aria-hidden>·</span>
             <SurveyUpdatedAt updatedAt={row.updatedAt} now={now} />

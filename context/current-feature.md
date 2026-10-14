@@ -1,18 +1,76 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Surveys Table Filters
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- URL state on `/surveys`:
+  - `q` (name or code, accent and case insensitive);
+  - `type` (comma list of `satisfaction`, `rating`, `poll`);
+  - `status` (`active` | `draft`);
+  - `range` (`RANGE_KEYS`, default `30d`);
+  - `page` (1-based).
+  - Only non-default values are written; reloads and shared links restore the view.
+- `src/lib/surveys/list-params.ts`:
+  - `parseSurveyListParams(searchParams)` (unknown values fall back to defaults, categories de-duplicated);
+  - `buildSurveysHref(params)` (only non-default values; any filter change drops `page`).
+- `listSurveys(organizationId, params)`:
+  - takes `query`, `categories`, `status`, `range`, `page` and `pageSize` (10);
+  - filters, sorts and paginates on the server;
+  - returns `total` (after filters), `totalAll`, `page` (clamped to `pageCount`) and `pageCount`.
+- `SurveysToolbar` (client, inside the card):
+  - search input (`type="search"`, 300 ms debounce, synced when the URL changes from outside);
+  - **Type**: `DropdownMenuCheckboxItem` per category, the label shows the count ("Type · 2") with an `aria-label` for the full state;
+  - **Status**: `DropdownMenuRadioGroup` with All / Active / Draft;
+  - layout: search full width with the filters below it on narrow cards, search left and filters right on wide cards.
+- Shared `useUrlSearch` hook extracted from `CollectionsToolbar` and used by both toolbars; the dashboard behavior is unchanged
+- `SurveysPagination`:
+  - "Showing {from}–{to} of {total} surveys": ICU plural with formatted numbers, in a polite live region, hidden when `total` is 0;
+  - previous / next icon buttons with labels, `aria-disabled` at the ends;
+  - one `Link` per page, with an ellipsis after 7 pages;
+  - the current page is `bg-primary text-primary-foreground` with `aria-current="page"`;
+  - wrapped in `<nav aria-label="Pagination">`;
+  - hidden when there is one page; links keep the other params and work without JS.
+- No-results state (`totalAll > 0 && total === 0`):
+  - `EmptyState` with `SearchIcon`, "No surveys match your filters" and "Clear filters";
+  - "Clear filters" is a link to `/surveys` that keeps a non-default `range`;
+  - the toolbar stays visible.
+- The range select keeps the other filters when it changes (it no longer drops them) and resets `page`
+- Messages in en/es: `toolbar.search`, `toolbar.type`, `toolbar.typeLabel`, `toolbar.status`, `toolbar.statusAll`, `pagination.*`, `noResults.*`
 
 ## Notes
 
-<!-- Any extra notes -->
+- Phase 2 of 4 of the surveys table (spec: `context/features/surveys-table-filters-spec.md`, research: `docs/surveys-table.md` sections 4, 7, 9, 10, 11)
+- Requires phase 1: `/surveys`, `src/lib/surveys/list.ts`, `SurveysTable`, `SurveysList`, `SurveysTableSection`
+- Server-side filtering: the client only renders `SurveyRow[]`; the params have the shape of the future `GET /api/v1/surveys`
+- The Status filter exists because the table is the only place drafts are visible
+- There is no "Date" button; the range stays in the heading and only sets the window of the Responses column
+- The pager only shows pages that exist (no fake page 2 as in the screenshot)
+- The table and list switch with container queries (`@2xl`), and the toolbar layout should follow the same card width
+- Not in this phase: row menu, checkboxes and bulk actions (phase 3); final polish (phase 4)
+- Adjusted during implementation:
+  - **`useUrlSearch`** lives in `src/hooks/use-url-search.ts` and returns `{ search, handleChange, commit }`. `commit` cancels a pending search so the dashboard range select writes `q` and `range` together.
+  - **`withFilters(params, changes)`** in `list-params.ts` applies a filter change and resets `page`. **`getPageItems`** builds the pager (every page up to 7, then first / neighbors / last with ellipses).
+  - **`EmptyState`** got an optional `className`, so the no-results state sits borderless inside the card.
+  - **The "Showing …" footer** stays visible with a single page; only the pager hides.
+  - **The skeleton** now includes the toolbar and the footer.
+  - **The Type menu** stays open while picking (`onSelect` prevents close); filters are highlighted in pink while active ("Type · 2", "Status · Draft").
+- Fixed in review: a filter or range picked within 300 ms of typing was undone when the debounced search fired with the old params.
+  - `useUrlSearch` now calls the latest `onSearch` (ref).
+  - The search state lives in `SurveysTableSection` and is passed to `SurveysToolbar`.
+  - Filters and the range include the pending text through `commit(search)`.
+- 7 draft surveys ("Borrador de prueba 1–7") were created through the form to test paging. They live in the in-memory store and disappear when `yarn dev` restarts.
+- Verification:
+  - `yarn lint`, `tsc` and `yarn build` pass;
+  - `/surveys?q=store&type=satisfaction&status=active&range=7d` restores the same view after a reload;
+  - accents and case are ignored ("PRUEBAS" finds "Pruebas con QR");
+  - "Clear filters" keeps only `range`;
+  - with more than 10 surveys, page 2 works, a filter change goes back to page 1, and `?page=99` clamps to the last page;
+  - dashboard search still works;
+  - both menus work with the keyboard and the total is announced;
+  - 375 / 768 / 1280px in light, dark, English and Spanish, with no console errors.
 
 ## History
 
