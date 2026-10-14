@@ -1,70 +1,18 @@
-# Current Feature: Surveys Table Polish
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Responsive at 375, 500, 768 and 1280px:
-  - narrow cards: stacked list, search full width with Type and Status below, the selection bar wraps without overflow, pager centered;
-  - 768: table without the Type column (badge under the name), toolbar on one row;
-  - 1280: full table as in the reference;
-  - no page-level horizontal overflow (the table `overflow-x-auto` is only a safety net);
-  - long survey names truncate with `title` in the table and the list, and codes never wrap;
-  - only one layout (table or list) in the accessibility tree at a time.
-- Dark mode, checked against `docs/surveys-table.md` section 12:
-  - card, borders, dividers and row hover;
-  - type badges and Active / Draft pills;
-  - light checkboxes and the checked / indeterminate states;
-  - current page, rows-per-page select, menus and dialogs;
-  - dots.
-  - Re-run `check-contrast.mjs`, adding any new pair.
-- Accessibility:
-  - table caption, `th scope="col"` / `th scope="row"`, pagination `nav` label;
-  - a visible solid `--ring` on every interactive element;
-  - tab order: range → search → Type → Status (or the selection bar) → select all → per row (checkbox, name, menu) → rows per page → pager;
-  - status and type never conveyed by color alone;
-  - no Radix console warnings (missing `Title` / `Description`) in menus and dialogs.
-- Loading and transitions:
-  - the skeleton matches the final layout at every width (list skeleton on narrow cards), so nothing shifts;
-  - filter and page changes keep the previous content until the new one streams in, with no flash of an empty state.
-- Pending items from the phase 1–3 reviews:
-  - **Top bar date at 768px:** the date in the top bar wraps onto several lines when the sidebar is open; make it fit (truncate, shorter format or hide below a width) without hiding the greeting;
-  - **Two `h1` on the page:** the top bar greeting and "All surveys" (also on the form pages) are both `h1`; keep one `h1` per page;
-  - **Scroll on page change:** pager links use `scroll={false}`; after a page or page-size change, bring the top of the table into view (respecting reduced motion) without jumping on filter changes;
-  - **Live regions that stay silent:**
-    - "Showing X–Y of Z" is not announced when the list comes back from the no-results state;
-    - "{count} selected" is not announced the first time rows are selected.
-    - In both cases the region mounts together with its text: use live regions that stay mounted and only change their content;
-  - **Tab order of the selection clear button:** the X sits before the bulk actions in the DOM but is shown last on wide cards; make the DOM order match the visual order in both layouts.
-- Comparison with `table-design-view.png` (ignoring its sidebar and top bar), with the intended differences: no "Paused", no toolbar "Date" button, no fake page 2, light checkboxes. Spacing, type scale, uppercase headers and row height should match.
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Phase 4 of 4 of the surveys table (spec: `context/features/surveys-table-polish-spec.md`, research: `docs/surveys-table.md` sections 9, 10, 12, 14)
-- No new features: fix what the pass finds, plus the pending items listed in the goals
-- The table and list switch with container queries (`@2xl`, `@4xl`), because the sidebar takes part of the width
-- Rows per page (5 / 10 / 25 / 50, default 5) and the always-visible pager were added at the end of phase 3: include them in the pass
-- The in-memory store resets when `yarn dev` restarts; create drafts through the form when testing paging, selection or empty states
-- Done during the pass:
-  - **Top bar:** the header is a container, so the organization name and the "New survey" label only show from `@3xl` (bar ≥ 768px). The date uses `dateStyle: "medium"` below `xl` and `"full"` above, on one truncated line. The greeting size follows the bar width.
-  - **One `h1` per page:** the greeting became a `<p>`; `/surveys` and the form keep their own `h1`, and the dashboard got an sr-only `h1` (`DashboardTitle`). The surveys `h1` reads "All surveys 8" (space before the count).
-  - **Scroll:** after a page or page-size change (`data.page:data.pageSize`), the card scrolls into view only if its top is above the viewport (`scroll-mt-24`, instant under reduced motion). Filter changes never scroll.
-  - **Live regions:** two sr-only `aria-live="polite"` regions stay mounted in the section, one for results ("Showing …" / "No surveys match your filters") and one for selection. The visible "Showing …" text and the bar count are no longer live regions.
-  - **Selection bar order:** the DOM order is now count, Activate, Move to draft, Delete, Clear, the same as on screen; narrow cards put the count on its own line.
-  - **Pending state:** filter, range and page-size changes run in a transition; the card is dimmed with `aria-busy` while the new rows stream in.
-  - **Codes:** survey codes never wrap.
-- Fixed in review: the skeleton did not match the final layout.
-  - It drew 6 rows (now `DEFAULT_PAGE_SIZE`, 5), single-line rows on narrow cards (now stacked list items) and no rows-per-page / pager.
-  - Measured with JavaScript disabled (the Suspense fallback stays visible): 564 vs 568px at 1280, and 1002 vs 1034px at 375, where the gap is one real item whose responses wrap.
-- Not tested in the browser: the "no surveys yet" state (it would need deleting every seeded survey); its code is unchanged since phase 1
-- Verification:
-  - `yarn lint`, `tsc` and `yarn build` (`◐ /surveys`) pass;
-  - screenshots at 375, 500, 768 and 1280px, light and dark, English and Spanish, with data and in both empty states (no surveys, no results);
-  - a keyboard-only walkthrough: filter, select, bulk action, row menu action, page change;
-  - a screen reader check of the live regions (no-results → results, first selection);
-  - no horizontal scroll, no console errors or warnings.
+<!-- Any extra notes -->
 
 ## History
 
@@ -82,3 +30,4 @@ In Progress
 - **Surveys Table Base** (2026-10-13): phase 1 of 4. History removed from the sidebar and Surveys enabled. `/surveys` read-only table of every survey (active and draft) from `src/lib/surveys/list.ts`: stable color dot, name link + code, type badge, Active / Draft pill (`isActive`), responses in the selected range (`?range=`), Today / Yesterday dates in `TIME_ZONE`. Stacked list on narrow cards (container queries, since the sidebar takes width), skeleton and empty state. Dashboard "View all" link, `surveys` messages, shadcn `table`, overview updated (History replaced by the table)
 - **Surveys Table Filters** (2026-10-14): phase 2 of 4. URL state on `/surveys` (`q`, `type`, `status`, `range`, `page`) via `list-params.ts`; server-side search (accent and case insensitive), category and Active / Draft filters, sort and pagination by 10 with clamping. Toolbar with debounced search and Type / Status menus; pager with real pages only and a live "Showing X–Y of Z" text; no-results state with "Clear filters" keeping the range. Shared `useUrlSearch` hook (also on the dashboard) and a fix so a filter or range picked while typing is never undone
 - **Surveys Table Actions** (2026-10-14): phase 3 of 4. Row "…" menu (edit, copy link / code, activate / move to draft with the active-limit hint, delete staying on `/surveys`). Light checkboxes with the new `--control-border` token (3:1, in the contrast check) and an indeterminate select all. Per-view selection with a bulk bar (activate, move to draft, delete), all or nothing on the server with the 5-active limit. New validated `setSurveyActive` / `setSurveysActive` / `deleteSurveys` actions; every survey action revalidates `/dashboard` and `/surveys`. Added on request: 5 rows per page by default (5 / 10 / 25 / 50, `?size=`) and an always-visible pager
+- **Surveys Table Polish** (2026-10-14): phase 4 of 4. Responsive, dark mode and keyboard pass at 375 / 500 / 768 / 1280 (no overflow, long names truncated, full tab order, no Radix warnings). Top bar as a container (labels only with room, short date below `xl`) so the date no longer wraps at 768px. One `h1` per page (greeting as text, sr-only dashboard `h1`). Scroll to the table on page / size change. Always-mounted live regions for results and selection. Selection bar DOM order matches the screen. Dimmed `aria-busy` card during list transitions. Skeleton matching the table and the stacked list
