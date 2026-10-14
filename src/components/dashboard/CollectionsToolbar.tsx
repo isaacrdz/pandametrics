@@ -35,8 +35,9 @@ export function CollectionsToolbar({ query, range }: CollectionsToolbarProps) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-      <div className="relative">
+    // Sizes follow the "Your surveys" section (@container/surveys), not the viewport
+    <div className="flex w-full flex-col gap-3 @md/surveys:flex-row @3xl/surveys:w-auto">
+      <div className="relative @md/surveys:flex-1 @3xl/surveys:flex-none">
         <SearchIcon
           aria-hidden
           className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
@@ -47,13 +48,13 @@ export function CollectionsToolbar({ query, range }: CollectionsToolbarProps) {
           onChange={(event) => handleChange(event.target.value)}
           placeholder={t("search")}
           aria-label={t("search")}
-          className="h-11 w-full rounded-full bg-card pl-10 text-[0.95rem] sm:w-60"
+          className="h-11 w-full rounded-full bg-card pl-10 text-[0.95rem] @3xl/surveys:w-60"
         />
       </div>
       <Select value={range} onValueChange={(value) => updateUrl({ q: commit(search), range: parseRange(value) })}>
         <SelectTrigger
           aria-label={t("range")}
-          className="h-11! w-full gap-2 rounded-full bg-card px-4 text-[0.95rem] sm:w-48"
+          className="h-11! w-full gap-2 rounded-full bg-card px-4 text-[0.95rem] @md/surveys:w-48"
         >
           <span aria-hidden className="size-2 shrink-0 rounded-full bg-highlight" />
           <SelectValue />

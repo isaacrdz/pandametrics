@@ -63,6 +63,8 @@ The dashboard is a two-column app shell: a fixed sidebar (~280px) and a scrollin
 
 ### Stat cards (3 equal columns)
 
+> **Removed in the Dashboard Header Cleanup** (`docs/dashboard-header-cleanup.md`): the dashboard now opens with the "Your surveys" section. The description below is kept as history.
+
 | Card | Style | Content |
 | ---- | ----- | ------- |
 | Total responses | Solid indigo background, white text, large shadow | Label, bar chart icon, value `3,062`, `+14.2% vs. last month` (percentage bold) |

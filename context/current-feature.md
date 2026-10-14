@@ -1,18 +1,27 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Dashboard Header Cleanup
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Remove the three stat cards from `/dashboard` (`StatCards` in `page.tsx`; delete `StatCards.tsx` and `StatCard.tsx`)
+- Remove what only the stat cards use: `summary` and `todayResponses` in `src/lib/dashboard.ts`, `getMockDashboardSummary`, `DashboardSummary`, `getTodayRange` (grep first) and imports left unused
+- Remove `dashboard.stats.*` (5 keys) from both `en.json` and `es.json`; rename the `highlight` contrast note to "New survey button"
+- `DashboardSection` as `@container/surveys`: header stacked below `@3xl/surveys`, one row above; title block `min-w-0`, heading row `flex-wrap`, "View all" `whitespace-nowrap`; `h2` keeps its ref, `tabIndex` and focus ring
+- `CollectionsToolbar` on the same container: stacked below `@md/surveys`, one row with a growing search between `@md` and `@3xl`, fixed `w-60` search + `w-48` select from `@3xl`
+- `DashboardSkeleton` without the stat row, inside `@container/surveys`, with the toolbar shape on the same thresholds
+- Note in `docs/dashboard.md` that the stat cards were removed
+- `yarn lint`, `tsc --noEmit` and `yarn build` pass (`/dashboard` still partial prerender); no overflow at 375 / 500 / 640 / 768 / 1024 / 1280 with the sidebar open and collapsed, light / dark, en / es
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/dashboard-header-cleanup-spec.md`; research: `docs/dashboard-header-cleanup.md`
+- Overflow cause: the header goes to a row at the `sm` viewport breakpoint, but with the sidebar open the section is only 448px at 768px and the toolbar has fixed widths (240 + 192)
+- Keep `activeSurveyCount` (empty state and card menu) and the `--highlight` tokens (`NewSurveyButton`)
+- No replacement for the active-limit stat in this change
+- Move to draft / delete must still focus the "Your surveys" heading
 
 ## History
 

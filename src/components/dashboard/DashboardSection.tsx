@@ -27,10 +27,11 @@ export function DashboardSection({ cards, activeSurveyCount, query, range }: Das
   }
 
   return (
-    <section aria-labelledby="surveys-title" className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="flex items-baseline gap-4">
+    // A container: with the sidebar open the section is much narrower than the viewport
+    <section aria-labelledby="surveys-title" className="@container/surveys flex flex-col gap-6">
+      <div className="flex flex-col gap-4 @3xl/surveys:flex-row @3xl/surveys:items-end @3xl/surveys:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <h2
               ref={headingRef}
               id="surveys-title"
@@ -42,7 +43,7 @@ export function DashboardSection({ cards, activeSurveyCount, query, range }: Das
             {/* The dashboard only lists active surveys; drafts live in the table */}
             <Link
               href="/surveys"
-              className="inline-flex items-center gap-1 rounded-md text-sm font-semibold text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="inline-flex items-center gap-1 rounded-md text-sm whitespace-nowrap font-semibold text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {t("surveys.viewAll")}
               <ArrowRightIcon aria-hidden className="size-4" />

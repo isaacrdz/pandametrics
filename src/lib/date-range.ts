@@ -32,8 +32,3 @@ export function getDateRange(key: RangeKey, now: Date): DateRange {
   }
   return { from: new Date(to.getTime() - RANGE_DAYS[key] * DAY_MS), to };
 }
-
-export function getTodayRange(now: Date): DateRange {
-  const from = startOfDay(now);
-  return { from, to: new Date(from.getTime() + DAY_MS) };
-}

@@ -21,7 +21,7 @@ const PAIRS = [
   ["primary", "card", TEXT, "pink text on cards"],
   ["primary", "accent", TEXT, "pink text on accent tints (poll counts)"],
   ["accent-foreground", "accent", TEXT, "accent text (active nav, tiles)"],
-  ["highlight-foreground", "highlight", TEXT, "highlight card"],
+  ["highlight-foreground", "highlight", TEXT, "New survey button"],
   ["inverse-foreground", "inverse", TEXT, "dark CTA banner"],
   ["brand", "inverse", TEXT, "pink eyebrow on the dark CTA banner"],
   ["primary", "card", TEXT, "card-colored buttons with pink text"],

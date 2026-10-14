@@ -3,7 +3,6 @@
 
 import type {
   AnswerType,
-  DashboardSummary,
   DateRange,
   Organization,
   Question,
@@ -19,8 +18,6 @@ import type {
 } from "@/types/survey";
 
 export const MOCK_NOW = new Date("2026-10-13T18:00:00.000Z");
-
-export const ACTIVE_SURVEY_LIMIT = 5;
 
 export const REACTION_OPTIONS: {
   value: ReactionValue;
@@ -461,19 +458,6 @@ export function getMockSurveyMetrics(survey: Survey, range: DateRange = LAST_30_
 
 export function countMockResponses(surveyId: string, range: DateRange = LAST_30_DAYS): number {
   return MOCK_RESPONSES.filter((r) => r.surveyId === surveyId && inRange(r, range)).length;
-}
-
-export function getMockDashboardSummary(
-  activeSurveyIds: string[],
-  range: DateRange = LAST_30_DAYS,
-): DashboardSummary {
-  const activeIds = new Set(activeSurveyIds);
-
-  return {
-    totalResponses: MOCK_RESPONSES.filter((r) => activeIds.has(r.surveyId) && inRange(r, range)).length,
-    activeSurveys: activeIds.size,
-    activeSurveyLimit: ACTIVE_SURVEY_LIMIT,
-  };
 }
 
 export function getAnsweredOptionIds(surveyId: string): Set<string> {

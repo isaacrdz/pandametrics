@@ -36,15 +36,17 @@ export function DashboardSkeleton() {
   const t = useTranslations("common");
 
   return (
-    <div role="status" aria-label={t("loading")} className="flex flex-col gap-10">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        {Array.from({ length: 3 }, (_, i) => (
-          <Skeleton key={i} className="h-40 rounded-2xl" />
-        ))}
-      </div>
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-72" />
+    // Same container and thresholds as DashboardSection, so nothing jumps when the content arrives
+    <div role="status" aria-label={t("loading")} className="@container/surveys flex flex-col gap-6">
+      <div className="flex flex-col gap-4 @3xl/surveys:flex-row @3xl/surveys:items-end @3xl/surveys:justify-between">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-72 max-w-full" />
+        </div>
+        <div className="flex w-full flex-col gap-3 @md/surveys:flex-row @3xl/surveys:w-auto">
+          <Skeleton className="h-11 rounded-full @md/surveys:flex-1 @3xl/surveys:w-60 @3xl/surveys:flex-none" />
+          <Skeleton className="h-11 rounded-full @md/surveys:w-48" />
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <SurveyCardSkeleton />

@@ -32,13 +32,6 @@
     "hello": "{period, select, morning {Good morning} afternoon {Good afternoon} evening {Good evening} other {Hello}}, {name}"
   },
   "dashboard": {
-    "stats": {
-      "totalResponses": "Total responses",
-      "activeSurveys": "Active surveys",
-      "todayResponses": "Responses today",
-      "todayHint": "Received since midnight",
-      "remaining": "{count, plural, =0 {Limit reached} one {One spot remaining} other {# spots remaining}}"
-    },
     "surveys": {
       "title": "Your surveys",
       "subtitle": "A snapshot of how your customers are feeling.",

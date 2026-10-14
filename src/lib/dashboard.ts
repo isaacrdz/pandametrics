@@ -1,18 +1,16 @@
 // Single data access point for the dashboard. Backed by the mock until Prisma exists.
 
-import { getDateRange, getTodayRange, type RangeKey } from "@/lib/date-range";
+import { getDateRange, type RangeKey } from "@/lib/date-range";
 import {
   MOCK_CURRENT_ORGANIZATION,
   MOCK_CURRENT_USER,
   MOCK_NOW,
   MOCK_ORGANIZATIONS,
-  getMockDashboardSummary,
   getMockSurveyMetrics,
 } from "@/lib/mock-data";
 import { matchesQuery } from "@/lib/surveys/search";
 import { listActiveSurveys } from "@/lib/surveys/service";
 import type {
-  DashboardSummary,
   Organization,
   Survey,
   SurveyMetrics,
@@ -32,8 +30,6 @@ export interface SurveyCardData {
 }
 
 export interface DashboardData {
-  summary: DashboardSummary;
-  todayResponses: number;
   activeSurveyCount: number;
   cards: SurveyCardData[];
 }
@@ -58,7 +54,6 @@ export function getDashboardData(
 ): DashboardData {
   const range = getDateRange(rangeKey, MOCK_NOW);
   const surveys = listActiveSurveys(organizationId);
-  const activeIds = surveys.map((survey) => survey.id);
 
   const cards = surveys
     .filter((survey) => matchesQuery(survey, query))
@@ -69,8 +64,6 @@ export function getDashboardData(
     }));
 
   return {
-    summary: getMockDashboardSummary(activeIds, range),
-    todayResponses: getMockDashboardSummary(activeIds, getTodayRange(MOCK_NOW)).totalResponses,
     activeSurveyCount: surveys.length,
     cards,
   };

@@ -117,9 +117,3 @@ export interface SurveyMetrics {
   totalResponses: number;
   questions: QuestionMetrics[];
 }
-
-export interface DashboardSummary {
-  totalResponses: number;
-  activeSurveys: number;
-  activeSurveyLimit: number;
-}

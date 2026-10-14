@@ -4,7 +4,6 @@ import { DashboardFooter } from "@/components/dashboard/DashboardFooter";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { DashboardTitle } from "@/components/dashboard/DashboardTitle";
-import { StatCards } from "@/components/dashboard/StatCards";
 import { getAppContext, getDashboardData } from "@/lib/dashboard";
 import { parseRange } from "@/lib/date-range";
 
@@ -18,15 +17,12 @@ async function DashboardContent({ searchParams }: Pick<PageProps<"/dashboard">, 
   const data = getDashboardData(organization.id, range, query);
 
   return (
-    <>
-      <StatCards summary={data.summary} todayResponses={data.todayResponses} range={range} />
-      <DashboardSection
-        cards={data.cards}
-        activeSurveyCount={data.activeSurveyCount}
-        query={query}
-        range={range}
-      />
-    </>
+    <DashboardSection
+      cards={data.cards}
+      activeSurveyCount={data.activeSurveyCount}
+      query={query}
+      range={range}
+    />
   );
 }
 

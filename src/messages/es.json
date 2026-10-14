@@ -32,13 +32,6 @@
     "hello": "{period, select, morning {Buenos días} afternoon {Buenas tardes} evening {Buenas noches} other {Hola}}, {name}"
   },
   "dashboard": {
-    "stats": {
-      "totalResponses": "Respuestas totales",
-      "activeSurveys": "Encuestas activas",
-      "todayResponses": "Respuestas hoy",
-      "todayHint": "Recibidas desde la medianoche",
-      "remaining": "{count, plural, =0 {Límite alcanzado} one {Queda # lugar disponible} other {Quedan # lugares disponibles}}"
-    },
     "surveys": {
       "title": "Tus encuestas",
       "subtitle": "Así se sienten tus clientes.",
