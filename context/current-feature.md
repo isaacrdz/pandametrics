@@ -1,27 +1,18 @@
-# Current Feature: Sidebar Collapse
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Collapsed rail of 4rem: `--sidebar-width-icon: 4rem` as `style` on `SidebarProvider` in `src/app/(app)/layout.tsx`
-- Every collapsed item is a centered 40px square: `NavMain` buttons (`size-10! p-0! justify-center`, icon `size-5`), `NavUser` button and avatar `size-10`, logo tile `size-10`, header `px-3` in both states
-- At 1280px collapsed, the centers of logo, toggle, nav buttons, nav icons and avatar measure 32px in light and dark
-- New client `SidebarToggle` in the header, visible in both states: `PanelLeftCloseIcon` + "Collapse sidebar" when expanded, `PanelLeftOpenIcon` + "Expand sidebar" when collapsed; `aria-label`, `aria-expanded`, right-side tooltip with the shortcut from a constant; stays mounted so focus stays on it
-- Header row when expanded (logo `flex-1` + toggle), column when collapsed (logo above toggle); replaces the header `SidebarTrigger`
-- Collapsed wordmark `sr-only` instead of `hidden`, so the logo link keeps the name "Panda Metrics"
-- "Settings" shows its "Coming soon" tooltip when collapsed; switch to `aria-disabled` if `disabled` blocks it
-- New `a11y.expandSidebar` / `a11y.collapseSidebar` in en / es; `toggleSidebar` kept
-- `yarn lint`, `tsc --noEmit`, `yarn build` pass; `Cmd/Ctrl + B`, the rail and the mobile sheet still work; no overflow at 768 / 1024 / 1280 in both states, en / es
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/sidebar-collapse-spec.md`; research: `docs/sidebar-collapse.md`
-- Off-center cause: group `px-3` leaves 24px for a forced 32px button, and the 20px icon overflows the button's 16px content box (icons measured at center 30, avatar at 28, rail center 24)
-- Do not edit `src/components/ui/sidebar.tsx` (shadcn primitive); the top bar `SidebarTrigger` (`md:hidden`) stays for the mobile sheet
-- No persistence of the collapsed state across reloads in this change (reading the cookie on the server would make admin routes dynamic)
+<!-- Any extra notes -->
 
 ## History
 
@@ -42,3 +33,4 @@ In Progress
 - **Surveys Table Polish** (2026-10-14): phase 4 of 4. Responsive, dark mode and keyboard pass at 375 / 500 / 768 / 1280 (no overflow, long names truncated, full tab order, no Radix warnings). Top bar as a container (labels only with room, short date below `xl`) so the date no longer wraps at 768px. One `h1` per page (greeting as text, sr-only dashboard `h1`). Scroll to the table on page / size change. Always-mounted live regions for results and selection. Selection bar DOM order matches the screen. Dimmed `aria-busy` card during list transitions. Skeleton matching the table and the stacked list
 - **Survey Card Redesign** (2026-10-14): dashboard card as one panel ("Propuesta 3: Lista con caritas"): title, code · status and a single "…" menu instead of the copy link / edit buttons. `SurveyRowMenu` extracted to a shared `SurveyActionsMenu` (table, stacked list and card). New `OptionList` (small face / stars / plain label + count + percentage, best option first, poll in owner's order, archived last) replaces the three charts and `MetricBar`; `ReactionFace` `size` prop. Pager with "Question X of Y · N responses" (survey total), only the total for one question. Delete dialog in `SurveyGrid` staying on `/dashboard`; focus to the surveys heading after move to draft or delete. Skeleton updated, unused messages and `ui/progress` removed
 - **Dashboard Header Cleanup** (2026-10-14): removed the three stat cards (Total responses, Active surveys, Responses today) and everything only they used (`StatCards`, `StatCard`, `summary` / `todayResponses`, `getMockDashboardSummary`, `DashboardSummary`, `getTodayRange`, `dashboard.stats` messages); the surveys section is now the first block. "Your surveys" header and `CollectionsToolbar` sized by `@container/surveys` instead of the viewport (stacked header below 48rem, one-row toolbar with a growing search from 28rem), which fixes the 976px-wide page at 768px with the sidebar open; "View all" no longer wraps. Skeleton on the same container; no overflow at 375 / 500 / 640 / 768 / 1024 / 1280, sidebar open and collapsed
+- **Sidebar Collapse** (2026-10-14): collapsed rail widened to 4rem (`--sidebar-width-icon` on `SidebarProvider`) with the logo, nav buttons, toggle and avatar as centered 40px squares (they were up to 6px off center); nav labels, wordmark and user text `sr-only` when collapsed so names stay accessible. New `SidebarToggle` visible in both states (next to the logo when expanded, under it when collapsed) with state-specific icon and label, `aria-expanded` and a ⌘B / Ctrl B tooltip; "Close" in the mobile sheet. Settings uses `aria-disabled` so its "Coming soon" tooltip shows. No persistence across reloads yet
