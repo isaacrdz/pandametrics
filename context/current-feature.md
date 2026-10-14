@@ -1,18 +1,43 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Logo Assets
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `scripts/brand-assets.mjs` with `sharp` (v0.35, installed through Next), run once, outputs committed:
+  - `src/app/icon.png` 512×512 and `src/app/apple-icon.png` 180×180 from the square crop `left 1844, top 154, 1816×1816` (panda head on pink);
+  - `src/assets/brand/logo-icon.webp` 128×128 (same crop) for the logo tile;
+  - `src/assets/brand/panda-hero.webp` 1200 wide from `left 1706, top 92`, 2092 wide, cut above the "PANDA" letters (~0.62 of the height);
+  - `src/app/opengraph-image.png` and `src/app/twitter-image.png` 1200×630, plus their `.alt.txt` files.
+- Script header explains where the source lives and how to rerun it
+- 14.7 MB source moved to `design/logo-source.png`; `src/lib/media/` removed
+- `src/components/brand/Logo.tsx` (no `'use client'`):
+  - static import of `logo-icon.webp` in a rounded `bg-brand` tile;
+  - "Panda Metrics" wordmark from a brand constant;
+  - props `showWordmark`, `href`, `size` (sidebar / nav), `className`;
+  - `alt=""` with the wordmark, `alt="Panda Metrics"` without it.
+- `AppSidebar` uses `Logo` (`href="/dashboard"`) instead of the sparkles tile; only the icon when collapsed
+- `yarn lint`, `tsc`, `yarn build` pass; build lists the icon and Open Graph routes
+- `<head>` has the icon, apple-touch-icon, `og:image` (1200×630) and `og:image:alt`; the tab shows the panda favicon
+- No file under `src/` larger than 1 MB; sidebar checked expanded and collapsed, light and dark
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/logo-assets-spec.md`. Research: `docs/landing.md` section 4 (crops, sizes and weights measured on the real source)
+- Phase 2 of 4 of the landing work; requires phase 1 (`--brand` token, done)
+- Next.js limits: `opengraph-image` over 8 MB and `twitter-image` over 5 MB fail the build (the source is 14.7 MB)
+- Next.js 16: `next/image` `priority` is deprecated (`preload`, or `fetchPriority="high"` for the LCP image). The hero image is generated here but used in phase 3
+- Static imports give `next/image` the width, height and blur placeholder; `public/` is not needed
+- The current `favicon.ico` (Next default) in `src/app/` is replaced or removed so the panda icon wins
+- Brand name "Panda Metrics" is the same in every language: keep it in a constant (passes `react/jsx-no-literals`)
+- Check the crops visually before committing (the icon should show the whole head; the hero should not show the letters)
+- Added during implementation (not in the spec):
+  - `sharp` as an explicit dev dependency (the script should not rely on Next's transitive copy);
+  - `metadataBase` from `PANDA_PUBLIC_URL` in the root `generateMetadata`, so the Open Graph / Twitter image URLs are absolute (the build warned and fell back to `http://localhost:3000`);
+  - `.alt.txt` files written without a trailing newline (Next uses the content verbatim).
+- Decided in review: the source is committed losslessly recompressed (`design/logo-source.png`, 9 MB instead of 14.7 MB, identical pixels) and the assets regenerated from it; the sidebar wordmark reads "Panda Metrics"
 
 ## History
 

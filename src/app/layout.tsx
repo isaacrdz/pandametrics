@@ -22,7 +22,12 @@ const geistMono = Geist_Mono({
 // Always the default locale: the server cannot read the language stored in the browser
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
-  return { title: t("title"), description: t("description") };
+  return {
+    // Absolute URLs for the Open Graph / Twitter images (same base as the public survey links)
+    metadataBase: new URL(process.env.PANDA_PUBLIC_URL ?? "http://localhost:3000"),
+    title: t("title"),
+    description: t("description"),
+  };
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
