@@ -38,18 +38,18 @@ export function NavUser({ name, email }: NavUserProps) {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="h-auto gap-3 rounded-2xl bg-muted/70 p-3 group-data-[collapsible=icon]:bg-transparent"
+              className="h-auto gap-3 rounded-2xl bg-muted/70 p-3 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:bg-transparent"
             >
-              <Avatar className="size-10 group-data-[collapsible=icon]:size-8">
+              <Avatar className="size-10">
                 <AvatarFallback className="bg-accent font-semibold text-accent-foreground">
                   {getInitials(name)}
                 </AvatarFallback>
               </Avatar>
-              <span className="grid flex-1 text-left leading-tight">
+              <span className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:sr-only">
                 <span className="truncate font-semibold text-foreground">{name}</span>
                 <span className="truncate text-xs text-muted-foreground">{email}</span>
               </span>
-              <ChevronsUpDownIcon aria-hidden className="ml-auto text-muted-foreground" />
+              <ChevronsUpDownIcon aria-hidden className="ml-auto text-muted-foreground group-data-[collapsible=icon]:hidden" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

@@ -169,7 +169,9 @@
     "toggleSidebar": "Toggle sidebar",
     "sidebarTitle": "Menu",
     "sidebarDescription": "Displays the navigation menu.",
-    "close": "Close"
+    "close": "Close",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar"
   },
   "languages": {
     "en": "English",

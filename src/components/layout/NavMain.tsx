@@ -52,8 +52,10 @@ const NAV_GROUPS: NavGroup[] = [
 const LABEL_CLASS =
   "text-[0.7rem] font-semibold tracking-[0.18em] text-muted-foreground uppercase";
 
+// Collapsed: a 40px square centered in the 4rem rail (12px group padding on each side). The
+// label leaves the flow so the icon is centered, but stays as the link's accessible name
 const BUTTON_CLASS =
-  "h-11 gap-3 rounded-xl px-3 text-[0.95rem] text-sidebar-foreground [&_svg]:size-5 data-active:text-sidebar-accent-foreground";
+  "h-11 gap-3 rounded-xl px-3 text-[0.95rem] text-sidebar-foreground [&_svg]:size-5 data-active:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&>span]:sr-only";
 
 function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   const t = useTranslations("nav");
@@ -62,7 +64,13 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
 
   if (!item.enabled) {
     return (
-      <SidebarMenuButton disabled tooltip={t("comingSoon", { title })} className={BUTTON_CLASS}>
+      // aria-disabled instead of disabled: a disabled button gets no hover or focus, so the
+      // "Coming soon" tooltip could never show on the collapsed rail
+      <SidebarMenuButton
+        aria-disabled
+        tooltip={t("comingSoon", { title })}
+        className={`${BUTTON_CLASS} cursor-not-allowed aria-disabled:pointer-events-auto hover:bg-transparent hover:text-sidebar-foreground active:bg-transparent`}
+      >
         <Icon aria-hidden />
         <span>{title}</span>
       </SidebarMenuButton>

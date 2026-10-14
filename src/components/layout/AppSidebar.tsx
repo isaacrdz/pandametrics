@@ -1,13 +1,13 @@
 import { Logo } from "@/components/brand/Logo";
 import { NavMain } from "@/components/layout/NavMain";
 import { NavUser } from "@/components/layout/NavUser";
+import { SidebarToggle } from "@/components/layout/SidebarToggle";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import type { User } from "@/types/survey";
 
@@ -18,15 +18,16 @@ interface AppSidebarProps {
 export function AppSidebar({ user }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="px-4 pt-5 pb-6 group-data-[collapsible=icon]:px-2">
-        <div className="flex items-center gap-3">
+      <SidebarHeader className="px-3 pt-5 pb-6">
+        {/* Row when expanded; logo above the toggle when collapsed to the icon rail */}
+        <div className="flex items-center gap-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2">
           <Logo
             href="/dashboard"
-            className="flex-1"
-            iconClassName="group-data-[collapsible=icon]:size-8"
-            wordmarkClassName="group-data-[collapsible=icon]:hidden"
+            className="flex-1 group-data-[collapsible=icon]:flex-none"
+            // Still named "Panda Metrics" for screen readers when only the tile shows
+            wordmarkClassName="group-data-[collapsible=icon]:sr-only"
           />
-          <SidebarTrigger className="text-muted-foreground group-data-[collapsible=icon]:hidden" />
+          <SidebarToggle />
         </div>
       </SidebarHeader>
       <SidebarContent>

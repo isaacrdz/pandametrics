@@ -169,7 +169,9 @@
     "toggleSidebar": "Mostrar u ocultar menú",
     "sidebarTitle": "Menú",
     "sidebarDescription": "Muestra el menú de navegación.",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "expandSidebar": "Expandir menú",
+    "collapseSidebar": "Contraer menú"
   },
   "languages": {
     "en": "English",

@@ -1,18 +1,27 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Sidebar Collapse
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Collapsed rail of 4rem: `--sidebar-width-icon: 4rem` as `style` on `SidebarProvider` in `src/app/(app)/layout.tsx`
+- Every collapsed item is a centered 40px square: `NavMain` buttons (`size-10! p-0! justify-center`, icon `size-5`), `NavUser` button and avatar `size-10`, logo tile `size-10`, header `px-3` in both states
+- At 1280px collapsed, the centers of logo, toggle, nav buttons, nav icons and avatar measure 32px in light and dark
+- New client `SidebarToggle` in the header, visible in both states: `PanelLeftCloseIcon` + "Collapse sidebar" when expanded, `PanelLeftOpenIcon` + "Expand sidebar" when collapsed; `aria-label`, `aria-expanded`, right-side tooltip with the shortcut from a constant; stays mounted so focus stays on it
+- Header row when expanded (logo `flex-1` + toggle), column when collapsed (logo above toggle); replaces the header `SidebarTrigger`
+- Collapsed wordmark `sr-only` instead of `hidden`, so the logo link keeps the name "Panda Metrics"
+- "Settings" shows its "Coming soon" tooltip when collapsed; switch to `aria-disabled` if `disabled` blocks it
+- New `a11y.expandSidebar` / `a11y.collapseSidebar` in en / es; `toggleSidebar` kept
+- `yarn lint`, `tsc --noEmit`, `yarn build` pass; `Cmd/Ctrl + B`, the rail and the mobile sheet still work; no overflow at 768 / 1024 / 1280 in both states, en / es
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/sidebar-collapse-spec.md`; research: `docs/sidebar-collapse.md`
+- Off-center cause: group `px-3` leaves 24px for a forced 32px button, and the 20px icon overflows the button's 16px content box (icons measured at center 30, avatar at 28, rail center 24)
+- Do not edit `src/components/ui/sidebar.tsx` (shadcn primitive); the top bar `SidebarTrigger` (`md:hidden`) stays for the mobile sheet
+- No persistence of the collapsed state across reloads in this change (reading the cookie on the server would make admin routes dynamic)
 
 ## History
 
