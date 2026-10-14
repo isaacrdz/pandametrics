@@ -1,27 +1,18 @@
-# Current Feature: Dashboard Header Cleanup
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Remove the three stat cards from `/dashboard` (`StatCards` in `page.tsx`; delete `StatCards.tsx` and `StatCard.tsx`)
-- Remove what only the stat cards use: `summary` and `todayResponses` in `src/lib/dashboard.ts`, `getMockDashboardSummary`, `DashboardSummary`, `getTodayRange` (grep first) and imports left unused
-- Remove `dashboard.stats.*` (5 keys) from both `en.json` and `es.json`; rename the `highlight` contrast note to "New survey button"
-- `DashboardSection` as `@container/surveys`: header stacked below `@3xl/surveys`, one row above; title block `min-w-0`, heading row `flex-wrap`, "View all" `whitespace-nowrap`; `h2` keeps its ref, `tabIndex` and focus ring
-- `CollectionsToolbar` on the same container: stacked below `@md/surveys`, one row with a growing search between `@md` and `@3xl`, fixed `w-60` search + `w-48` select from `@3xl`
-- `DashboardSkeleton` without the stat row, inside `@container/surveys`, with the toolbar shape on the same thresholds
-- Note in `docs/dashboard.md` that the stat cards were removed
-- `yarn lint`, `tsc --noEmit` and `yarn build` pass (`/dashboard` still partial prerender); no overflow at 375 / 500 / 640 / 768 / 1024 / 1280 with the sidebar open and collapsed, light / dark, en / es
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/dashboard-header-cleanup-spec.md`; research: `docs/dashboard-header-cleanup.md`
-- Overflow cause: the header goes to a row at the `sm` viewport breakpoint, but with the sidebar open the section is only 448px at 768px and the toolbar has fixed widths (240 + 192)
-- Keep `activeSurveyCount` (empty state and card menu) and the `--highlight` tokens (`NewSurveyButton`)
-- No replacement for the active-limit stat in this change
-- Move to draft / delete must still focus the "Your surveys" heading
+<!-- Any extra notes -->
 
 ## History
 
@@ -41,3 +32,4 @@ In Progress
 - **Surveys Table Actions** (2026-10-14): phase 3 of 4. Row "…" menu (edit, copy link / code, activate / move to draft with the active-limit hint, delete staying on `/surveys`). Light checkboxes with the new `--control-border` token (3:1, in the contrast check) and an indeterminate select all. Per-view selection with a bulk bar (activate, move to draft, delete), all or nothing on the server with the 5-active limit. New validated `setSurveyActive` / `setSurveysActive` / `deleteSurveys` actions; every survey action revalidates `/dashboard` and `/surveys`. Added on request: 5 rows per page by default (5 / 10 / 25 / 50, `?size=`) and an always-visible pager
 - **Surveys Table Polish** (2026-10-14): phase 4 of 4. Responsive, dark mode and keyboard pass at 375 / 500 / 768 / 1280 (no overflow, long names truncated, full tab order, no Radix warnings). Top bar as a container (labels only with room, short date below `xl`) so the date no longer wraps at 768px. One `h1` per page (greeting as text, sr-only dashboard `h1`). Scroll to the table on page / size change. Always-mounted live regions for results and selection. Selection bar DOM order matches the screen. Dimmed `aria-busy` card during list transitions. Skeleton matching the table and the stacked list
 - **Survey Card Redesign** (2026-10-14): dashboard card as one panel ("Propuesta 3: Lista con caritas"): title, code · status and a single "…" menu instead of the copy link / edit buttons. `SurveyRowMenu` extracted to a shared `SurveyActionsMenu` (table, stacked list and card). New `OptionList` (small face / stars / plain label + count + percentage, best option first, poll in owner's order, archived last) replaces the three charts and `MetricBar`; `ReactionFace` `size` prop. Pager with "Question X of Y · N responses" (survey total), only the total for one question. Delete dialog in `SurveyGrid` staying on `/dashboard`; focus to the surveys heading after move to draft or delete. Skeleton updated, unused messages and `ui/progress` removed
+- **Dashboard Header Cleanup** (2026-10-14): removed the three stat cards (Total responses, Active surveys, Responses today) and everything only they used (`StatCards`, `StatCard`, `summary` / `todayResponses`, `getMockDashboardSummary`, `DashboardSummary`, `getTodayRange`, `dashboard.stats` messages); the surveys section is now the first block. "Your surveys" header and `CollectionsToolbar` sized by `@container/surveys` instead of the viewport (stacked header below 48rem, one-row toolbar with a growing search from 28rem), which fixes the 976px-wide page at 768px with the sidebar open; "View all" no longer wraps. Skeleton on the same container; no overflow at 375 / 500 / 640 / 768 / 1024 / 1280, sidebar open and collapsed
