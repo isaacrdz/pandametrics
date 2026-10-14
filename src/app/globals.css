@@ -47,6 +47,7 @@
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
   --color-card-border: var(--card-border);
+  --color-control-border: var(--control-border);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-reaction-very-bad: var(--reaction-very-bad);
@@ -110,6 +111,8 @@
   --highlight: var(--primary);
   --highlight-foreground: var(--primary-foreground);
   --card-border: #fcccd5;
+  /* Border of controls whose outline is their only boundary (table checkboxes): 3:1 on card and page */
+  --control-border: #a08089;
   --success: #5fa04e;
   --success-foreground: #3d7a32;
   --reaction-very-bad: #ef4444;
@@ -157,6 +160,7 @@
   --inverse: #3b2830;
   --inverse-foreground: #f6edef;
   --card-border: #4a323b;
+  --control-border: #8a6b75;
   --success: #6fbf5c;
   --success-foreground: #86d672;
   --star-empty: #4b5563;

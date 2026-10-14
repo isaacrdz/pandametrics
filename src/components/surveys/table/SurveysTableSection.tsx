@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CalendarIcon, ClipboardListIcon, PlusIcon, SearchXIcon } from "lucide-react";
@@ -9,11 +10,13 @@ import { SurveysList } from "@/components/surveys/table/SurveysList";
 import { SurveysPagination } from "@/components/surveys/table/SurveysPagination";
 import { SurveysTable } from "@/components/surveys/table/SurveysTable";
 import { SurveysToolbar } from "@/components/surveys/table/SurveysToolbar";
+import type { RowControls } from "@/components/surveys/table/row-controls";
+import { DeleteSurveyDialog } from "@/components/surveys/form/DeleteSurveyDialog";
 import { Button } from "@/components/ui/button";
 import { useUrlSearch } from "@/hooks/use-url-search";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RANGE_KEYS, parseRange } from "@/lib/date-range";
-import type { SurveyListResult } from "@/lib/surveys/list";
+import type { SurveyListResult, SurveyRow } from "@/lib/surveys/list";
 import { DEFAULT_SURVEY_LIST_QUERY, buildSurveysHref, withFilters, type SurveyListQuery } from "@/lib/surveys/list-params";
 
 interface SurveysTableSectionProps {
@@ -39,6 +42,28 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
   function handleRangeChange(value: string) {
     navigate(withFilters(params, { range: parseRange(value), query: commit(search) }));
   }
+
+  // Selection is per list view: changing a filter, the range or the page starts empty,
+  // and rows that left the page (deleted, filtered out) drop out of it
+  const listKey = buildSurveysHref(params);
+  const [selection, setSelection] = useState<{ key: string; ids: ReadonlySet<string> }>({ key: listKey, ids: new Set() });
+  const selectedIds = selection.key === listKey ? data.rows.filter((row) => selection.ids.has(row.id)).map((row) => row.id) : [];
+  const [deleteTarget, setDeleteTarget] = useState<SurveyRow | null>(null);
+
+  function updateSelection(ids: string[]) {
+    setSelection({ key: listKey, ids: new Set(ids) });
+  }
+
+  const controls: RowControls = {
+    isSelected: (id) => selectedIds.includes(id),
+    onToggle: (id, checked) =>
+      updateSelection(checked ? [...selectedIds, id] : selectedIds.filter((selected) => selected !== id)),
+    allState:
+      selectedIds.length === 0 ? false : selectedIds.length === data.rows.length ? true : "indeterminate",
+    onToggleAll: (checked) => updateSelection(checked ? data.rows.map((row) => row.id) : []),
+    activeCount: data.activeCount,
+    onDelete: setDeleteTarget,
+  };
 
   // Clearing the filters keeps the range: it is not a filter, it is the responses window
   const clearFiltersHref = buildSurveysHref({ ...DEFAULT_SURVEY_LIST_QUERY, range: params.range });
@@ -89,7 +114,14 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
         // Container queries, not viewport breakpoints: the sidebar takes part of the width,
         // so at a 768px viewport the card is only ~450px wide
         <div className="@container overflow-hidden rounded-3xl border border-card-border bg-card">
-          <SurveysToolbar params={params} search={search} onSearchChange={handleChange} commitSearch={commit} />
+          <SurveysToolbar
+            params={params}
+            search={search}
+            onSearchChange={handleChange}
+            commitSearch={commit}
+            selectedIds={selectedIds}
+            onClearSelection={() => updateSelection([])}
+          />
           {data.total === 0 ? (
             <EmptyState
               icon={SearchXIcon}
@@ -107,10 +139,10 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
           ) : (
             <>
               <div className="hidden @2xl:block">
-                <SurveysTable rows={data.rows} now={data.now} range={params.range} />
+                <SurveysTable rows={data.rows} now={data.now} range={params.range} controls={controls} />
               </div>
               <div className="@2xl:hidden">
-                <SurveysList rows={data.rows} now={data.now} />
+                <SurveysList rows={data.rows} now={data.now} controls={controls} />
               </div>
             </>
           )}
@@ -121,9 +153,21 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
               pageCount={data.pageCount}
               pageSize={data.pageSize}
               total={data.total}
+              onPageSizeChange={(pageSize) => navigate(withFilters(params, { pageSize, query: commit(search) }))}
             />
           )}
         </div>
+      )}
+
+      {deleteTarget && (
+        <DeleteSurveyDialog
+          surveyId={deleteTarget.id}
+          surveyName={deleteTarget.name}
+          open
+          onOpenChange={(open) => !open && setDeleteTarget(null)}
+          // Stay on the table: the action refreshes this page
+          onDeleted={() => setDeleteTarget(null)}
+        />
       )}
     </section>
   );

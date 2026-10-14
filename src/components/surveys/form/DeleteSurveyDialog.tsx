@@ -22,9 +22,11 @@ interface DeleteSurveyDialogProps {
   surveyName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // Called after a successful delete instead of going to the dashboard (the survey table stays)
+  onDeleted?: () => void;
 }
 
-export function DeleteSurveyDialog({ surveyId, surveyName, open, onOpenChange }: DeleteSurveyDialogProps) {
+export function DeleteSurveyDialog({ surveyId, surveyName, open, onOpenChange, onDeleted }: DeleteSurveyDialogProps) {
   const t = useTranslations("surveyForm");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -39,7 +41,12 @@ export function DeleteSurveyDialog({ surveyId, surveyName, open, onOpenChange }:
       }
       toast.dismiss();
       toast.success(t("toasts.deleted"));
-      router.push("/dashboard");
+      if (onDeleted) {
+        onOpenChange(false);
+        onDeleted();
+      } else {
+        router.push("/dashboard");
+      }
     });
   }
 

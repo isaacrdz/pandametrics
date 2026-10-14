@@ -32,6 +32,8 @@ const PAIRS = [
   ["ring", "background", UI, "focus ring on the page"],
   ["ring", "card", UI, "focus ring on cards"],
   ["brand", "inverse", UI, "focus ring on the dark CTA banner"],
+  ["control-border", "card", UI, "checkbox border on cards"],
+  ["control-border", "background", UI, "checkbox border on the page"],
 ];
 
 function readBlock(css, selector) {

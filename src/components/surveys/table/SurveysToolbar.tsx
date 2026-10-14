@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { SurveysSelectionBar } from "@/components/surveys/table/SurveysSelectionBar";
 import { SURVEY_CATEGORIES } from "@/lib/surveys/constants";
 import {
   SURVEY_STATUS_FILTERS,
@@ -36,9 +37,19 @@ interface SurveysToolbarProps {
   search: string;
   onSearchChange: (value: string) => void;
   commitSearch: (value: string) => string;
+  // While rows are selected, the bulk actions replace the filters
+  selectedIds: string[];
+  onClearSelection: () => void;
 }
 
-export function SurveysToolbar({ params, search, onSearchChange, commitSearch }: SurveysToolbarProps) {
+export function SurveysToolbar({
+  params,
+  search,
+  onSearchChange,
+  commitSearch,
+  selectedIds,
+  onClearSelection,
+}: SurveysToolbarProps) {
   const t = useTranslations("surveys");
   const tCategories = useTranslations("categories");
   const router = useRouter();
@@ -65,7 +76,7 @@ export function SurveysToolbar({ params, search, onSearchChange, commitSearch }:
 
   return (
     <div className="flex flex-col gap-3 border-b border-card-border p-4 @2xl:flex-row @2xl:items-center @2xl:justify-between @2xl:px-6">
-      <div className="relative w-full @2xl:max-w-sm">
+      <div className="relative w-full min-w-0 @2xl:max-w-sm @2xl:flex-1">
         <SearchIcon
           aria-hidden
           className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
@@ -80,66 +91,70 @@ export function SurveysToolbar({ params, search, onSearchChange, commitSearch }:
         />
       </div>
 
-      <div className="flex gap-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              aria-label={t("toolbar.typeLabel", { count: typeCount })}
-              className={cn(FILTER_BUTTON_CLASS, typeCount > 0 && FILTER_ACTIVE_CLASS)}
-            >
-              <SlidersHorizontalIcon aria-hidden />
-              {t("toolbar.type")}
-              {typeCount > 0 && <span className="font-semibold tabular-nums">· {typeCount}</span>}
-              <ChevronDownIcon aria-hidden className="ml-auto text-muted-foreground @2xl:ml-0" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-48 rounded-xl">
-            <DropdownMenuLabel>{t("toolbar.type")}</DropdownMenuLabel>
-            {SURVEY_CATEGORIES.map((category) => (
-              <DropdownMenuCheckboxItem
-                key={category}
-                checked={params.categories.includes(category)}
-                onCheckedChange={(checked) => toggleCategory(category, checked)}
-                // Keep the menu open: several types can be picked in a row
-                onSelect={(event) => event.preventDefault()}
+      {selectedIds.length > 0 ? (
+        <SurveysSelectionBar ids={selectedIds} onDone={onClearSelection} />
+      ) : (
+        <div className="flex gap-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                aria-label={t("toolbar.typeLabel", { count: typeCount })}
+                className={cn(FILTER_BUTTON_CLASS, typeCount > 0 && FILTER_ACTIVE_CLASS)}
               >
-                {tCategories(`${category}.title`)}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              aria-label={t("toolbar.statusLabel", { status: statusName(params.status) })}
-              className={cn(FILTER_BUTTON_CLASS, params.status !== "all" && FILTER_ACTIVE_CLASS)}
-            >
-              <ListFilterIcon aria-hidden />
-              {t("toolbar.status")}
-              {params.status !== "all" && <span className="font-semibold">· {statusName(params.status)}</span>}
-              <ChevronDownIcon aria-hidden className="ml-auto text-muted-foreground @2xl:ml-0" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-44 rounded-xl">
-            <DropdownMenuLabel>{t("toolbar.status")}</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={params.status}
-              onValueChange={(value) =>
-                applyFilter({ status: SURVEY_STATUS_FILTERS.find((s) => s === value) ?? "all" })
-              }
-            >
-              {SURVEY_STATUS_FILTERS.map((status) => (
-                <DropdownMenuRadioItem key={status} value={status}>
-                  {statusName(status)}
-                </DropdownMenuRadioItem>
+                <SlidersHorizontalIcon aria-hidden />
+                {t("toolbar.type")}
+                {typeCount > 0 && <span className="font-semibold tabular-nums">· {typeCount}</span>}
+                <ChevronDownIcon aria-hidden className="ml-auto text-muted-foreground @2xl:ml-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-48 rounded-xl">
+              <DropdownMenuLabel>{t("toolbar.type")}</DropdownMenuLabel>
+              {SURVEY_CATEGORIES.map((category) => (
+                <DropdownMenuCheckboxItem
+                  key={category}
+                  checked={params.categories.includes(category)}
+                  onCheckedChange={(checked) => toggleCategory(category, checked)}
+                  // Keep the menu open: several types can be picked in a row
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  {tCategories(`${category}.title`)}
+                </DropdownMenuCheckboxItem>
               ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                aria-label={t("toolbar.statusLabel", { status: statusName(params.status) })}
+                className={cn(FILTER_BUTTON_CLASS, params.status !== "all" && FILTER_ACTIVE_CLASS)}
+              >
+                <ListFilterIcon aria-hidden />
+                {t("toolbar.status")}
+                {params.status !== "all" && <span className="font-semibold">· {statusName(params.status)}</span>}
+                <ChevronDownIcon aria-hidden className="ml-auto text-muted-foreground @2xl:ml-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-44 rounded-xl">
+              <DropdownMenuLabel>{t("toolbar.status")}</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={params.status}
+                onValueChange={(value) =>
+                  applyFilter({ status: SURVEY_STATUS_FILTERS.find((s) => s === value) ?? "all" })
+                }
+              >
+                {SURVEY_STATUS_FILTERS.map((status) => (
+                  <DropdownMenuRadioItem key={status} value={status}>
+                    {statusName(status)}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
     </div>
   );
 }

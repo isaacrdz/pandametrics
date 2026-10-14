@@ -89,7 +89,9 @@
       "status": "Status",
       "responses": "Responses",
       "responsesRange": "Responses, {range}",
-      "updated": "Last updated"
+      "updated": "Last updated",
+      "select": "Select",
+      "actions": "Actions"
     },
     "status": {
       "ACTIVE": "Active",
@@ -111,12 +113,47 @@
       "previous": "Previous page",
       "next": "Next page",
       "page": "Page {page}",
-      "showing": "Showing {from}–{to} of {total, plural, one {# survey} other {# surveys}}"
+      "showing": "Showing {from}–{to} of {total, plural, one {# survey} other {# surveys}}",
+      "rowsPerPage": "Rows per page"
     },
     "noResults": {
       "title": "No surveys match your filters",
       "description": "Try another search or clear the filters.",
       "clear": "Clear filters"
+    },
+    "select": {
+      "row": "Select {name}",
+      "all": "Select all surveys on this page",
+      "count": "{count, plural, one {# selected} other {# selected}}"
+    },
+    "actions": {
+      "label": "Actions for {name}",
+      "edit": "Edit",
+      "copyLink": "Copy link",
+      "copyCode": "Copy code",
+      "activate": "Activate",
+      "deactivate": "Move to draft",
+      "delete": "Delete…",
+      "activeCount": "{count} of {limit} active"
+    },
+    "toasts": {
+      "activated": "Survey activated",
+      "deactivated": "Survey moved to draft",
+      "bulkActivated": "{count, plural, one {# survey activated} other {# surveys activated}}",
+      "bulkDeactivated": "{count, plural, one {# survey moved to draft} other {# surveys moved to draft}}",
+      "bulkDeleted": "{count, plural, one {# survey deleted} other {# surveys deleted}}"
+    },
+    "bulk": {
+      "label": "Selected surveys",
+      "activate": "Activate",
+      "deactivate": "Move to draft",
+      "delete": "Delete",
+      "clear": "Clear selection",
+      "deleteTitle": "Delete {count, plural, one {# survey} other {# surveys}}?",
+      "deleteDescription": "Their responses are kept, but the surveys stop accepting answers and leave this list.",
+      "deleteConfirm": "Delete",
+      "deleting": "Deleting…",
+      "cancel": "Cancel"
     }
   },
   "results": {

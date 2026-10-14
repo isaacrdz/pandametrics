@@ -89,7 +89,9 @@
       "status": "Estado",
       "responses": "Respuestas",
       "responsesRange": "Respuestas, {range}",
-      "updated": "Última actualización"
+      "updated": "Última actualización",
+      "select": "Seleccionar",
+      "actions": "Acciones"
     },
     "status": {
       "ACTIVE": "Activa",
@@ -111,12 +113,47 @@
       "previous": "Página anterior",
       "next": "Página siguiente",
       "page": "Página {page}",
-      "showing": "Mostrando {from}–{to} de {total, plural, one {# encuesta} other {# encuestas}}"
+      "showing": "Mostrando {from}–{to} de {total, plural, one {# encuesta} other {# encuestas}}",
+      "rowsPerPage": "Filas por página"
     },
     "noResults": {
       "title": "Ninguna encuesta coincide con tus filtros",
       "description": "Prueba otra búsqueda o limpia los filtros.",
       "clear": "Limpiar filtros"
+    },
+    "select": {
+      "row": "Seleccionar {name}",
+      "all": "Seleccionar todas las encuestas de esta página",
+      "count": "{count, plural, one {# seleccionada} other {# seleccionadas}}"
+    },
+    "actions": {
+      "label": "Acciones de {name}",
+      "edit": "Editar",
+      "copyLink": "Copiar enlace",
+      "copyCode": "Copiar código",
+      "activate": "Activar",
+      "deactivate": "Pasar a borrador",
+      "delete": "Eliminar…",
+      "activeCount": "{count} de {limit} activas"
+    },
+    "toasts": {
+      "activated": "Encuesta activada",
+      "deactivated": "Encuesta pasada a borrador",
+      "bulkActivated": "{count, plural, one {# encuesta activada} other {# encuestas activadas}}",
+      "bulkDeactivated": "{count, plural, one {# encuesta pasada a borrador} other {# encuestas pasadas a borrador}}",
+      "bulkDeleted": "{count, plural, one {# encuesta eliminada} other {# encuestas eliminadas}}"
+    },
+    "bulk": {
+      "label": "Encuestas seleccionadas",
+      "activate": "Activar",
+      "deactivate": "Pasar a borrador",
+      "delete": "Eliminar",
+      "clear": "Limpiar selección",
+      "deleteTitle": "¿Eliminar {count, plural, one {# encuesta} other {# encuestas}}?",
+      "deleteDescription": "Sus respuestas se conservan, pero las encuestas dejan de recibir respuestas y salen de esta lista.",
+      "deleteConfirm": "Eliminar",
+      "deleting": "Eliminando…",
+      "cancel": "Cancelar"
     }
   },
   "results": {

@@ -4,7 +4,7 @@ import { getPublicSurveyUrl } from "@/lib/dashboard";
 import { getDateRange } from "@/lib/date-range";
 import { MOCK_NOW, countMockResponses } from "@/lib/mock-data";
 import { getSurveyColorIndex } from "@/lib/surveys/colors";
-import { SURVEYS_PAGE_SIZE, type SurveyListQuery } from "@/lib/surveys/list-params";
+import type { SurveyListQuery } from "@/lib/surveys/list-params";
 import { matchesQuery } from "@/lib/surveys/search";
 import { listSurveys as listStoredSurveys } from "@/lib/surveys/service";
 import type { SurveyCategory } from "@/types/survey";
@@ -41,11 +41,8 @@ export interface SurveyListResult {
   now: string;
 }
 
-export function listSurveys(
-  organizationId: string,
-  params: SurveyListQuery,
-  pageSize = SURVEYS_PAGE_SIZE,
-): SurveyListResult {
+export function listSurveys(organizationId: string, params: SurveyListQuery): SurveyListResult {
+  const { pageSize } = params;
   const range = getDateRange(params.range, MOCK_NOW);
   const surveys = listStoredSurveys(organizationId);
   const categories = new Set(params.categories);

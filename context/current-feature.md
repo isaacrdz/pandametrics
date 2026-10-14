@@ -1,18 +1,75 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Surveys Table Actions
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Tokens and contrast:
+  - `--control-border` in `globals.css` (`#a08089` light, `#8a6b75` dark) + `--color-control-border` in `@theme`;
+  - `check-contrast.mjs` checks `control-border` on `card` and on `background` (UI, 3:1).
+- Light checkboxes:
+  - install the shadcn `checkbox` (`radix-nova`);
+  - table classes `size-4.5 rounded-[5px] border-control-border bg-card shadow-none dark:bg-card`, primary fill only when checked, indeterminate styled like checked with a `MinusIcon`;
+  - solid focus ring (`ring-2 ring-ring ring-offset-2 ring-offset-card`), the registry hit area kept;
+  - the shared `checkbox.tsx` keeps the shadcn defaults.
+- Checkbox column:
+  - `w-12` with a sr-only "Select" header;
+  - row boxes labeled "Select {name}", the header box "Select all surveys on this page" (indeterminate on partial selection);
+  - the same checkbox on each item of the stacked list.
+- Selection:
+  - client state, current page only, reset when filters or the page change;
+  - with 1+ selected, the toolbar shows "{count} selected" (polite live region), **Activate**, **Move to draft**, **Delete** (destructive) and **Clear selection**.
+- Bulk actions:
+  - `setSurveysActive(scope, ids, isActive)` service + action, all or nothing: activating checks `active + selected drafts ≤ 5` and returns `ACTIVE_LIMIT` otherwise; unknown or deleted ids return `NOT_FOUND` with no change;
+  - bulk delete through an `AlertDialog` ("Delete {count} surveys? Their responses are kept.") and a `deleteSurveys(ids)` soft-delete action.
+- Row menu (`SurveyRowMenu`):
+  - ghost `MoreHorizontalIcon` trigger with `aria-label` "Actions for {name}", `align="end"`;
+  - Edit (link), Copy link, Copy code (success toasts), Activate / Move to draft (`setSurveyActive`) with the "{count} of {limit} active" hint, separator, Delete… (opens `DeleteSurveyDialog`);
+  - errors as toasts from `surveyForm.errors.*` (`ACTIVE_LIMIT` with `{ limit: 5 }`), success with `surveys.toasts.activated` / `deactivated`.
+- Actions and revalidation:
+  - new `setSurveyActive`, `setSurveysActive` and `deleteSurveys` with the same `ActionResult` / `toErrorResult`;
+  - every survey action (including `createSurvey`, `updateSurvey`, `deleteSurvey`) revalidates `/dashboard` and `/surveys`;
+  - the table calls `refresh()` after success, and the server clamps `page`.
+- `DeleteSurveyDialog` gets an optional `onDeleted` prop: the form page keeps `router.push("/dashboard")`, the table stays on `/surveys`
+- Messages in en/es: `columns.select`, `select.*`, `actions.*`, `toasts.*`, `bulk.*` (plural delete confirmation)
 
 ## Notes
 
-<!-- Any extra notes -->
+- Phase 3 of 4 of the surveys table (spec: `context/features/surveys-table-actions-spec.md`, research: `docs/surveys-table.md` sections 5, 8, 10, 11, 12)
+- The checkboxes must be much lighter than the near-black squares in `table-design-view.png`, yet keep a 3:1 boundary (WCAG 1.4.11): `--input` is only 1.28:1 on the card
+- `setSurveyActive` does not reuse `updateSurvey`, which needs the whole form and re-merges questions
+- The server is the authority on the 5-active limit; the menu hint can be outdated by the time of the click
+- No clickable `<tr>`: the name link, the checkbox and the menu are the row's interactive elements
+- Phase 1 already provides `publicUrl` and `activeCount` in the list result
+- The 7 "Borrador de prueba" drafts in memory (until `yarn dev` restarts) can be used to test activate / delete without touching the seeded surveys
+- Not in this phase: final responsive / dark / keyboard pass and the pager scroll / live region details (phase 4)
+- Adjusted during implementation:
+  - **Indeterminate icon:** the shared `checkbox.tsx` got one marked local change, a `MinusIcon` for the indeterminate state (the registry only renders a check). The light table styles live in `SurveyCheckbox`.
+  - **Row props:** `RowControls` (`row-controls.ts`) carries the selection and menu props shared by the table and the stacked list.
+  - **Selection key:** selection is keyed by the list URL (`buildSurveysHref(params)`), so a filter, range or page change starts empty, and deleted rows drop out on their own.
+  - **Filters hidden while selecting:** the bulk bar replaces the Type / Status menus (the search stays), as in the research. Clearing the selection brings them back.
+  - **Bulk bar layout:** on narrow cards, the count and clear go on the first line and the actions below; on wide cards, one line with the search shrinking.
+  - **Refresh:** `deleteSurvey` also calls `refresh()`, since the table stays on the page.
+  - **Pending hint:** the "{count} of 5 active" hint only shows for drafts (Activate).
+- Fixed in review:
+  - **Validation:** the new actions validate their client input (ids: 1 to `SURVEYS_PAGE_SIZE` strings; `isActive` boolean) and return `VALIDATION` otherwise.
+  - **Bulk count:** `setSurveysActive` returns only the surveys whose status changed, so "1 survey activated" stays true when the selection mixes an active survey with a draft.
+- Added on request: rows per page.
+  - The table defaults to 5 rows per page, with a "Rows per page" select (5, 10, 25, 50) next to the pager.
+  - It is written to the URL as `?size=` (omitted at 5); changing it resets `page`, and unknown values fall back to 5.
+  - The pager is always shown, as in the reference, with disabled arrows when there is one page.
+  - `SURVEYS_PAGE_SIZE` became `PAGE_SIZE_OPTIONS` / `DEFAULT_PAGE_SIZE` / `MAX_PAGE_SIZE`; bulk actions accept up to `MAX_PAGE_SIZE` ids.
+  - `docs/surveys-table.md` is updated.
+- Verification:
+  - `yarn lint` (with the `control-border` pairs), `tsc` and `yarn build` pass;
+  - checkboxes are a light grey-pink outline at rest in both themes and pink when checked, select all goes indeterminate, the focus ring is solid;
+  - with 5 active, "Activate" on a draft (row or bulk) shows the limit toast and changes nothing; after "Move to draft" activating works; the dashboard reflects every change;
+  - single and bulk delete remove the rows and stay on `/surveys`; deleting from the form still goes to `/dashboard`;
+  - selection clears on filter or page change;
+  - keyboard: checkbox → name → menu per row, the menu with arrows / Enter / Escape and focus return, the dialogs trap focus;
+  - 375 / 768 / 1280px in light, dark, English and Spanish, with no console errors.
 
 ## History
 

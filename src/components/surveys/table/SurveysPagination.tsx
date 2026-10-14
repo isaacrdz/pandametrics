@@ -4,7 +4,14 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { buildSurveysHref, getPageItems, type SurveyListQuery } from "@/lib/surveys/list-params";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  PAGE_SIZE_OPTIONS,
+  buildSurveysHref,
+  getPageItems,
+  type PageSize,
+  type SurveyListQuery,
+} from "@/lib/surveys/list-params";
 import { cn } from "@/lib/utils";
 
 const ELLIPSIS = "…";
@@ -18,9 +25,10 @@ interface SurveysPaginationProps {
   pageCount: number;
   pageSize: number;
   total: number;
+  onPageSizeChange: (pageSize: PageSize) => void;
 }
 
-export function SurveysPagination({ params, page, pageCount, pageSize, total }: SurveysPaginationProps) {
+export function SurveysPagination({ params, page, pageCount, pageSize, total, onPageSizeChange }: SurveysPaginationProps) {
   const t = useTranslations("surveys.pagination");
   const format = useFormatter();
   const hrefFor = (target: number) => buildSurveysHref({ ...params, page: target });
@@ -35,7 +43,33 @@ export function SurveysPagination({ params, page, pageCount, pageSize, total }: 
         {t("showing", { from: format.number(from), to: format.number(to), total })}
       </p>
 
-      {pageCount > 1 && (
+      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span aria-hidden>{t("rowsPerPage")}</span>
+          <Select
+            value={String(pageSize)}
+            onValueChange={(value) => {
+              const next = PAGE_SIZE_OPTIONS.find((option) => String(option) === value);
+              if (next) onPageSizeChange(next);
+            }}
+          >
+            <SelectTrigger
+              aria-label={t("rowsPerPage")}
+              className="h-10! w-20 rounded-xl bg-card text-sm font-semibold text-foreground tabular-nums"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end" className="min-w-20 rounded-xl">
+              {PAGE_SIZE_OPTIONS.map((option) => (
+                <SelectItem key={option} value={String(option)}>
+                  {format.number(option)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Always shown, as in the reference: with one page both arrows are disabled */}
         <nav aria-label={t("label")}>
           <ul className="flex items-center gap-1.5">
             <li>
@@ -74,7 +108,7 @@ export function SurveysPagination({ params, page, pageCount, pageSize, total }: 
             </li>
           </ul>
         </nav>
-      )}
+      </div>
     </div>
   );
 }

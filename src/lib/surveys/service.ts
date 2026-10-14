@@ -249,6 +249,43 @@ export function updateSurvey(scope: SurveyScope, id: string, input: SurveyFormVa
   return updated;
 }
 
+// Only the status changes: no form values, so the questions are never re-merged
+export function setSurveyActive(scope: SurveyScope, id: string, isActive: boolean): void {
+  setSurveysActive(scope, [id], isActive);
+}
+
+// All or nothing: every id must be visible, and activating must keep the organization
+// within the limit counting every selected draft at once. Returns how many surveys changed.
+export function setSurveysActive(scope: SurveyScope, ids: string[], isActive: boolean): number {
+  const surveys = getVisibleSurveys(scope.organizationId, ids);
+  const changing = surveys.filter((survey) => survey.isActive !== isActive);
+
+  if (isActive && countActiveSurveys(scope.organizationId) + changing.length > ACTIVE_SURVEY_LIMIT) {
+    throw new SurveyServiceError("ACTIVE_LIMIT");
+  }
+
+  const now = new Date();
+  for (const survey of changing) {
+    getStore().set(survey.id, { ...survey, isActive, updatedAt: now });
+  }
+  return changing.length;
+}
+
+export function softDeleteSurveys(scope: SurveyScope, ids: string[]): void {
+  const surveys = getVisibleSurveys(scope.organizationId, ids);
+  const now = new Date();
+  for (const survey of surveys) {
+    getStore().set(survey.id, { ...survey, isActive: false, deletedAt: now, updatedAt: now });
+  }
+}
+
+// Unknown, deleted or another organization's id: NOT_FOUND before anything changes
+function getVisibleSurveys(organizationId: string, ids: string[]): Survey[] {
+  const surveys = [...new Set(ids)].map((id) => getSurvey(organizationId, id));
+  if (surveys.length === 0 || surveys.some((survey) => !survey)) throw new SurveyServiceError("NOT_FOUND");
+  return surveys as Survey[];
+}
+
 export function softDeleteSurvey(scope: SurveyScope, id: string): void {
   const stored = getSurvey(scope.organizationId, id);
   if (!stored) throw new SurveyServiceError("NOT_FOUND");

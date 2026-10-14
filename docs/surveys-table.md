@@ -327,7 +327,7 @@ const TABLE_CHECKBOX =
 - **Writing:** a `buildSurveysHref(params)` helper writes only non-default values, like `CollectionsToolbar.updateUrl`. It uses `router.replace(…, { scroll: false })`.
 - **Search** keeps the 300 ms debounce and the "synced when the URL changes from outside" logic. Extract that logic from `CollectionsToolbar` into a `useUrlSearch` hook rather than duplicating it.
 - **Any filter change resets `page`** to 1.
-- **Page size:** 10.
+- **Page size:** 5 by default, with a "Rows per page" select offering 5, 10, 25 and 50 (`?size=`, omitted at 5; changing it resets `page`). Updated on request after phase 2.
   - The 5-active limit keeps most organizations under one page.
   - Pagination still matters for drafts and future imports from Kraquen.
 
@@ -409,7 +409,7 @@ src/components/surveys/table/
   - the current page is filled pink (`bg-primary text-primary-foreground`, `aria-current="page"`);
   - the pager is wrapped in `<nav aria-label="Pagination">`.
 - **The page buttons are `Link`s** to the URL with `page`, so they work without JS and the page survives a reload.
-- **Hide the pager** when `pageCount` is 1. The screenshot's fake page 2 is not reproduced.
+- **The pager is always shown**, as in the reference (with one page both arrows are disabled). Only real pages are listed, so the screenshot's fake page 2 is not reproduced.
 
 ## 8. Row actions
 
