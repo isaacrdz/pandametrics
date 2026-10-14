@@ -1,18 +1,28 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Hide Dev Indicator
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `next.config.ts` sets `devIndicators: false` inside the existing `NextConfig` object (still wrapped by `withNextIntl`), with a short comment that errors still open the overlay and that static vs dynamic is checked in the `yarn build` route table (`○` / `◐` / `ƒ`)
+- The leftover `/* config options here */` boilerplate comment is removed
+- After restarting `yarn dev`, there is no floating Next.js "N" button at 375px or 1280px on `/` or `/dashboard`
+- A temporary runtime error in a Client Component still opens the Next.js error overlay (then reverted)
+- `yarn lint`, `tsc` and `yarn build` pass, and the build route table is unchanged
 
 ## Notes
 
-<!-- Any extra notes -->
+- No spec: loaded inline from the research in `docs/dev-indicator.md` (prompt: `context/research/dev-indicator-research.md`)
+- Hide instead of move: no corner is free in both layouts.
+  - Bottom-left covers the landing hero and the sidebar.
+  - Bottom-right is taken by the sonner `Toaster`.
+  - Top corners sit over the nav and the top bar.
+- Committed for the whole team, not per developer (no env var)
+- Only `next.config.ts` changes: no components, messages, tokens or routes. The indicator never ships in production.
+- v16 removed `appIsrStatus`, `buildActivity` and `buildActivityPosition`; none are used. `experimental.agentFeedback` is unrelated and stays as is.
+- Next.js restarts the dev server when `next.config.ts` changes; if the button is still visible, restart `yarn dev` by hand and hard-refresh the tab
 
 ## History
 
