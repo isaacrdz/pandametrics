@@ -7,10 +7,10 @@ import {
   MOCK_CURRENT_USER,
   MOCK_NOW,
   MOCK_ORGANIZATIONS,
-  getMockActiveSurveys,
   getMockDashboardSummary,
   getMockSurveyMetrics,
 } from "@/lib/mock-data";
+import { listActiveSurveys } from "@/lib/surveys/service";
 import type {
   DashboardSummary,
   Organization,
@@ -66,18 +66,20 @@ export function getDashboardData(
   query = "",
 ): DashboardData {
   const range = getDateRange(rangeKey, MOCK_NOW);
-  const surveys = getMockActiveSurveys(organizationId);
+  const surveys = listActiveSurveys(organizationId);
+  const activeIds = surveys.map((survey) => survey.id);
 
   const cards = surveys
     .filter((survey) => matchesQuery(survey, query))
-    .flatMap((survey) => {
-      const metrics = getMockSurveyMetrics(survey.id, range);
-      return metrics ? [{ survey, metrics, publicUrl: getPublicSurveyUrl(survey.code) }] : [];
-    });
+    .map((survey) => ({
+      survey,
+      metrics: getMockSurveyMetrics(survey, range),
+      publicUrl: getPublicSurveyUrl(survey.code),
+    }));
 
   return {
-    summary: getMockDashboardSummary(organizationId, range),
-    todayResponses: getMockDashboardSummary(organizationId, getTodayRange(MOCK_NOW)).totalResponses,
+    summary: getMockDashboardSummary(activeIds, range),
+    todayResponses: getMockDashboardSummary(activeIds, getTodayRange(MOCK_NOW)).totalResponses,
     activeSurveyCount: surveys.length,
     cards,
   };

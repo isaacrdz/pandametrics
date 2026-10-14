@@ -439,13 +439,9 @@ function buildQuestionMetrics(
   };
 }
 
-export function getMockSurveyMetrics(
-  surveyId: string,
-  range: DateRange = LAST_30_DAYS,
-): SurveyMetrics | null {
-  const survey = MOCK_SURVEYS.find((s) => s.id === surveyId);
-  if (!survey) return null;
-
+// Surveys come from the survey store (src/lib/surveys/service.ts); responses stay static
+export function getMockSurveyMetrics(survey: Survey, range: DateRange = LAST_30_DAYS): SurveyMetrics {
+  const surveyId = survey.id;
   const responses = MOCK_RESPONSES.filter((r) => r.surveyId === surveyId && inRange(r, range));
   const counts = new Map<string, number>();
   for (const response of responses) {
@@ -463,21 +459,24 @@ export function getMockSurveyMetrics(
   };
 }
 
-export function getMockActiveSurveys(organizationId: string = ACME_ID): Survey[] {
-  return MOCK_SURVEYS.filter(
-    (s) => s.organizationId === organizationId && s.isActive && !s.deletedAt,
-  );
-}
-
 export function getMockDashboardSummary(
-  organizationId: string = ACME_ID,
+  activeSurveyIds: string[],
   range: DateRange = LAST_30_DAYS,
 ): DashboardSummary {
-  const activeIds = new Set(getMockActiveSurveys(organizationId).map((s) => s.id));
+  const activeIds = new Set(activeSurveyIds);
 
   return {
     totalResponses: MOCK_RESPONSES.filter((r) => activeIds.has(r.surveyId) && inRange(r, range)).length,
     activeSurveys: activeIds.size,
     activeSurveyLimit: ACTIVE_SURVEY_LIMIT,
   };
+}
+
+export function getAnsweredOptionIds(surveyId: string): Set<string> {
+  const ids = new Set<string>();
+  for (const response of MOCK_RESPONSES) {
+    if (response.surveyId !== surveyId) continue;
+    for (const item of response.items) ids.add(item.answerOptionId);
+  }
+  return ids;
 }

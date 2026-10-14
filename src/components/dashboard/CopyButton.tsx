@@ -21,17 +21,26 @@ interface CopyButtonProps {
   className?: string;
 }
 
-export function CopyButton({ value, label, successMessage, icon = "copy", className }: CopyButtonProps) {
+// Copies a value and confirms it with a toast (shared by icon and text buttons)
+export function useCopyToClipboard() {
   const t = useTranslations("common");
-  const Icon = ICONS[icon];
 
-  async function handleCopy() {
+  return async (value: string, successMessage: string) => {
     try {
       await navigator.clipboard.writeText(value);
       toast.success(successMessage, { description: value });
     } catch {
       toast.error(t("copyError"));
     }
+  };
+}
+
+export function CopyButton({ value, label, successMessage, icon = "copy", className }: CopyButtonProps) {
+  const copy = useCopyToClipboard();
+  const Icon = ICONS[icon];
+
+  function handleCopy() {
+    void copy(value, successMessage);
   }
 
   return (

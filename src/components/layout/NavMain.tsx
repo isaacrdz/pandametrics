@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -86,9 +87,8 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   );
 }
 
-export function NavMain() {
+function NavMainItems({ pathname }: { pathname: string | null }) {
   const t = useTranslations("nav");
-  const pathname = usePathname();
 
   return NAV_GROUPS.map((group, index) => (
     <div key={group.key}>
@@ -99,7 +99,7 @@ export function NavMain() {
           <SidebarMenu className="gap-1">
             {group.items.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <NavLink item={item} isActive={pathname.startsWith(item.href)} />
+                <NavLink item={item} isActive={pathname?.startsWith(item.href) ?? false} />
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
@@ -107,4 +107,18 @@ export function NavMain() {
       </SidebarGroup>
     </div>
   ));
+}
+
+function NavMainWithPathname() {
+  return <NavMainItems pathname={usePathname()} />;
+}
+
+// usePathname() is runtime data on dynamic routes (/surveys/[id]): the menu prerenders
+// without an active item and the active state streams in
+export function NavMain() {
+  return (
+    <Suspense fallback={<NavMainItems pathname={null} />}>
+      <NavMainWithPathname />
+    </Suspense>
+  );
 }

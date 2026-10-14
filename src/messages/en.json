@@ -104,5 +104,149 @@
   "languages": {
     "en": "English",
     "es": "Español"
+  },
+  "surveyForm": {
+    "createTitle": "New survey",
+    "createSubtitle": "Pick a category, write your questions and publish it when you're ready.",
+    "editTitle": "Edit survey",
+    "editSubtitle": "Update your survey's experience and answer options.",
+    "actions": {
+      "back": "Back",
+      "delete": "Delete",
+      "create": "Create survey",
+      "save": "Save survey",
+      "saving": "Saving…"
+    },
+    "sections": {
+      "details": {
+        "title": "Survey details",
+        "description": "Give your survey a clear name and a little context."
+      },
+      "category": {
+        "title": "Category",
+        "description": "Choose how people will answer."
+      },
+      "questions": {
+        "title": "Questions",
+        "description": "Ask a specific question and make every answer count."
+      }
+    },
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "required": "(required)"
+    },
+    "publish": {
+      "title": "Publish survey",
+      "active": "Active",
+      "inactive": "Draft",
+      "activeHint": "The survey is published and your customers can answer it through its link or QR code.",
+      "inactiveHint": "The survey is a draft. Turn it on to start collecting answers."
+    },
+    "category": {
+      "locked": "The category can't change because this survey already has responses.",
+      "pickHint": "Pick a category to start adding questions.",
+      "changeTitle": "Change category?",
+      "changeDescription": "The answer options of your questions will be replaced. Question texts are kept.",
+      "changeConfirm": "Change category",
+      "cancel": "Cancel"
+    },
+    "toasts": {
+      "created": "Survey created",
+      "saved": "Changes saved",
+      "deleted": "Survey deleted"
+    },
+    "errors": {
+      "VALIDATION": "Check the highlighted fields.",
+      "ACTIVE_LIMIT": "You already have {limit} active surveys. Deactivate one first.",
+      "NOT_FOUND": "This survey no longer exists.",
+      "CATEGORY_LOCKED": "The category can't change because this survey already has responses.",
+      "UNKNOWN": "Something went wrong. Try again."
+    },
+    "questions": {
+      "label": "Question {number}",
+      "remove": "Remove question {number}",
+      "add": "Add question"
+    },
+    "options": {
+      "title": "Answer options",
+      "reactionHint": "Customize the labels respondents will see. Up to {max} answers per question.",
+      "pollHint": "Write between {min} and {max} answers people can choose from.",
+      "ratingHint": "Respondents pick from 1 to 5 stars. These options are created automatically.",
+      "counter": "{count}/{max} answers",
+      "limit": "Limit of {max} answers reached.",
+      "add": "Add answer",
+      "label": "Option {number}",
+      "reaction": "Reaction for option {number}",
+      "color": "Color for option {number}",
+      "remove": "Remove option {number} of question {question}"
+    },
+    "share": {
+      "title": "Share",
+      "description": "Share the public link or let your customers scan the QR code.",
+      "scanQr": "Scan QR code",
+      "qrLabel": "QR code that opens survey {code}",
+      "downloadQr": "Download QR",
+      "publicLink": "Public link",
+      "code": "Code",
+      "copyLink": "Copy link",
+      "copyLinkLabel": "Copy public link",
+      "linkCopied": "Link copied",
+      "copyCode": "Copy code",
+      "codeCopied": "Code copied",
+      "openSurvey": "Open survey",
+      "openSoon": "Available when the kiosk is ready",
+      "createdAt": "Created on {date}",
+      "createdBy": "Created by {name} ({email})",
+      "createdByUnknown": "Created by an unknown user"
+    },
+    "delete": {
+      "title": "Delete “{name}”?",
+      "description": "Its responses are kept, but its link and QR code stop working.",
+      "confirm": "Delete survey",
+      "deleting": "Deleting…",
+      "cancel": "Cancel"
+    },
+    "unsaved": {
+      "title": "Discard changes?",
+      "description": "You have unsaved changes. If you leave now, they will be lost.",
+      "confirm": "Discard and leave",
+      "cancel": "Keep editing"
+    }
+  },
+  "categories": {
+    "SATISFACTION": {
+      "title": "Satisfaction",
+      "description": "Faces from very bad to excellent."
+    },
+    "RATING": {
+      "title": "Rating",
+      "description": "1 to 5 stars."
+    },
+    "POLL": {
+      "title": "Poll",
+      "description": "2 to 5 options you define."
+    }
+  },
+  "validation": {
+    "required": "This field is required.",
+    "tooLong": "Use {max} characters or fewer.",
+    "categoryRequired": "Pick a category.",
+    "minQuestions": "Add at least one question.",
+    "minOptions": "Add at least {min, plural, one {# answer} other {# answers}}.",
+    "maxOptions": "Use up to {max} answers.",
+    "duplicateReaction": "Each reaction can be used only once.",
+    "invalidReaction": "Pick a valid reaction.",
+    "invalidColor": "Pick a valid color."
+  },
+  "reactions": {
+    "VERY_BAD": "Very bad",
+    "BAD": "Bad",
+    "GOOD": "Good",
+    "VERY_GOOD": "Very good",
+    "INCREDIBLE": "Excellent"
+  },
+  "ratings": {
+    "label": "{value, plural, one {# star} other {# stars}}"
   }
 }

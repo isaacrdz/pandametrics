@@ -104,5 +104,149 @@
   "languages": {
     "en": "English",
     "es": "Español"
+  },
+  "surveyForm": {
+    "createTitle": "Nueva encuesta",
+    "createSubtitle": "Elige una categoría, escribe tus preguntas y publícala cuando quieras.",
+    "editTitle": "Editar encuesta",
+    "editSubtitle": "Actualiza la experiencia y las opciones de respuesta de tu encuesta.",
+    "actions": {
+      "back": "Regresar",
+      "delete": "Borrar",
+      "create": "Crear encuesta",
+      "save": "Guardar encuesta",
+      "saving": "Guardando…"
+    },
+    "sections": {
+      "details": {
+        "title": "Detalles de la encuesta",
+        "description": "Dale a tu encuesta un nombre claro y un poco de contexto."
+      },
+      "category": {
+        "title": "Categoría",
+        "description": "Elige cómo responderán las personas."
+      },
+      "questions": {
+        "title": "Preguntas",
+        "description": "Haz una pregunta concreta y consigue que cada respuesta cuente."
+      }
+    },
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "required": "(obligatorio)"
+    },
+    "publish": {
+      "title": "Publicar encuesta",
+      "active": "Activa",
+      "inactive": "Borrador",
+      "activeHint": "La encuesta está publicada y tus clientes pueden responderla mediante su enlace o código QR.",
+      "inactiveHint": "La encuesta es un borrador. Actívala para empezar a recibir respuestas."
+    },
+    "category": {
+      "locked": "La categoría no se puede cambiar porque esta encuesta ya tiene respuestas.",
+      "pickHint": "Elige una categoría para empezar a agregar preguntas.",
+      "changeTitle": "¿Cambiar la categoría?",
+      "changeDescription": "Las opciones de respuesta de tus preguntas se reemplazarán. Los textos de las preguntas se conservan.",
+      "changeConfirm": "Cambiar categoría",
+      "cancel": "Cancelar"
+    },
+    "toasts": {
+      "created": "Encuesta creada",
+      "saved": "Cambios guardados",
+      "deleted": "Encuesta borrada"
+    },
+    "errors": {
+      "VALIDATION": "Revisa los campos marcados.",
+      "ACTIVE_LIMIT": "Ya tienes {limit} encuestas activas. Desactiva una primero.",
+      "NOT_FOUND": "Esta encuesta ya no existe.",
+      "CATEGORY_LOCKED": "La categoría no se puede cambiar porque esta encuesta ya tiene respuestas.",
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
+    },
+    "questions": {
+      "label": "Pregunta {number}",
+      "remove": "Eliminar pregunta {number}",
+      "add": "Agregar pregunta"
+    },
+    "options": {
+      "title": "Opciones de respuesta",
+      "reactionHint": "Personaliza las etiquetas que verán las personas encuestadas. Máximo {max} respuestas por pregunta.",
+      "pollHint": "Escribe entre {min} y {max} respuestas para elegir.",
+      "ratingHint": "Las personas eligen de 1 a 5 estrellas. Estas opciones se crean automáticamente.",
+      "counter": "{count}/{max} respuestas",
+      "limit": "Límite de {max} respuestas alcanzado.",
+      "add": "Agregar respuesta",
+      "label": "Opción {number}",
+      "reaction": "Reacción de la opción {number}",
+      "color": "Color de la opción {number}",
+      "remove": "Eliminar la opción {number} de la pregunta {question}"
+    },
+    "share": {
+      "title": "Compartir",
+      "description": "Comparte el enlace público o permite que tus clientes escaneen el código QR.",
+      "scanQr": "Escanear código QR",
+      "qrLabel": "Código QR que abre la encuesta {code}",
+      "downloadQr": "Descargar QR",
+      "publicLink": "Enlace público",
+      "code": "Código",
+      "copyLink": "Copiar enlace",
+      "copyLinkLabel": "Copiar enlace público",
+      "linkCopied": "Enlace copiado",
+      "copyCode": "Copiar código",
+      "codeCopied": "Código copiado",
+      "openSurvey": "Abrir encuesta",
+      "openSoon": "Disponible cuando el kiosco esté listo",
+      "createdAt": "Creada el {date}",
+      "createdBy": "Creada por {name} ({email})",
+      "createdByUnknown": "Creada por un usuario desconocido"
+    },
+    "delete": {
+      "title": "¿Borrar «{name}»?",
+      "description": "Sus respuestas se conservan, pero su enlace y su código QR dejan de funcionar.",
+      "confirm": "Borrar encuesta",
+      "deleting": "Borrando…",
+      "cancel": "Cancelar"
+    },
+    "unsaved": {
+      "title": "¿Descartar cambios?",
+      "description": "Tienes cambios sin guardar. Si sales ahora, se perderán.",
+      "confirm": "Descartar y salir",
+      "cancel": "Seguir editando"
+    }
+  },
+  "categories": {
+    "SATISFACTION": {
+      "title": "Satisfacción",
+      "description": "Caras de muy malo a excelente."
+    },
+    "RATING": {
+      "title": "Calificación",
+      "description": "De 1 a 5 estrellas."
+    },
+    "POLL": {
+      "title": "Opción múltiple",
+      "description": "De 2 a 5 opciones que tú defines."
+    }
+  },
+  "validation": {
+    "required": "Este campo es obligatorio.",
+    "tooLong": "Usa {max} caracteres o menos.",
+    "categoryRequired": "Elige una categoría.",
+    "minQuestions": "Agrega al menos una pregunta.",
+    "minOptions": "Agrega al menos {min, plural, one {# respuesta} other {# respuestas}}.",
+    "maxOptions": "Usa hasta {max} respuestas.",
+    "duplicateReaction": "Cada reacción solo se puede usar una vez.",
+    "invalidReaction": "Elige una reacción válida.",
+    "invalidColor": "Elige un color válido."
+  },
+  "reactions": {
+    "VERY_BAD": "Muy malo",
+    "BAD": "Malo",
+    "GOOD": "Bueno",
+    "VERY_GOOD": "Muy bueno",
+    "INCREDIBLE": "Excelente"
+  },
+  "ratings": {
+    "label": "{value, plural, one {# estrella} other {# estrellas}}"
   }
 }
