@@ -1,53 +1,18 @@
-# Current Feature: Landing Polish
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `MobileNav` (client) in `src/components/landing/`:
-  - below `md`, a menu button (`aria-label` from `landing.nav.menu`, new key in en/es) opens a `Sheet`;
-  - the sheet holds the section links, the `LanguageSwitcher`, "Sign in" and "Create account";
-  - it closes when a link is clicked, and focus returns to the menu button.
-- `LandingNav` below `md` shows only `Logo` + `MobileNav`: inline links and auth buttons hidden, and the wordmark no longer truncated ("Panda…")
-- Responsive layout:
-  - `< md`:
-    - hero stacked (text first, visual full width), headline ~44px, CTAs full width;
-    - feature and step cards stacked;
-    - the CTA banner stacks the button under the text;
-    - footer lines stacked and centered.
-  - `md – lg`: nav links visible, hero still stacked with a wider visual
-  - `≥ lg`: two-column hero as in the screenshot
-  - No horizontal overflow at 375, 500, 768 and 1280px
-- "Skip to content" link: the first focusable element, visible on focus, jumps to `<main id="content">`
-- Landmarks: `header`, `nav` with an accessible name, `main`, `footer`; one `h1`, an `h2` per section, an `h3` per card
-- Focus rings visible on every link and button (pink `--ring`, at least 3:1 on its background)
-- Decorative images and icons `aria-hidden`; the stat card announced through its single `aria-label`
-- Any animation only under `motion-safe:`; smooth scroll only with `prefers-reduced-motion: no-preference`
-- Dark mode:
-  - plum surfaces, and the `brand` panel stays pink;
-  - the hero frame uses `--card` and the feature cards use `--accent`;
-  - the CTA banner uses `--inverse` with a `--card-border` border.
-- Any new landing-only color pair added to `scripts/check-contrast.mjs`
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Phase 4 of 4 of the landing work (spec: `context/features/landing-polish-spec.md`, details in `docs/landing.md` section 9)
-- Reuse `src/components/ui/sheet.tsx` (shadcn, Radix: focus trap, Escape, focus return) and `src/components/layout/LanguageSwitcher.tsx`
-- The landing has no theme toggle: it keeps the user's choice, light by default
-- Known starting point from phase 3:
-  - the nav truncates the wordmark on mobile;
-  - section links are hidden below `md` with no menu;
-  - smooth scroll is already gated by reduced motion in `globals.css`;
-  - the stat card already has `role="img"` with one `aria-label`.
-- Adjusted during implementation: at `md – lg` the nav shows the logo, the section links and the menu button; the language switcher and account buttons move to the sheet until `lg`, because at 768px they truncated the wordmark and wrapped "How it works"
-- Verification:
-  - `yarn lint`, `tsc` and `yarn build` pass;
-  - screenshots at 375, 768 and 1280px in light, dark, English and Spanish, compared with `context/screenshots/landing-view*.png`;
-  - mobile menu works with the keyboard (Enter / Escape, focus trap and return), and its links scroll to their sections and close it;
-  - tab order: skip link → logo → nav links → language switcher → auth buttons → hero CTAs;
-  - no horizontal scroll and no console errors.
+<!-- Any extra notes -->
 
 ## History
 
@@ -60,3 +25,4 @@ In Progress
 - **Brand Tokens** (2026-10-13): rebranded the theme to the logo pink; light primary `#a85569` (logo hue darkened for AA), dark mode on plum-brown surfaces with the logo pink `#db8396` as primary and dark-brown text; new `--brand` and `--inverse` tokens, `--highlight` follows the primary; survey data, status and destructive colors unchanged; `scripts/check-contrast.mjs` in `yarn lint`; `StatCard` highlight text at full opacity; landing research and 4 phase specs
 - **Logo Assets** (2026-10-13): `scripts/brand-assets.mjs` (sharp) generates the app icon, Apple icon, logo tile, hero illustration and Open Graph / Twitter images from `design/logo-source.png` (losslessly recompressed to 9 MB); default favicon replaced; `metadataBase` from `PANDA_PUBLIC_URL`; `Logo` component in the sidebar (icon only when collapsed)
 - **Landing Page** (2026-10-13): public landing at `/` in a static `(marketing)` route group (redirect removed); nav with logo, section links, language switcher and account CTAs (to `/dashboard` via `LANDING_LINKS`); hero with panda illustration and accessible illustrative stat card; features, new "How it works" section, dark CTA banner and footer; copy fixed and translated (`landing` namespace); metadata and `themeColor`; contrast checks for the new pairs
+- **Landing Polish** (2026-10-13): `MobileNav` sheet (section links below `md`, full-width language switcher, account actions; closes on link click with focus back on the menu button); at `md – lg` the nav keeps logo + links + menu so the wordmark fits; 44px headline and full-width CTAs on phones, capped hero visual while stacked, centered footer; "Skip to content" link, solid pink `FOCUS_RING`, logo-pink ring on the dark CTA banner and banner border in dark mode; no overflow at 375/500/768/1280 in light, dark, English and Spanish
