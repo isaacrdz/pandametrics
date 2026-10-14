@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint && node scripts/check-messages.mjs"
+    "lint": "eslint && node scripts/check-messages.mjs && node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

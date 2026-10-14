@@ -200,6 +200,8 @@ Notes:
 
 ## 5. Design tokens
 
+> **Superseded (2026-10-13):** the project was rebranded to the logo's pink. The purple / indigo values below are historical; the current light and dark tokens are in `src/app/globals.css`, documented in `docs/landing.md` section 3 and `context/project-overview.md` section 11. Token names and roles are unchanged, plus `--brand` and `--inverse`.
+
 Colors sampled from the screenshots (approximate) and mapped to shadcn/ui tokens. Values go in `src/app/globals.css`; shadcn init will add its scaffold (`@import "shadcn/tailwind.css"`, `@custom-variant dark`, `@theme inline` mappings, `:root` / `.dark` tokens), and we replace the neutral values with these.
 
 | Token | Light | Used for |

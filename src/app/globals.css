@@ -41,6 +41,9 @@
   --color-card: var(--card);
 
   /* Panda Metrics */
+  --color-brand: var(--brand);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
   --color-card-border: var(--card-border);
@@ -63,43 +66,50 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Brand: the logo pink is #db8396 (--brand). White text on it is only 2.73:1, so filled buttons
+   and pink text use --primary #a85569, the same hue darkened to pass AA. Dark mode surfaces are
+   plum-brown tinted with that hue. Contrast is checked by scripts/check-contrast.mjs in `yarn lint`
+   (values and measurements in docs/landing.md). */
 :root {
   --radius: 0.75rem;
-  --background: #f8f8fc;
-  --foreground: #2f3241;
+  --background: #fdf8f9;
+  --foreground: #2b1e24;
   --card: #ffffff;
-  --card-foreground: #2f3241;
+  --card-foreground: #2b1e24;
   --popover: #ffffff;
-  --popover-foreground: #2f3241;
-  --primary: #6439c4;
+  --popover-foreground: #2b1e24;
+  --primary: #a85569;
   --primary-foreground: #ffffff;
-  --secondary: #f1f1f5;
-  --secondary-foreground: #2f3241;
-  --muted: #f1f1f5;
-  --muted-foreground: #6b7080;
-  --accent: #efedfd;
-  --accent-foreground: #5b46d6;
+  --secondary: #f7eef0;
+  --secondary-foreground: #2b1e24;
+  --muted: #f7eef0;
+  --muted-foreground: #6e5d63;
+  --accent: #fff0f4;
+  --accent-foreground: #9c4b5f;
   --destructive: #dc2626;
-  --border: #e7e7ef;
-  --input: #e7e7ef;
-  --ring: #8b7cf0;
-  --chart-1: #6439c4;
-  --chart-2: #5d62d6;
+  --border: #efdfe4;
+  --input: #efdfe4;
+  --ring: #a85569;
+  --chart-1: #a85569;
+  --chart-2: #db8396;
   --chart-3: #00acc1;
   --chart-4: #f59e0b;
   --chart-5: #22c55e;
   --sidebar: #ffffff;
-  --sidebar-foreground: #4b4f5e;
-  --sidebar-primary: #6439c4;
+  --sidebar-foreground: #5b4a50;
+  --sidebar-primary: #a85569;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #efedfd;
-  --sidebar-accent-foreground: #5b46d6;
-  --sidebar-border: #e7e7ef;
-  --sidebar-ring: #8b7cf0;
+  --sidebar-accent: #fff0f4;
+  --sidebar-accent-foreground: #9c4b5f;
+  --sidebar-border: #efdfe4;
+  --sidebar-ring: #a85569;
 
-  --highlight: #5d62d6;
-  --highlight-foreground: #ffffff;
-  --card-border: #ddd4f6;
+  --brand: #db8396;
+  --inverse: #2b1e24;
+  --inverse-foreground: #ffffff;
+  --highlight: var(--primary);
+  --highlight-foreground: var(--primary-foreground);
+  --card-border: #fcccd5;
   --success: #5fa04e;
   --success-foreground: #3d7a32;
   --reaction-very-bad: #ef4444;
@@ -112,41 +122,41 @@
 }
 
 .dark {
-  --background: #14141c;
-  --foreground: #ececf3;
-  --card: #1c1c27;
-  --card-foreground: #ececf3;
-  --popover: #1c1c27;
-  --popover-foreground: #ececf3;
-  --primary: #8b6cf0;
-  --primary-foreground: #ffffff;
-  --secondary: #262633;
-  --secondary-foreground: #ececf3;
-  --muted: #262633;
-  --muted-foreground: #a1a4b5;
-  --accent: #2a2440;
-  --accent-foreground: #c4b5fd;
+  --background: #1d1418;
+  --foreground: #f6edef;
+  --card: #261b20;
+  --card-foreground: #f6edef;
+  --popover: #261b20;
+  --popover-foreground: #f6edef;
+  --primary: #db8396;
+  --primary-foreground: #210a10;
+  --secondary: #33252b;
+  --secondary-foreground: #f6edef;
+  --muted: #33252b;
+  --muted-foreground: #c2adb4;
+  --accent: #3b2830;
+  --accent-foreground: #fcccd5;
   --destructive: #f87171;
-  --border: rgb(255 255 255 / 10%);
-  --input: rgb(255 255 255 / 15%);
-  --ring: #8b7cf0;
-  --chart-1: #8b6cf0;
-  --chart-2: #7c80f0;
+  --border: rgb(255 228 236 / 10%);
+  --input: rgb(255 228 236 / 15%);
+  --ring: #db8396;
+  --chart-1: #db8396;
+  --chart-2: #fea3b6;
   --chart-3: #22d3ee;
   --chart-4: #fbbf24;
   --chart-5: #4ade80;
-  --sidebar: #1c1c27;
-  --sidebar-foreground: #c9cbd8;
-  --sidebar-primary: #8b6cf0;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2a2440;
-  --sidebar-accent-foreground: #c4b5fd;
-  --sidebar-border: rgb(255 255 255 / 10%);
-  --sidebar-ring: #8b7cf0;
+  --sidebar: #211719;
+  --sidebar-foreground: #d9c6cc;
+  --sidebar-primary: #db8396;
+  --sidebar-primary-foreground: #210a10;
+  --sidebar-accent: #3b2830;
+  --sidebar-accent-foreground: #fcccd5;
+  --sidebar-border: rgb(255 228 236 / 10%);
+  --sidebar-ring: #db8396;
 
-  --highlight: #6b70e6;
-  --highlight-foreground: #ffffff;
-  --card-border: #3a3355;
+  --inverse: #3b2830;
+  --inverse-foreground: #f6edef;
+  --card-border: #4a323b;
   --success: #6fbf5c;
   --success-foreground: #86d672;
   --star-empty: #4b5563;

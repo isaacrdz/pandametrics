@@ -1,18 +1,35 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Brand Tokens
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `src/app/globals.css` light and dark values replaced with the token table in `docs/landing.md` section 3:
+  - primary `#a85569` (light) / `#db8396` with `#210a10` text (dark);
+  - backgrounds `#fdf8f9` (light) and `#1d1418` / `#261b20` / `#33252b` (dark);
+  - accent, muted, border, ring, card-border, sidebar and chart values from the table.
+- New tokens exposed in `@theme inline`: `--brand` (`#db8396`, surfaces only) and `--inverse` / `--inverse-foreground`
+- `--highlight` follows the primary (highlight card, "New survey" button, sidebar logo tile turn pink)
+- Unchanged: `--success*`, `--reaction-*`, `--star*`, `--destructive`, `sky-*` info alerts
+- `scripts/check-contrast.mjs`:
+  - covers the token pairs of both themes;
+  - fails when text pairs are below 4.5:1 or UI / ring pairs below 3:1;
+  - runs in `yarn lint`.
+- Docs: `context/project-overview.md` section 11 (brand palette, what follows the brand and what does not) and the tokens in `docs/dashboard.md` section 5
+- `yarn lint`, `tsc`, `yarn build` pass
+- Before / after screenshots of the dashboard, survey form (create, edit with share panel), a dialog and a toast, in light and dark
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/brand-tokens-spec.md`. Research: `docs/landing.md` (sections 1 and 3: token inventory, contrast tables, scale)
+- Phase 1 of 4 of the landing work (next: `logo-assets-spec.md`, `landing-page-spec.md`, `landing-polish-spec.md`); one feature per phase for clean commits
+- Logo colors: pink `#db8396`, dark brown `#210a10`, cream `#f1ecdb`. White text on the logo pink is only 2.73:1, so the logo pink is `--brand` (never under text) and `--primary` is `#a85569` (5.04:1 with white, 4.79:1 as text on the background, 4.56:1 on the accent)
+- Every component already uses tokens; the only hard-coded colors are the flags, the QR and the `sky-*` info alerts. If a component needs a change, note why
+- Take the "before" screenshots before touching `globals.css`
+- Component change found in review: `StatCard` drew its label and hint at 85% / 70% opacity on the highlight card (4.14:1 on the new pink); they now use the full `highlight-foreground` (5.04:1). The decorative icon keeps 85% (non-text, above 3:1)
+- Out of scope: logo assets and the `Logo` component (phase 2), the landing page (phase 3)
 
 ## History
 

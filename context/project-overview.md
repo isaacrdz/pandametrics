@@ -655,6 +655,21 @@ Dashboard filters live in the URL (`/dashboard?range=this-month&tz=America/Mexic
 
 ## 11. Visual design system
 
+### Brand palette
+
+The brand comes from the logo (a panda in a hoodie on pink). Full measurements and the token table in `docs/landing.md` section 3; values live in `src/app/globals.css`.
+
+| Role | Light | Dark | Notes |
+| ---- | ----- | ---- | ----- |
+| Brand (`--brand`) | `#db8396` | `#db8396` | The logo pink. Surfaces and illustrations only: white text on it is 2.73:1 |
+| Primary (`--primary`) | `#a85569` | `#db8396` | Same hue. Light: white text 5.04:1, pink text 4.79:1 on the page. Dark: text `#210a10` (6.9:1) |
+| Background / card | `#fdf8f9` / `#ffffff` | `#1d1418` / `#261b20` | Dark surfaces are the logo's dark brown tinted with the pink hue |
+| Foreground | `#2b1e24` | `#f6edef` | |
+| Accent (`--accent`) | `#fff0f4` | `#3b2830` | Active nav, tiles, poll option blocks |
+| Inverse (`--inverse`) | `#2b1e24` | `#3b2830` | Dark CTA blocks |
+
+Follow the brand: primary buttons, links, focus rings, highlight card, active states, poll bars. Do **not** follow the brand: survey data colors (reactions, stars, poll fallbacks, below), the success green for status, the destructive red. `yarn lint` runs `scripts/check-contrast.mjs`, which fails when a token pair drops below AA (4.5:1 text, 3:1 focus rings) in either theme.
+
 ### Satisfaction (reaction) color palette
 
 Single source of truth for frontend and backend.
@@ -677,7 +692,7 @@ These colors live as CSS variables in `globals.css` (exposed through `@theme`), 
 
 - Build the UI with shadcn/ui components (added with `npx shadcn@latest add <component>`) and Tailwind v4 utilities; no `tailwind.config.*` file.
 - Default to light mode; offer dark mode through a theme toggle (`next-themes` with the `.dark` class, as shadcn/ui recommends).
-- Use neutral surfaces, subtle borders and restrained shadows.
+- Use pink-tinted neutral surfaces, subtle borders and restrained shadows; never put text on the raw brand pink.
 - Use reaction and option colors for chart bars and answer accents, not for full backgrounds.
 - Kiosk: large type readable from a distance, answer targets of 125px (faces and stars) and 240px (poll images), specific layouts for short viewports (height ≤ 520px) and narrow tall phones.
 - Use the shadcn/ui `Sidebar` for the admin navigation; it becomes a `Sheet` drawer on mobile.

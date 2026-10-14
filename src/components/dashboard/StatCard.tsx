@@ -31,7 +31,7 @@ export function StatCard({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <h2 className={cn("text-sm", highlighted ? "text-highlight-foreground/85" : "text-muted-foreground")}>
+        <h2 className={cn("text-sm", highlighted ? "text-highlight-foreground" : "text-muted-foreground")}>
           {label}
         </h2>
         <Icon
@@ -42,7 +42,7 @@ export function StatCard({
       <p className="flex items-baseline gap-1.5">
         <span className="text-4xl font-bold tracking-tight">{value}</span>
         {suffix && (
-          <span className={cn("text-lg", highlighted ? "text-highlight-foreground/70" : "text-muted-foreground")}>
+          <span className={cn("text-lg", highlighted ? "text-highlight-foreground" : "text-muted-foreground")}>
             {suffix}
           </span>
         )}
@@ -50,7 +50,7 @@ export function StatCard({
       <p
         className={cn(
           "text-sm",
-          highlighted && "text-highlight-foreground/85",
+          highlighted && "text-highlight-foreground",
           !highlighted && hintTone === "success" && "text-success-foreground",
           !highlighted && hintTone === "muted" && "text-muted-foreground",
         )}
