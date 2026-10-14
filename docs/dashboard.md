@@ -84,6 +84,8 @@ Rounded corners (~16px), generous padding, icons outlined in the top right.
 
 ## 3. Survey card design
 
+> **Superseded by the Survey Card Redesign** (`docs/survey-card.md`). The card is now one panel with a "…" actions menu (shared with the surveys table as `SurveyActionsMenu`), the current question as an option list (`OptionList`: small face / stars / plain label + count + percentage, best option first) and a pager with the survey total. The nested results panel, the copy link and edit buttons, the bars (`MetricBar`) and the three chart components below were removed. The rest of this section describes the original design.
+
 All three cards share one shell; only the chart inside the results panel changes.
 
 ```

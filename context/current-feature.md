@@ -1,18 +1,31 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Survey Card Redesign
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Extract `SurveyRowMenu` to a shared `SurveyActionsMenu` (`src/components/surveys/SurveyActionsMenu.tsx`) used by the table, the stacked list and the dashboard card, with no visual or behavior change in `/surveys`
+- `SurveyCard` as one card with no nested panel: title (`line-clamp-2`), meta line with code · status dot + Activa / Inactiva, and an outline "…" trigger on the right (Edit, Copy link, Copy code, Move to draft, Delete…)
+- Remove from the card: description, copy link and edit buttons, "Resumen de respuestas", copy code icon, separator and "Respuestas totales"
+- Question as an unnumbered `h4` in an `aria-live` wrapper; rating average on the same line
+- New `OptionList` replacing the three charts: rows with icon (small face / `StarRow` / none for poll) + label + count + percentage, row dividers, archived options last and dimmed, `0` / `0%` for options with no answers
+- `sortOptionsForList(category, options)` in `charts.ts`: satisfaction and rating best first, poll in stored order, archived last
+- `ReactionFace` gets an optional `size` prop (`md` default keeps the form unchanged)
+- Pager at the bottom (`mt-auto`): outline prev / next buttons, "Pregunta X de Y · N respuestas" with `metrics.totalResponses`; one question shows only the total; Arrow keys still work; dots and `aria-roledescription` removed
+- `SurveyGrid` owns one `DeleteSurveyDialog` (stays on `/dashboard`); after Move to draft or delete, focus moves to the surveys section heading; `activeSurveyCount` passed down as `activeCount`
+- `SurveyCardSkeleton` matches the new card
+- Delete unused charts / `MetricBar` (and `progress.tsx` if unused) and unused messages in en / es; no new strings; separators from a constant or message; update `docs/dashboard.md`
+- `yarn lint`, `tsc --noEmit` and `yarn build` pass; checked at 375 / 768 / 1280, light / dark, English / Spanish, keyboard
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/survey-card-redesign-spec.md`; research: `docs/survey-card.md`; mockup: `context/screenshots/card-list-proposal.png` (Propuesta 3, but the copy link / edit buttons become the "…" menu)
+- The dashboard only lists active surveys, so on a card the menu always shows "Move to draft" and a card leaves the grid after Move to draft or delete
+- The delete dialog must live in `SurveyGrid`, not in the card, because the card unmounts when `/dashboard` revalidates
+- Keep `CopyButton` (used by `SharePanel`); grep every message key before removing it from both locales (parity check)
+- Decisions to keep: no description on the card, pager shows the survey total, poll options are not sorted by count
 
 ## History
 

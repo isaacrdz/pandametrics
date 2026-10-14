@@ -10,7 +10,7 @@ import {
 } from "@/components/surveys/table/SurveyRowParts";
 import type { RowControls } from "@/components/surveys/table/row-controls";
 import { SurveyCheckbox } from "@/components/surveys/table/SurveyCheckbox";
-import { SurveyRowMenu } from "@/components/surveys/table/SurveyRowMenu";
+import { SurveyActionsMenu } from "@/components/surveys/SurveyActionsMenu";
 import type { SurveyRow } from "@/lib/surveys/list";
 
 interface SurveysListProps {
@@ -39,7 +39,7 @@ export function SurveysList({ rows, now, controls }: SurveysListProps) {
             />
             <SurveyDot colorIndex={row.colorIndex} />
             <SurveyName row={row} className="flex-1" />
-            <SurveyRowMenu row={row} activeCount={controls.activeCount} onDelete={controls.onDelete} />
+            <SurveyActionsMenu survey={row} activeCount={controls.activeCount} onDelete={controls.onDelete} />
           </div>
           <div className="flex flex-wrap items-center gap-2 pr-2 pl-12">
             <SurveyTypeBadge category={row.category} />

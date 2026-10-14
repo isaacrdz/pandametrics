@@ -65,10 +65,7 @@
     "footer": "Panda Metrics · Tus opiniones, medibles"
   },
   "surveyCard": {
-    "copyLink": "Copiar enlace público",
-    "linkCopied": "Enlace copiado",
-    "edit": "Ver / Editar encuesta",
-    "editLabel": "Ver / Editar encuesta: {name}"
+    "linkCopied": "Enlace copiado"
   },
   "surveys": {
     "title": "Todas las encuestas",
@@ -157,23 +154,17 @@
     }
   },
   "results": {
-    "title": "Resumen de respuestas",
-    "code": "código:",
-    "copyCode": "Copiar código",
     "codeCopied": "Código copiado",
     "active": "Activa",
     "inactive": "Inactiva",
     "previous": "Pregunta anterior",
     "next": "Pregunta siguiente",
     "questionOf": "Pregunta {current} de {total}",
-    "total": "Respuestas totales",
-    "noQuestions": "Esta encuesta no tiene preguntas.",
-    "carousel": "carrusel"
+    "noQuestions": "Esta encuesta no tiene preguntas."
   },
   "charts": {
     "archived": "{label} (eliminada)",
-    "stars": "{count, plural, one {# estrella} other {# estrellas}}",
-    "barLabel": "{label}: {count, plural, one {# respuesta} other {# respuestas}} ({share, number, percent})"
+    "stars": "{count, plural, one {# estrella} other {# estrellas}}"
   },
   "dateRange": {
     "7d": "Últimos 7 días",

@@ -65,10 +65,7 @@
     "footer": "Panda Metrics · Your feedback, made measurable"
   },
   "surveyCard": {
-    "copyLink": "Copy public link",
-    "linkCopied": "Link copied",
-    "edit": "View / Edit survey",
-    "editLabel": "View / Edit survey: {name}"
+    "linkCopied": "Link copied"
   },
   "surveys": {
     "title": "All surveys",
@@ -157,23 +154,17 @@
     }
   },
   "results": {
-    "title": "Response summary",
-    "code": "code:",
-    "copyCode": "Copy code",
     "codeCopied": "Code copied",
     "active": "Active",
     "inactive": "Inactive",
     "previous": "Previous question",
     "next": "Next question",
     "questionOf": "Question {current} of {total}",
-    "total": "Total responses",
-    "noQuestions": "This survey has no questions.",
-    "carousel": "carousel"
+    "noQuestions": "This survey has no questions."
   },
   "charts": {
     "archived": "{label} (removed)",
-    "stars": "{count, plural, one {# star} other {# stars}}",
-    "barLabel": "{label}: {count, plural, one {# response} other {# responses}} ({share, number, percent})"
+    "stars": "{count, plural, one {# star} other {# stars}}"
   },
   "dateRange": {
     "7d": "Last 7 days",

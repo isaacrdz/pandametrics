@@ -1,61 +1,56 @@
 "use client";
 
-import Link from "next/link";
-import { PencilIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { CopyButton } from "@/components/dashboard/CopyButton";
 import { SurveyResults } from "@/components/dashboard/SurveyResults";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { SurveyActionsMenu, type SurveyActionsTarget } from "@/components/surveys/SurveyActionsMenu";
 import type { SurveyCardData } from "@/lib/dashboard";
+import { cn } from "@/lib/utils";
 
-const ICON_BUTTON_CLASS = "size-11 rounded-xl [&_svg:not([class*='size-'])]:size-5";
+interface SurveyCardProps extends SurveyCardData {
+  activeCount: number;
+  onDelete: (survey: SurveyActionsTarget) => void;
+  // The card leaves the dashboard when its survey is moved to draft
+  onRemoved: () => void;
+}
 
-export function SurveyCard({ survey, metrics, publicUrl }: SurveyCardData) {
-  const t = useTranslations("surveyCard");
+export function SurveyCard({ survey, metrics, publicUrl, activeCount, onDelete, onRemoved }: SurveyCardProps) {
+  const t = useTranslations("results");
 
   return (
     <article
       aria-labelledby={`survey-${survey.id}`}
-      className="flex flex-col gap-6 rounded-3xl border border-card-border bg-card p-5 sm:p-8"
+      className="flex h-full flex-col gap-5 rounded-3xl border border-card-border bg-card p-5 sm:p-6"
     >
       <header className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h3 id={`survey-${survey.id}`} className="text-xl font-bold text-foreground sm:text-2xl">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h3 id={`survey-${survey.id}`} className="line-clamp-2 text-lg font-bold text-foreground sm:text-xl">
             {survey.name}
           </h3>
-          {survey.description && <p className="mt-1.5 text-muted-foreground">{survey.description}</p>}
+          <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+            <span className="font-mono tracking-wide">{survey.code}</span>
+            <span aria-hidden>·</span>
+            <span className="flex items-center gap-1.5">
+              <span
+                aria-hidden
+                className={cn(
+                  "size-2 rounded-full",
+                  survey.isActive ? "bg-success shadow-[0_0_8px_var(--success)]" : "bg-muted-foreground/50",
+                )}
+              />
+              {survey.isActive ? t("active") : t("inactive")}
+            </span>
+          </p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <CopyButton
-            icon="link"
-            value={publicUrl}
-            label={t("copyLink")}
-            successMessage={t("linkCopied")}
-            className={`${ICON_BUTTON_CLASS} border border-card-border bg-card text-primary hover:bg-accent hover:text-primary`}
-          />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                asChild
-                size="icon"
-                className={`${ICON_BUTTON_CLASS} shadow-[0_10px_24px_-12px_var(--primary)]`}
-              >
-                <Link href={`/surveys/${survey.id}`} aria-label={t("editLabel", { name: survey.name })}>
-                  <PencilIcon aria-hidden />
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t("edit")}</TooltipContent>
-          </Tooltip>
-        </div>
+        <SurveyActionsMenu
+          survey={{ id: survey.id, name: survey.name, code: survey.code, isActive: survey.isActive, publicUrl }}
+          activeCount={activeCount}
+          onDelete={onDelete}
+          onStatusChanged={(isActive) => !isActive && onRemoved()}
+          triggerVariant="outline"
+          triggerClassName="shrink-0 rounded-xl border-card-border"
+        />
       </header>
-      <SurveyResults
-        category={survey.category}
-        code={survey.code}
-        isActive={survey.isActive}
-        metrics={metrics}
-      />
+      <SurveyResults category={survey.category} metrics={metrics} />
     </article>
   );
 }

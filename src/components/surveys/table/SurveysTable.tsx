@@ -11,7 +11,7 @@ import {
 } from "@/components/surveys/table/SurveyRowParts";
 import type { RowControls } from "@/components/surveys/table/row-controls";
 import { SurveyCheckbox } from "@/components/surveys/table/SurveyCheckbox";
-import { SurveyRowMenu } from "@/components/surveys/table/SurveyRowMenu";
+import { SurveyActionsMenu } from "@/components/surveys/SurveyActionsMenu";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { RangeKey } from "@/lib/date-range";
 import type { SurveyRow } from "@/lib/surveys/list";
@@ -101,7 +101,7 @@ export function SurveysTable({ rows, now, range, controls }: SurveysTableProps) 
               <SurveyUpdatedAt updatedAt={row.updatedAt} now={now} />
             </TableCell>
             <TableCell className="py-4 pr-4 text-right">
-              <SurveyRowMenu row={row} activeCount={controls.activeCount} onDelete={controls.onDelete} />
+              <SurveyActionsMenu survey={row} activeCount={controls.activeCount} onDelete={controls.onDelete} />
             </TableCell>
           </TableRow>
         ))}

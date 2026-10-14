@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { ArrowRightIcon, ClipboardListIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -18,13 +19,24 @@ interface DashboardSectionProps {
 
 export function DashboardSection({ cards, activeSurveyCount, query, range }: DashboardSectionProps) {
   const t = useTranslations("dashboard");
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  // Wait for the dialog or menu to finish restoring focus before moving it
+  function focusHeading() {
+    requestAnimationFrame(() => headingRef.current?.focus());
+  }
 
   return (
     <section aria-labelledby="surveys-title" className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-baseline gap-4">
-            <h2 id="surveys-title" className="text-2xl font-bold text-foreground sm:text-3xl">
+            <h2
+              ref={headingRef}
+              id="surveys-title"
+              tabIndex={-1}
+              className="rounded-md text-2xl font-bold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-3xl"
+            >
               {t("surveys.title")}
             </h2>
             {/* The dashboard only lists active surveys; drafts live in the table */}
@@ -52,6 +64,8 @@ export function DashboardSection({ cards, activeSurveyCount, query, range }: Das
           cards={cards}
           query={query}
           clearSearchHref={range === DEFAULT_RANGE ? "/dashboard" : `/dashboard?range=${range}`}
+          activeCount={activeSurveyCount}
+          onCardRemoved={focusHeading}
         />
       )}
     </section>

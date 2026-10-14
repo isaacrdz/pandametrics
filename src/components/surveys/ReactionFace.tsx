@@ -11,19 +11,27 @@ const FACE_PATHS: Record<ReactionValue, string[]> = {
   INCREDIBLE: ["M15 27 Q24 38 33 27"],
 };
 
+const SIZE_CLASSES = {
+  // Row icon in the dashboard option list
+  sm: "size-7 border",
+  md: "size-12 border-2 shadow-[0_8px_24px_-10px_var(--face-color)] sm:size-16",
+};
+
 interface ReactionFaceProps {
   value: ReactionValue;
   color: string;
+  size?: keyof typeof SIZE_CLASSES;
   className?: string;
 }
 
-export function ReactionFace({ value, color, className }: ReactionFaceProps) {
+export function ReactionFace({ value, color, size = "md", className }: ReactionFaceProps) {
   return (
     <span
       aria-hidden
       style={{ "--face-color": color } as CSSProperties}
       className={cn(
-        "flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-(--face-color)/45 bg-(--face-color)/12 text-(--face-color) shadow-[0_8px_24px_-10px_var(--face-color)] sm:size-16",
+        "flex shrink-0 items-center justify-center rounded-full border-(--face-color)/45 bg-(--face-color)/12 text-(--face-color)",
+        SIZE_CLASSES[size],
         className,
       )}
     >
