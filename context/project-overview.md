@@ -1,10 +1,10 @@
 # Panda Metrics — Product & Technical Overview
 
-Panda Metrics rebuilds the Kraquen surveys module as a standalone product. It is organized around three pillars: feedback collection (kiosk, link and QR), survey management, and reliable metrics. Every survey belongs to one of three categories: **Satisfaction** (faces), **Rating** (1 to 5 stars) or **Poll** (options defined by the creator).
+Panda Metrics is a new, standalone survey product built from scratch (inspired by the Kraquen surveys module, but with no shared data or code). It is organized around three pillars: feedback collection (kiosk, link and QR), survey management, and reliable metrics. Every survey belongs to one of three categories: **Satisfaction** (faces), **Rating** (1 to 5 stars) or **Poll** (options defined by the creator).
 
-The most important architectural decision is to keep Kraquen's MongoDB document model (questions and answer options embedded in the survey, responses referencing them by ObjectId) and manage it with Prisma ORM 6, the latest Prisma version with stable MongoDB support. That keeps historical data compatible while giving the project typed models and queries. On top of that model, Panda fixes the known data risks: options are archived instead of removed, responses carry a snapshot of the answer they chose, every query is scoped to an organization, and metrics are always calculated in the user's timezone.
+The most important architectural decision is a relational model in **Neon PostgreSQL**, managed with **Prisma ORM 7**. Surveys, questions, answer options, responses and response items are tables with real foreign keys and unique constraints, so the database itself guarantees the critical rules (one answer per question per response, items that always point to an existing option). Every structural change goes through committed Prisma migrations. On top of that model, Panda fixes the known data risks: options are archived instead of removed, responses carry a snapshot of the answer they chose, every query is scoped to an organization, and metrics are always calculated in the user's timezone.
 
-Below is an implementation-oriented overview: architecture, Prisma models, metrics engine, API design, migration from Kraquen and a suggested development roadmap. The feature-level detail lives in `panda-metrics-project-spec.md`.
+Below is an implementation-oriented overview: architecture, Prisma models, metrics engine, API design and a suggested development roadmap. The feature-level detail lives in `panda-metrics-project-spec.md`.
 
 ## 1. Product overview
 
@@ -61,9 +61,9 @@ Phase 3 — Metrics
 
 Dashboard with date range, timezone, day-of-week and category filters, rating averages, per-survey metrics for inactive surveys, time series and CSV export.
 
-Phase 4 — Migration and hardening
+Phase 4 — Hardening
 
-Kraquen data migration, redirect for printed QR codes, rate limiting, i18n completeness, accessibility and device testing.
+Rate limiting, i18n completeness, accessibility and device testing.
 
 The kiosk comes first because it is the highest-value piece, it does not depend on auth, and it can be tested against seeded surveys. Metrics come after the data model (snapshots, archiving, organization scope) is stable, so the queries are written once.
 
@@ -79,8 +79,8 @@ Recommended stack:
 | Styling        | Tailwind CSS v4                         | CSS-first theme (`@theme` in `globals.css`), design tokens, dark mode |
 | Data fetching  | TanStack Query                          | Queries, mutations, cache and loading states          |
 | Forms          | react-hook-form + Zod                   | Survey editor; Zod schemas shared with the API        |
-| Database       | MongoDB (Atlas, replica set)            | Organizations, users, surveys and responses           |
-| ORM            | Prisma ORM 6 (MongoDB connector)        | Data models, queries and schema sync                  |
+| Database       | Neon PostgreSQL                         | Organizations, users, surveys, questions and responses |
+| ORM            | Prisma ORM 7 (`@prisma/adapter-pg`)     | Data models, queries and migrations                   |
 | Authentication | Auth.js / NextAuth v5 (Prisma adapter)  | Sessions, credentials and organization-scoped roles   |
 | Storage        | Amazon S3 (Panda bucket)                | Answer images via presigned URLs                      |
 | QR             | `barcode-detector`, `qrcode`            | Read QR on every browser; generate QR on the client   |
@@ -90,8 +90,8 @@ Recommended stack:
 Useful official documentation:
 
 - [Next.js documentation](https://nextjs.org/docs)
-- [Prisma ORM with MongoDB](https://www.prisma.io/docs/orm/overview/databases/mongodb)
-- [MongoDB documentation](https://www.mongodb.com/docs/)
+- [Prisma ORM 7 documentation](https://www.prisma.io/docs/orm/v7)
+- [Neon documentation](https://neon.com/docs)
 - [Auth.js documentation](https://authjs.dev/)
 - [shadcn/ui documentation](https://ui.shadcn.com/docs)
 - [Tailwind CSS documentation](https://tailwindcss.com/docs)
@@ -112,8 +112,8 @@ flowchart LR
   RH --> Auth[Auth.js session]
   RH --> RL[Rate limiter]
   RH --> Svc[Survey & metrics services]
-  Svc --> ORM[Prisma ORM 6]
-  ORM --> DB[(MongoDB)]
+  Svc --> ORM[Prisma ORM 7]
+  ORM --> DB[(Neon PostgreSQL)]
   RH --> S3[S3 presigned upload]
   Admin -. generates QR from publicUrl .-> QR[qrcode lib]
   Kiosk -. reads QR .-> BD[barcode-detector]
@@ -123,7 +123,7 @@ Data flow rules
 
 1. Public kiosk endpoints (`/public/:code`) are the only unauthenticated routes. They return a reduced survey and only work for active surveys.
 2. Every authenticated operation validates the session and the organization of the survey before reading or changing it.
-3. Metrics are calculated on the server with MongoDB aggregation pipelines, always with an explicit timezone. The client never computes counts.
+3. Metrics are calculated on the server with SQL aggregations in PostgreSQL, always with an explicit timezone. The client never computes counts.
 4. Request bodies are validated with the same Zod schemas the frontend uses.
 5. Database credentials, S3 keys and auth secrets stay on the server.
 6. `publicUrl` is derived from `PANDA_PUBLIC_URL`; the QR is generated on the client. Neither is stored.
@@ -148,14 +148,14 @@ The UI is available in English (default) and Spanish with next-intl. Full resear
 ### Core design decisions
 
 - Each survey has a `category` (`SATISFACTION`, `RATING`, `POLL`); the type of its answer options must match it (`REACTION`, `RATING`, or `TEXT` / `IMAGE`).
-- Kraquen's document model is kept: questions and answer options are embedded in the survey (Prisma composite types), and each response embeds its items. Ids stay as MongoDB ObjectIds.
-- Embedded questions and options carry their own ObjectId, generated by the service. Those ids are what responses reference, so they are never regenerated on update.
-- Questions and answer options are **archived** (`archivedAt`), never removed from the array, once they exist. Editing a survey keeps the ids of unchanged items; removed items are archived so their past answers still resolve.
+- Relational model in PostgreSQL: `Survey` → `Question` → `AnswerOption`, and `SurveyResponse` → `ResponseItem`. Questions and options are ordered by an explicit `position`, not by array order.
+- Ids are strings generated with `cuid()`.
+- Questions and answer options are **archived** (`archivedAt`), never deleted, once they exist. Editing a survey keeps the ids of unchanged items; removed items are archived so their past answers still resolve. Foreign keys from `ResponseItem` use `onDelete: Restrict`, so the database refuses to delete an option or question that has answers.
 - Each response item stores a snapshot (`answerType`, `answerValue`, `answerLabel`) of the chosen option, so relabeling an option never rewrites history.
-- A response answers each question at most once (validated by the API, since embedded arrays cannot carry a unique index).
+- A response answers each question at most once, enforced by `@@unique([responseId, questionId])`.
 - Every survey and response belongs to an organization; responses denormalize `organizationId` for fast queries.
-- Surveys are soft deleted (`deletedAt`); their responses are kept.
-- Responses are immutable: `createdAt` only.
+- Surveys are soft deleted (`deletedAt`); their questions, options and responses are kept.
+- Responses are immutable: `createdAt` only, stored as `timestamptz` so timezone conversions in SQL are exact.
 - `publicUrl`, QR image, `totalResponses`, `totalAnswers` and per-option `count` are computed, never stored.
 
 ### Entity relationship diagram
@@ -166,79 +166,85 @@ erDiagram
   ORGANIZATION ||--o{ SURVEY : owns
   ORGANIZATION ||--o{ SURVEY_RESPONSE : scopes
   USER ||--o{ SURVEY : creates
-  SURVEY ||--|{ QUESTION : embeds
-  QUESTION ||--|{ ANSWER_OPTION : embeds
+  SURVEY ||--|{ QUESTION : contains
+  QUESTION ||--|{ ANSWER_OPTION : offers
   SURVEY ||--o{ SURVEY_RESPONSE : receives
-  SURVEY_RESPONSE ||--|{ RESPONSE_ITEM : embeds
+  SURVEY_RESPONSE ||--|{ RESPONSE_ITEM : contains
+  QUESTION ||--o{ RESPONSE_ITEM : answered_in
+  ANSWER_OPTION ||--o{ RESPONSE_ITEM : chosen_in
 
   ORGANIZATION {
-    ObjectId id PK
+    string id PK
     string name
     int activeSurveyCount
     datetime createdAt
   }
   USER {
-    ObjectId id PK
+    string id PK
     string email UK
-    ObjectId organizationId FK
+    string organizationId FK
     enum role
   }
   SURVEY {
-    ObjectId id PK
+    string id PK
     string code UK
     string name
     enum category
     boolean isActive
     datetime deletedAt
-    ObjectId organizationId FK
-    ObjectId createdById FK
+    string organizationId FK
+    string createdById FK
   }
   QUESTION {
-    ObjectId id
+    string id PK
+    string surveyId FK
     string text
+    int position
     datetime archivedAt
   }
   ANSWER_OPTION {
-    ObjectId id
+    string id PK
+    string questionId FK
     enum type
     string value
     string label
     string color
+    int position
     datetime archivedAt
   }
   SURVEY_RESPONSE {
-    ObjectId id PK
-    ObjectId surveyId FK
-    ObjectId organizationId FK
+    string id PK
+    string surveyId FK
+    string organizationId FK
     enum source
     string deviceId
     datetime createdAt
   }
   RESPONSE_ITEM {
-    ObjectId questionId
-    ObjectId answerOptionId
+    string id PK
+    string responseId FK
+    string questionId FK
+    string answerOptionId FK
     enum answerType
     string answerValue
     string answerLabel
   }
 ```
 
-`QUESTION`, `ANSWER_OPTION` and `RESPONSE_ITEM` are embedded documents (composite types), not collections.
+## 5. Prisma ORM 7 schema (PostgreSQL on Neon)
 
-## 5. Prisma ORM schema (MongoDB)
-
-Prisma ORM 7 does not support MongoDB yet, so the project uses **Prisma ORM 6** with the MongoDB connector (MongoDB support in Prisma 8 is in early access; upgrading is a later decision). The following is a proposed baseline, including the models needed by the Auth.js Prisma adapter. It is designed for organization-scoped data (one organization per user).
+The following is a proposed baseline, including the models needed by the Auth.js Prisma adapter. It is designed for organization-scoped data (one organization per user).
 
 File: `prisma/schema.prisma`
 
 ```prisma
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
 }
 
 enum Role {
@@ -267,7 +273,7 @@ enum ResponseSource {
 }
 
 model Organization {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                String   @id @default(cuid())
   name              String
   activeSurveyCount Int      @default(0)
   createdAt         DateTime @default(now())
@@ -279,16 +285,16 @@ model Organization {
 }
 
 model User {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  id             String    @id @default(cuid())
   name           String?
   email          String?   @unique
   emailVerified  DateTime?
   image          String?
   passwordHash   String?
   role           Role      @default(MEMBER)
-  organizationId String?   @db.ObjectId
+  organizationId String?
 
-  organization Organization? @relation(fields: [organizationId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   accounts     Account[]
   sessions     Session[]
   surveys      Survey[]
@@ -300,114 +306,149 @@ model User {
 }
 
 model Account {
-  id                String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String  @db.ObjectId
+  userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String? @db.Text
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  @@id([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
-  userId       String   @db.ObjectId
+  userId       String
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   identifier String
-  token      String   @unique
+  token      String
   expires    DateTime
 
-  @@unique([identifier, token])
-}
-
-type AnswerOption {
-  id         String     @map("_id") @db.ObjectId
-  type       AnswerType
-  value      String
-  label      String
-  color      String     @default("")
-  archivedAt DateTime?
-}
-
-type Question {
-  id         String         @map("_id") @db.ObjectId
-  text       String
-  options    AnswerOption[]
-  archivedAt DateTime?
+  @@id([identifier, token])
 }
 
 model Survey {
-  id             String         @id @default(auto()) @map("_id") @db.ObjectId
-  organizationId String         @db.ObjectId
-  createdById    String         @db.ObjectId
-  code           String         @unique
+  id             String         @id @default(cuid())
+  organizationId String
+  createdById    String
+  code           String         @unique @db.VarChar(6)
   name           String
   description    String         @default("")
   category       SurveyCategory
   isActive       Boolean        @default(false)
-  questions      Question[]
   deletedAt      DateTime?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
-  organization Organization     @relation(fields: [organizationId], references: [id])
-  createdBy    User             @relation(fields: [createdById], references: [id])
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  createdBy    User             @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  questions    Question[]
   responses    SurveyResponse[]
 
   @@index([organizationId, isActive])
   @@index([organizationId, category])
+  @@index([organizationId, updatedAt(sort: Desc)])
 }
 
-type ResponseItem {
-  questionId     String     @db.ObjectId
-  answerOptionId String     @db.ObjectId
-  answerType     AnswerType
-  answerValue    String
-  answerLabel    String
+model Question {
+  id         String    @id @default(cuid())
+  surveyId   String
+  text       String
+  position   Int
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  survey  Survey         @relation(fields: [surveyId], references: [id], onDelete: Restrict)
+  options AnswerOption[]
+  items   ResponseItem[]
+
+  @@index([surveyId, position])
+}
+
+model AnswerOption {
+  id         String     @id @default(cuid())
+  questionId String
+  type       AnswerType
+  value      String
+  label      String
+  color      String     @default("")
+  position   Int
+  archivedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  question Question       @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  items    ResponseItem[]
+
+  @@index([questionId, position])
 }
 
 model SurveyResponse {
-  id             String         @id @default(auto()) @map("_id") @db.ObjectId
-  surveyId       String         @db.ObjectId
-  organizationId String         @db.ObjectId
-  items          ResponseItem[]
+  id             String         @id @default(cuid())
+  surveyId       String
+  organizationId String
   source         ResponseSource
   deviceId       String?
   locale         String?
   durationMs     Int?
-  createdAt      DateTime       @default(now())
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
 
-  survey       Survey       @relation(fields: [surveyId], references: [id])
-  organization Organization @relation(fields: [organizationId], references: [id])
+  survey       Survey         @relation(fields: [surveyId], references: [id], onDelete: Restrict)
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  items        ResponseItem[]
 
   @@index([surveyId, createdAt(sort: Desc)])
   @@index([organizationId, createdAt(sort: Desc)])
+}
+
+model ResponseItem {
+  id             String     @id @default(cuid())
+  responseId     String
+  questionId     String
+  answerOptionId String
+  answerType     AnswerType
+  answerValue    String
+  answerLabel    String
+
+  response     SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question     Question       @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  answerOption AnswerOption   @relation(fields: [answerOptionId], references: [id], onDelete: Restrict)
+
+  @@unique([responseId, questionId])
+  @@index([questionId])
+  @@index([answerOptionId])
 }
 ```
 
 ### Important schema notes
 
-**MongoDB requirements:** Prisma's MongoDB connector needs a replica set (MongoDB Atlas provides one; locally, run a single-node replica set). Relations between collections are emulated by Prisma, not enforced by MongoDB.
+**Neon connections:** Neon gives two connection strings. The **pooled** one (host with `-pooler`) is for the app at runtime, where many short-lived serverless functions connect. The **direct** one is for the Prisma CLI (migrations, Studio), because migrations need a session that the pooler does not provide.
 
-**Embedded ids:** composite types do not generate ids, so the service creates them with `new ObjectId().toHexString()` (from `bson`) for every new question and option.
+```bash
+# .env (never committed)
+DATABASE_URL="postgresql://USER:PASSWORD@ep-xxx-pooler.REGION.aws.neon.tech/panda?sslmode=require"
+DIRECT_URL="postgresql://USER:PASSWORD@ep-xxx.REGION.aws.neon.tech/panda?sslmode=require"
+```
 
-**Authentication:** the schema includes the Auth.js adapter models in their MongoDB form. Email/password requires password hashing (`passwordHash`, never plaintext), credential validation and account recovery. Credentials-based Auth.js generally requires JWT sessions, so the session strategy must be configured consistently. Organization and role go into the session so every service can scope queries.
+Use a separate Neon branch for development and preview deployments, so migrations are tried on a copy before they reach production.
+
+**Ordering:** questions and options carry `position` (0-based). The editor sends the order; the service rewrites `position` on save. Archived items keep their last position.
+
+**Authentication:** the schema includes the Auth.js adapter models in their PostgreSQL form. Email/password requires password hashing (`passwordHash`, never plaintext), credential validation and account recovery. Credentials-based Auth.js generally requires JWT sessions, so the session strategy must be configured consistently. Organization and role go into the session so every service can scope queries.
 
 **Category rules:** Prisma enforces the enums, but the rules that tie options to the survey category are validated with a Zod discriminated union on `category` in the service layer:
 
@@ -417,50 +458,86 @@ model SurveyResponse {
 
 Changing `category` is rejected once the survey has responses (`409`), because past metrics would no longer make sense.
 
-**Active-survey limit:** "Max 5 active surveys" is enforced with an atomic counter on the organization. Activating a survey runs, inside `prisma.$transaction`, `organization.updateMany({ where: { id, activeSurveyCount: { lt: 5 } }, data: { activeSurveyCount: { increment: 1 } } })`; if it updates 0 documents the limit is reached (`409`). Deactivating or deleting an active survey decrements the counter. Two concurrent requests cannot create a sixth active survey.
+**Active-survey limit:** "Max 5 active surveys" is enforced with an atomic counter on the organization. Activating a survey runs, inside `prisma.$transaction`, `organization.updateMany({ where: { id, activeSurveyCount: { lt: 5 } }, data: { activeSurveyCount: { increment: 1 } } })`; if it updates 0 rows the limit is reached (`409`). Deactivating or deleting an active survey decrements the counter. Two concurrent requests cannot create a sixth active survey. For a database-level guard, add `CHECK ("activeSurveyCount" BETWEEN 0 AND 5)` by editing the generated migration SQL before applying it (Prisma does not model `CHECK` constraints).
 
-**Preserving ids on update:** the update service merges questions and options by `id` and writes the whole `questions` array back. Items without `id` get a new ObjectId; items omitted from the payload stay in the array with `archivedAt` set. Retyping an option that has answers creates a new option and archives the old one.
+**Preserving ids on update:** the update service, inside one transaction, updates questions and options by `id`, creates rows for items without `id` and sets `archivedAt` on items omitted from the payload. Retyping an option that has answers creates a new option and archives the old one. Nothing that has answers is ever deleted; `onDelete: Restrict` makes the database refuse it.
 
-**Answer integrity:** the public submit service checks that each `answerOptionId` belongs to the given `questionId`, that the question belongs to the survey and is not archived, and that no question appears twice; then it copies `type`, `value` and `label` into the item snapshot.
+**Answer integrity:** the public submit service checks that each `answerOptionId` belongs to the given `questionId`, that the question belongs to the survey and is not archived; the unique constraint rejects a question answered twice. Then it copies `type`, `value` and `label` into the item snapshot and writes the response with its items in one nested `create`.
 
-**Code generation:** generate random A-Z0-9 codes, reject reserved tokens (`SURVEY`, `PUBLIC`, `PANDA`) and retry on the unique-index error (`P2002`).
+**Code generation:** generate random A-Z0-9 codes, reject reserved tokens (`SURVEY`, `PUBLIC`, `PANDA`) and retry on the unique-constraint error (`P2002`).
 
-**Soft delete:** every survey query filters `deletedAt: null` (Prisma on MongoDB also treats a missing field as `isSet: false`, so filter with `OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }]` for imported documents).
+**Soft delete:** every survey query filters `deletedAt: null`.
 
-### Prisma client
+### Prisma 7 configuration
+
+Prisma ORM 7 moves the connection URL out of `schema.prisma` into `prisma.config.ts` (used by the CLI), and the app connects through a driver adapter. The client is generated into the project (`src/generated/prisma`, git-ignored) instead of `node_modules/@prisma/client`.
+
+File: `prisma.config.ts`
+
+```ts
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+    seed: "tsx prisma/seed.ts",
+  },
+  datasource: {
+    // Direct (unpooled) connection: migrations and Studio
+    url: env("DIRECT_URL"),
+  },
+});
+```
 
 File: `src/server/prisma.ts`
 
 ```ts
-import { PrismaClient } from '@prisma/client';
+import "server-only";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@/generated/prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+function createPrismaClient() {
+  // Pooled connection for the app at runtime
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  return new PrismaClient({ adapter });
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 ```
 
-### Schema and data changes
+Packages: `prisma` (dev), `@prisma/client`, `@prisma/adapter-pg`, `dotenv` and `tsx` (dev, for the seed). If the app later runs on an edge runtime, `@prisma/adapter-neon` (Neon's serverless driver) can replace `@prisma/adapter-pg` without touching the queries.
 
-Prisma Migrate does not support MongoDB. Schema changes (collections and indexes) are applied by syncing the committed schema:
+### Database migration policy
+
+Mandatory project rule: **never use `prisma db push` and never change the database structure by hand** (not from the Neon console either). Every structural change is a committed, reviewable Prisma migration.
 
 ```bash
-# Sync collections and indexes with the schema
-npx prisma db push
+# Create and apply a development migration after editing the schema
+npx prisma migrate dev --name init
 
 # Regenerate the Prisma Client when needed
 npx prisma generate
+
+# Apply the committed migrations in production (deploy step)
+npx prisma migrate deploy
 
 # Inspect the database during development
 npx prisma studio
 ```
 
-Changes to existing data (renaming fields, backfills, the Kraquen import) are versioned scripts in `scripts/data/`, reviewed and committed, run in dev first and then in prod.
+Use `migrate dev` against the development Neon branch, review the generated SQL (add `CHECK` constraints or data backfills there when needed) and commit `schema.prisma` together with the `prisma/migrations/` folder. Production deployments only run `migrate deploy`; they never generate new migrations.
+
+Changes to existing data that are not part of a structural change (one-off backfills) are versioned scripts in `scripts/data/`, reviewed and committed, run against a Neon branch first and then in production.
 
 ## 6. Metrics engine
 
-Metrics are computed deterministically from `SurveyResponse` with a MongoDB aggregation pipeline, run through `prisma.surveyResponse.aggregateRaw`. The client only renders the results.
+Metrics are computed deterministically from `SurveyResponse` and `ResponseItem` with a SQL aggregation in PostgreSQL, run through `prisma.$queryRaw` (tagged template, so every value is a bound parameter). The client only renders the results. If the query grows, it can move to a `.sql` file with Prisma TypedSQL to get typed results.
 
 Inputs: survey (or all active surveys of the organization), date range `gte` / `lt` as `YYYY-MM-DD`, IANA timezone, optional `daysOfWeek`.
 
@@ -468,32 +545,30 @@ Per-option counts:
 
 ```ts
 // from / to: UTC instants of local midnight for gte / lt in `timezone`
-const rows = await prisma.surveyResponse.aggregateRaw({
-  pipeline: [
-    {
-      $match: {
-        surveyId: { $oid: surveyId },
-        createdAt: { $gte: { $date: from.toISOString() }, $lt: { $date: to.toISOString() } },
-      },
-    },
-    ...(isoDays.length
-      ? [{ $match: { $expr: { $in: [{ $isoDayOfWeek: { date: '$createdAt', timezone } }, isoDays] } } }]
-      : []),
-    { $unwind: '$items' },
-    {
-      $group: {
-        _id: { question: '$items.questionId', option: '$items.answerOptionId' },
-        count: { $sum: 1 },
-      },
-    },
-  ],
-});
+// isoDays: [] for every day, or ISO days (1 = Monday … 7 = Sunday)
+const rows = await prisma.$queryRaw<
+  { questionId: string; answerOptionId: string; count: bigint }[]
+>`
+  SELECT ri."questionId", ri."answerOptionId", COUNT(*) AS count
+  FROM "ResponseItem" ri
+  JOIN "SurveyResponse" sr ON sr.id = ri."responseId"
+  WHERE sr."surveyId" = ${surveyId}
+    AND sr."createdAt" >= ${from}
+    AND sr."createdAt" < ${to}
+    AND (
+      cardinality(${isoDays}::int[]) = 0
+      OR EXTRACT(ISODOW FROM sr."createdAt" AT TIME ZONE ${timezone})::int = ANY(${isoDays}::int[])
+    )
+  GROUP BY ri."questionId", ri."answerOptionId"
+`;
 ```
+
+`createdAt` is `timestamptz`, so `AT TIME ZONE` returns the local time in the viewer's timezone. PostgreSQL returns `COUNT(*)` as `bigint`; convert it with `Number(row.count)` before sending it to the client. The `(surveyId, createdAt)` index on `SurveyResponse` covers the range filter.
 
 Steps:
 
 1. Convert `gte` / `lt` to UTC instants at local midnight in the given timezone, and `daysOfWeek` to ISO days (1 = Monday … 7 = Sunday).
-2. Run the pipeline above.
+2. Run the query above.
 3. Load the survey's questions and options, including archived ones.
 4. Merge counts into the active options, returning `count: 0` for options without answers. For Rating surveys, also return the average per question.
 5. Archived options that have answers in the range are returned flagged as removed (using their stored label), so they never disappear silently.
@@ -504,9 +579,9 @@ Definitions:
 - `totalAnswers(question)` = sum of `count` over the question's options
 - `share(option)` = `count / totalAnswers` (0 when `totalAnswers` is 0)
 - `average(question)` (Rating only) = `Σ(value × count) / totalAnswers`, rounded to 1 decimal
-- `totalResponses(survey)` = number of `SurveyResponse` documents in the range (not the max of `totalAnswers`, which undercounts when submissions are partial)
+- `totalResponses(survey)` = number of `SurveyResponse` rows in the range (not the max of `totalAnswers`, which undercounts when submissions are partial)
 
-Time series use the same match stages and group by `{ $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone } }`.
+Time series use the same filters and group by `to_char(sr."createdAt" AT TIME ZONE ${timezone}, 'YYYY-MM-DD')`.
 
 Test with responses near midnight in different timezones, with `daysOfWeek` filters, with archived options and with partial submissions.
 
@@ -546,10 +621,10 @@ Use Next.js Route Handlers under `/api/v1`, with shared service functions for th
 | `/api/v1/surveys/[id]/metrics/timeseries`    | GET    | Yes  | Responses per day and per option                     |
 | `/api/v1/surveys/[id]/responses/export.csv`  | GET    | Yes  | CSV export                                           |
 | `/api/v1/surveys/public/[code]`              | GET    | No   | Reduced survey for the kiosk (404 / 400 inactive)    |
-| `/api/v1/surveys/public/[code]/answers`      | POST   | No   | Submit `answers: [{ question, answer }]` by id       |
+| `/api/v1/surveys/public/[code]/answers`      | POST   | No   | Submit `items: [{ questionId, answerOptionId }]`     |
 | `/api/v1/uploads/image`                      | POST   | Yes  | Presigned S3 URL for answer images                   |
 
-The API keeps Kraquen's payload shape (nested `questions[].answers[]`); the services map it to the Prisma models (`questions[].options[]`, `items[]`).
+Payloads follow the Prisma models directly (`questions[].options[]` on surveys, `items[]` on responses), so the services need no mapping layer.
 
 Dashboard request body:
 
@@ -575,22 +650,7 @@ Dashboard request body:
 7. Rate limit public submissions by IP and `deviceId`, and rate limit auth endpoints.
 8. Return consistent status codes: 400 validation / inactive, 401 unauthenticated, 404 not found, 409 active limit, 429 rate limited.
 
-## 9. Migration from Kraquen
-
-Only applies if historical data is moved (see Open Decisions). It is a versioned data script in `scripts/data/`, run first against a copy of production data. Since both sides are MongoDB, ObjectIds are kept as they are.
-
-1. Read Kraquen's `Survey` and `SurveyClientAnswer` collections.
-2. Write each survey into Panda's `Survey` collection with the **same `_id`**, keeping the `_id` of every question and option (renaming `question` → `text` and `answers` → `options`).
-3. Remap `createdBy` with a `kraquenUserId → pandaUserId` table and set `organizationId` on surveys and responses; recompute `activeSurveyCount` per organization.
-4. Set `category`: surveys whose options are all reactions become `SATISFACTION`; any other survey becomes `POLL`, and its reaction options become `TEXT` options keeping label and color (Kraquen has no star ratings).
-5. Write each client answer as a `SurveyResponse` with the same `_id`, `source: KIOSK` (origin unknown) and one item per answer, filling the snapshot from the current option.
-6. Answers that point to options that no longer exist get an archived option added to that question with `label: '(deleted)'`, so every item still resolves.
-7. Copy answer images to Panda's S3 bucket and rewrite the option `value`.
-8. Drop the stored `qr` field (QR is generated on the client).
-9. Keep every `code` and redirect `app.kraquen.io/survey?code=X` to `<panda>/s?code=X` so printed QR codes keep working.
-10. Validate by comparing per-option counts on both dashboards for the same range, timezone and days of week.
-
-## 10. UI/UX specification
+## 9. UI/UX specification
 
 ### Main navigation
 
@@ -653,7 +713,7 @@ The same URLs serve both languages; the language comes from the browser's `local
 
 Dashboard filters live in the URL (`/dashboard?range=this-month&tz=America/Mexico_City&days=mon,tue,wed,thu,fri`), so a view can be shared.
 
-## 11. Visual design system
+## 10. Visual design system
 
 ### Brand palette
 
@@ -700,7 +760,7 @@ These colors live as CSS variables in `globals.css` (exposed through `@theme`), 
 - Include keyboard focus states and accessible labels for icon-only controls.
 - Use `Skeleton` loaders for asynchronous data and `Sonner` toast notifications for actions (link copied, survey saved, survey deleted, errors).
 
-## 12. Suggested project structure
+## 11. Suggested project structure
 
 ```
 src/
@@ -735,26 +795,30 @@ src/
 │   └── auth.ts
 ├── components/ui/    shadcn/ui components (generated, edited in place)
 ├── shared/           http client, DateRangeMenu, toaster, layout
-└── messages/         en.json, es.json (next-intl, same keys in both)
+├── messages/         en.json, es.json (next-intl, same keys in both)
+└── generated/prisma/ Prisma Client output (git-ignored, created by `prisma generate`)
 
 prisma/
 ├── schema.prisma
+├── migrations/       committed SQL migrations (never edited after they are applied)
 └── seed.ts
 
+prisma.config.ts      CLI config: schema path, migrations, seed, DIRECT_URL
+
 scripts/
-└── data/         versioned data scripts (backfills, import-kraquen.ts)
+└── data/         versioned data scripts (backfills)
 ```
 
 This structure is a starting point, not a requirement to create every folder immediately. Keep server-only code out of client components.
 
-## 13. Development checklist
+## 12. Development checklist
 
 ### Foundation
 
 - [ ] Initialize Next.js, TypeScript, Tailwind CSS v4, shadcn/ui (`npx shadcn@latest init`), TanStack Query and next-intl
 - [ ] next-intl without URL routing: language in `localStorage` (English default, Spanish), messages for every screen and the language switcher in the top bar
-- [ ] Configure MongoDB (Atlas or local replica set) and Prisma ORM 6
-- [ ] Sync collections and indexes with `prisma db push`
+- [ ] Configure Neon (production and development branches, pooled and direct URLs) and Prisma ORM 7 (`prisma.config.ts`, `@prisma/adapter-pg`, generated client)
+- [ ] Create and review the initial migration (`prisma migrate dev --name init`), including the active-limit `CHECK`
 - [ ] Configure Auth.js, organizations and roles
 - [ ] Shared Zod schemas (discriminated by category), reaction and rating constants
 
@@ -783,16 +847,14 @@ This structure is a starting point, not a requirement to create every folder imm
 - [ ] Per-survey metrics for inactive surveys
 - [ ] Time series and CSV export
 
-### Migration and release
+### Release
 
-- [ ] Kraquen import script and count comparison
-- [ ] Redirect from Kraquen's public survey URL
 - [ ] Test on iPad/Safari, Android/Chrome and a real kiosk device
 - [ ] Accessibility and responsive review
-- [ ] Test schema sync and data scripts against a clean database
+- [ ] Test migrations (`migrate deploy`) and data scripts against a clean Neon branch
 - [ ] Configure production environment and deployment
 
-## 14. Definition of done
+## 13. Definition of done
 
 The first production release should meet these criteria:
 
@@ -805,18 +867,16 @@ The first production release should meet these criteria:
 - Dashboard and per-survey metrics match the stored responses for any date range, timezone and day-of-week filter, for active and inactive surveys.
 - Users cannot read or change another organization's data by changing ids in API requests.
 - English and Spanish are complete, the language choice survives reloads, and pages are responsive and accessible.
-- If historical data is migrated, per-option counts match Kraquen for the same filters.
-- Schema changes come from the committed Prisma schema, and data changes run as versioned, reviewed scripts.
+- Database changes are managed through committed Prisma migrations (never `db push` or manual changes), production deployments use `prisma migrate deploy`, and data changes run as versioned, reviewed scripts.
 
-## 15. Open decisions
+## 14. Open decisions
 
 - Multiple organizations from day one? Is the 5-active limit per user or per organization?
-- Support emoji as reaction values (the Kraquen API allows it, the Kraquen UI rejects it)?
+- Support emoji as reaction values?
 - Must a public submission answer every question?
-- Migrate Kraquen's historical data or start empty?
 - Should a survey store its own `locale`, so the kiosk UI defaults to the language the questions are written in?
 - Final public domain for links and QR codes.
 - Spanish SEO for the marketing pages: the server renders English (language in `localStorage`), so only the English landing is indexed. If Spanish search traffic matters, add Spanish static routes for `(marketing)` only.
 - Standalone Next.js backend (this overview) or keep extending the existing Node/Express API?
 
-Final recommendation: build the kiosk first against seeded surveys, then survey management with the final data model (organization, archiving, snapshots, soft delete), then metrics, and import Kraquen data last. This delivers the most visible piece early and ensures the metrics are written once, on top of a data model that protects history.
+Final recommendation: build the kiosk first against seeded surveys, then survey management with the final data model (organization, archiving, snapshots, soft delete), then metrics. This delivers the most visible piece early and ensures the metrics are written once, on top of a data model that protects history.
