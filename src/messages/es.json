@@ -248,5 +248,54 @@
   },
   "ratings": {
     "label": "{value, plural, one {# estrella} other {# estrellas}}"
+  },
+  "landing": {
+    "nav": {
+      "label": "Principal",
+      "features": "Funciones",
+      "howItWorks": "Cómo funciona",
+      "signIn": "Iniciar sesión",
+      "signUp": "Crear cuenta"
+    },
+    "hero": {
+      "badge": "Feedback que mueve tu producto",
+      "title": "Entiende mejor a las personas que usan tu producto.",
+      "subtitle": "Panda Metrics convierte las respuestas de tus clientes en métricas simples, visuales y accionables. Pregunta, escucha y crece.",
+      "primaryCta": "Empieza gratis",
+      "secondaryCta": "Conoce más",
+      "noCard": "Sin tarjeta de crédito",
+      "quickSetup": "Configuración en minutos",
+      "statLabel": "Respuestas este mes",
+      "statDescription": "Ejemplo: {count} respuestas este mes, {growth} más"
+    },
+    "features": {
+      "eyebrow": "Todo lo que necesitas",
+      "title": "Feedback claro, decisiones confiables.",
+      "humanTitle": "Encuestas que se sienten humanas",
+      "humanText": "Crea experiencias de feedback claras y agradables con caras, estrellas o tus propias opciones.",
+      "metricsTitle": "Métricas fáciles de entender",
+      "metricsText": "Convierte cada respuesta en señales visuales para tomar mejores decisiones sin perder tiempo.",
+      "allTitle": "Todo en un solo lugar",
+      "allText": "Organiza tus encuestas, compártelas por enlace, QR o kiosco y descubre qué piensa realmente tu audiencia."
+    },
+    "how": {
+      "eyebrow": "Cómo funciona",
+      "title": "De la pregunta al hallazgo en tres pasos.",
+      "step1Title": "Crea una encuesta",
+      "step1Text": "Elige satisfacción, calificación u opción múltiple y escribe tus preguntas.",
+      "step2Title": "Compártela",
+      "step2Text": "Envía el enlace, imprime el QR o deja una tablet en modo kiosco.",
+      "step3Title": "Lee los resultados",
+      "step3Text": "Mira las respuestas por día, pregunta y opción, en tu zona horaria."
+    },
+    "cta": {
+      "eyebrow": "Listo para escuchar",
+      "title": "Haz preguntas. Descubre patrones. Crece con confianza.",
+      "button": "Crear mi cuenta"
+    },
+    "footer": {
+      "copyright": "© {year} Panda Metrics",
+      "tagline": "Feedback simple para equipos que escuchan."
+    }
   }
 }

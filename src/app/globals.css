@@ -162,6 +162,13 @@
   --star-empty: #4b5563;
 }
 
+/* In-page anchors (landing nav) scroll smoothly unless the user prefers reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Set by the inline locale script until LocaleProvider applies a non-default language */
 .locale-pending body {
   visibility: hidden;

@@ -23,6 +23,8 @@ const PAIRS = [
   ["accent-foreground", "accent", TEXT, "accent text (active nav, tiles)"],
   ["highlight-foreground", "highlight", TEXT, "highlight card"],
   ["inverse-foreground", "inverse", TEXT, "dark CTA banner"],
+  ["brand", "inverse", TEXT, "pink eyebrow on the dark CTA banner"],
+  ["primary", "card", TEXT, "card-colored buttons with pink text"],
   ["sidebar-foreground", "sidebar", TEXT, "sidebar items"],
   ["sidebar-accent-foreground", "sidebar-accent", TEXT, "active sidebar item"],
   ["success-foreground", "card", TEXT, "success text"],

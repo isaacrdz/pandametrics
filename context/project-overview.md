@@ -637,7 +637,7 @@ Recommended content order:
 ### Routes
 
 ```
-/
+/                                  public landing (marketing)
 ├── /s?code=AB12CD                 public kiosk
 ├── /login
 ├── /dashboard
@@ -650,6 +650,8 @@ Recommended content order:
 ```
 
 The same URLs serve both languages; the language comes from the browser's `localStorage` (see Internationalization in section 3).
+
+`/` is the public landing (`(marketing)` route group: its own nav and footer, no sidebar, fully static). Its account buttons point to `/dashboard` through `LANDING_LINKS` until `/login` exists.
 
 Dashboard filters live in the URL (`/dashboard?range=this-month&tz=America/Mexico_City&days=mon,tue,wed,thu,fri`), so a view can be shared.
 
@@ -707,6 +709,9 @@ src/
 ├── i18n/             config.ts, request.ts, LocaleProvider.tsx, locale-script.ts
 ├── app/
 │   ├── layout.tsx    root layout: inline locale script, LocaleProvider, theme
+│   ├── (marketing)/
+│   │   ├── layout.tsx    landing nav + footer
+│   │   └── page.tsx      landing at /
 │   ├── (public)/
 │   │   └── s/page.tsx
 │   ├── (app)/
@@ -814,6 +819,7 @@ The first production release should meet these criteria:
 - Migrate Kraquen's historical data or start empty?
 - Should a survey store its own `locale`, so the kiosk UI defaults to the language the questions are written in?
 - Final public domain for links and QR codes.
+- Spanish SEO for the marketing pages: the server renders English (language in `localStorage`), so only the English landing is indexed. If Spanish search traffic matters, add Spanish static routes for `(marketing)` only.
 - Standalone Next.js backend (this overview) or keep extending the existing Node/Express API?
 
 Final recommendation: build the kiosk first against seeded surveys, then survey management with the final data model (organization, archiving, snapshots, soft delete), then metrics, and import Kraquen data last. This delivers the most visible piece early and ensures the metrics are written once, on top of a data model that protects history.

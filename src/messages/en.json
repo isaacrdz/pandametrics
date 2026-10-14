@@ -248,5 +248,54 @@
   },
   "ratings": {
     "label": "{value, plural, one {# star} other {# stars}}"
+  },
+  "landing": {
+    "nav": {
+      "label": "Main",
+      "features": "Features",
+      "howItWorks": "How it works",
+      "signIn": "Sign in",
+      "signUp": "Create account"
+    },
+    "hero": {
+      "badge": "Feedback that moves your product",
+      "title": "Understand the people who use your product.",
+      "subtitle": "Panda Metrics turns your customers' answers into simple, visual, actionable metrics. Ask, listen and grow.",
+      "primaryCta": "Start for free",
+      "secondaryCta": "Learn more",
+      "noCard": "No credit card",
+      "quickSetup": "Set up in minutes",
+      "statLabel": "Responses this month",
+      "statDescription": "Example: {count} responses this month, up {growth}"
+    },
+    "features": {
+      "eyebrow": "Everything you need",
+      "title": "Clear feedback, reliable decisions.",
+      "humanTitle": "Surveys that feel human",
+      "humanText": "Create friendly feedback experiences with faces, stars or your own options.",
+      "metricsTitle": "Metrics that are easy to read",
+      "metricsText": "Turn every answer into visual signals and make better decisions without losing time.",
+      "allTitle": "Everything in one place",
+      "allText": "Organize your surveys, share them by link, QR or kiosk, and find out what your audience really thinks."
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "From question to insight in three steps.",
+      "step1Title": "Create a survey",
+      "step1Text": "Pick satisfaction, rating or poll and write your questions.",
+      "step2Title": "Share it",
+      "step2Text": "Send the link, print the QR or leave a tablet in kiosk mode.",
+      "step3Title": "Read the results",
+      "step3Text": "See answers by day, question and option, in your timezone."
+    },
+    "cta": {
+      "eyebrow": "Ready to listen",
+      "title": "Ask questions. Find patterns. Grow with confidence.",
+      "button": "Create my account"
+    },
+    "footer": {
+      "copyright": "© {year} Panda Metrics",
+      "tagline": "Simple feedback for teams that listen."
+    }
   }
 }
