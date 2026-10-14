@@ -18,8 +18,9 @@ export function HeroVisual() {
   const count = format.number(STAT_COUNT);
   const growth = format.number(STAT_GROWTH, { style: "percent", maximumFractionDigits: 1 });
 
+  // Capped while the hero is stacked (below lg) so the panda does not fill the whole screen
   return (
-    <div className="rounded-[2rem] bg-card p-3 shadow-[0_40px_80px_-40px_color-mix(in_oklch,var(--brand)_70%,transparent)] ring-1 ring-card-border sm:p-4">
+    <div className="mx-auto w-full max-w-xl rounded-[2rem] bg-card p-3 shadow-[0_40px_80px_-40px_color-mix(in_oklch,var(--brand)_70%,transparent)] ring-1 ring-card-border sm:p-4 lg:max-w-none">
       {/* Bottom padding leaves room for the stat card so it covers the hoodie, not the face */}
       <div className="relative overflow-hidden rounded-[1.6rem] bg-brand pb-32">
         <Image
@@ -27,7 +28,7 @@ export function HeroVisual() {
           alt=""
           fetchPriority="high"
           loading="eager"
-          sizes="(min-width: 1024px) 480px, 90vw"
+          sizes="(min-width: 1024px) 480px, (min-width: 640px) 544px, 90vw"
           placeholder="blur"
           className="-mt-[16%] h-auto w-full"
         />

@@ -31,6 +31,7 @@ const PAIRS = [
   ["destructive", "card", TEXT, "destructive text"],
   ["ring", "background", UI, "focus ring on the page"],
   ["ring", "card", UI, "focus ring on cards"],
+  ["brand", "inverse", UI, "focus ring on the dark CTA banner"],
 ];
 
 function readBlock(css, selector) {

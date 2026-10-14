@@ -8,7 +8,7 @@ export function LandingFooter() {
 
   return (
     <footer className="bg-accent/40">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 border-t border-card-border px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:justify-between md:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 border-t border-card-border px-4 py-8 text-center text-sm text-muted-foreground md:flex-row md:justify-between md:text-left md:px-8">
         <p>{t("copyright", { year: COPYRIGHT_YEAR })}</p>
         <p>{t("tagline")}</p>
       </div>

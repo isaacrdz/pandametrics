@@ -4,8 +4,9 @@ import Link from "next/link";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { HeroVisual } from "@/components/landing/HeroVisual";
-import { LANDING_LINKS, SECTION_IDS } from "@/components/landing/landing-links";
+import { FOCUS_RING, LANDING_LINKS, SECTION_IDS } from "@/components/landing/landing-links";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function Hero() {
   const t = useTranslations("landing.hero");
@@ -18,20 +19,20 @@ export function Hero() {
           {t("badge")}
         </span>
 
-        <h1 className="text-5xl leading-[1.02] font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+        <h1 className="text-[2.75rem] leading-[1.05] font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
           {t("title")}
         </h1>
 
         <p className="max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl">{t("subtitle")}</p>
 
-        <div className="flex flex-wrap gap-4">
-          <Button asChild className="h-14 gap-2 rounded-2xl px-7 text-base font-semibold shadow-[0_18px_36px_-16px_var(--primary)]">
+        <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
+          <Button asChild className={cn("h-14 w-full gap-2 rounded-2xl px-7 text-base font-semibold shadow-[0_18px_36px_-16px_var(--primary)] md:w-auto", FOCUS_RING)}>
             <Link href={LANDING_LINKS.start}>
               {t("primaryCta")}
               <ArrowRightIcon aria-hidden className="size-5" />
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-14 rounded-2xl border-card-border bg-card px-7 text-base font-semibold text-primary hover:bg-accent hover:text-primary">
+          <Button asChild variant="outline" className={cn("h-14 w-full rounded-2xl border-card-border bg-card px-7 text-base font-semibold text-primary hover:bg-accent hover:text-primary md:w-auto", FOCUS_RING)}>
             <a href={`#${SECTION_IDS.features}`}>{t("secondaryCta")}</a>
           </Button>
         </div>

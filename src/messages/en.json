@@ -250,12 +250,15 @@
     "label": "{value, plural, one {# star} other {# stars}}"
   },
   "landing": {
+    "skipToContent": "Skip to content",
     "nav": {
       "label": "Main",
       "features": "Features",
       "howItWorks": "How it works",
       "signIn": "Sign in",
-      "signUp": "Create account"
+      "signUp": "Create account",
+      "menu": "Open menu",
+      "menuTitle": "Menu"
     },
     "hero": {
       "badge": "Feedback that moves your product",
