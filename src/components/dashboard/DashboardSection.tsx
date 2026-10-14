@@ -1,6 +1,7 @@
 "use client";
 
-import { ClipboardListIcon } from "lucide-react";
+import Link from "next/link";
+import { ArrowRightIcon, ClipboardListIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CollectionsToolbar } from "@/components/dashboard/CollectionsToolbar";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -22,9 +23,19 @@ export function DashboardSection({ cards, activeSurveyCount, query, range }: Das
     <section aria-labelledby="surveys-title" className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 id="surveys-title" className="text-2xl font-bold text-foreground sm:text-3xl">
-            {t("surveys.title")}
-          </h2>
+          <div className="flex items-baseline gap-4">
+            <h2 id="surveys-title" className="text-2xl font-bold text-foreground sm:text-3xl">
+              {t("surveys.title")}
+            </h2>
+            {/* The dashboard only lists active surveys; drafts live in the table */}
+            <Link
+              href="/surveys"
+              className="inline-flex items-center gap-1 rounded-md text-sm font-semibold text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {t("surveys.viewAll")}
+              <ArrowRightIcon aria-hidden className="size-4" />
+            </Link>
+          </div>
           <p className="mt-1 text-muted-foreground">{t("surveys.subtitle")}</p>
         </div>
         <CollectionsToolbar query={query} range={range} />

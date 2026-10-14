@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChartColumnIcon,
   ClipboardListIcon,
   LayoutGridIcon,
   SlidersHorizontalIcon,
@@ -21,7 +20,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
-type NavKey = "dashboard" | "surveys" | "history" | "settings";
+type NavKey = "dashboard" | "surveys" | "settings";
 
 interface NavItem {
   key: NavKey;
@@ -41,8 +40,7 @@ const NAV_GROUPS: NavGroup[] = [
     key: "workspace",
     items: [
       { key: "dashboard", href: "/dashboard", icon: LayoutGridIcon, enabled: true },
-      { key: "surveys", href: "/surveys", icon: ClipboardListIcon, enabled: false },
-      { key: "history", href: "/history", icon: ChartColumnIcon, enabled: false },
+      { key: "surveys", href: "/surveys", icon: ClipboardListIcon, enabled: true },
     ],
   },
   {

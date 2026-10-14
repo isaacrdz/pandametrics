@@ -459,6 +459,10 @@ export function getMockSurveyMetrics(survey: Survey, range: DateRange = LAST_30_
   };
 }
 
+export function countMockResponses(surveyId: string, range: DateRange = LAST_30_DAYS): number {
+  return MOCK_RESPONSES.filter((r) => r.surveyId === surveyId && inRange(r, range)).length;
+}
+
 export function getMockDashboardSummary(
   activeSurveyIds: string[],
   range: DateRange = LAST_30_DAYS,

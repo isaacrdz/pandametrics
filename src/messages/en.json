@@ -13,7 +13,6 @@
     "manage": "Manage",
     "dashboard": "Dashboard",
     "surveys": "Surveys",
-    "history": "History",
     "settings": "Settings",
     "comingSoon": "{title} · Coming soon"
   },
@@ -42,7 +41,8 @@
     },
     "surveys": {
       "title": "Your surveys",
-      "subtitle": "A snapshot of how your customers are feeling."
+      "subtitle": "A snapshot of how your customers are feeling.",
+      "viewAll": "View all"
     },
     "toolbar": {
       "search": "Search surveys",
@@ -69,6 +69,37 @@
     "linkCopied": "Link copied",
     "edit": "View / Edit survey",
     "editLabel": "View / Edit survey: {name}"
+  },
+  "surveys": {
+    "title": "All surveys",
+    "subtitle": "Manage your surveys and keep track of every response.",
+    "caption": "All surveys",
+    "toolbar": {
+      "range": "Date range"
+    },
+    "columns": {
+      "survey": "Survey",
+      "type": "Type",
+      "status": "Status",
+      "responses": "Responses",
+      "responsesRange": "Responses, {range}",
+      "updated": "Last updated"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "DRAFT": "Draft"
+    },
+    "noResponses": "No responses",
+    "updated": {
+      "today": "Today, {time}",
+      "yesterday": "Yesterday, {time}"
+    },
+    "empty": {
+      "title": "No surveys yet",
+      "description": "Create your first survey to start collecting feedback.",
+      "cta": "Create survey"
+    },
+    "loading": "Loading surveys"
   },
   "results": {
     "title": "Response summary",

@@ -61,6 +61,11 @@ export function getSurvey(organizationId: string, id: string): Survey | null {
   return survey && isVisible(survey, organizationId) ? survey : null;
 }
 
+// Every visible survey, active and draft (the survey table sorts and filters them)
+export function listSurveys(organizationId: string): Survey[] {
+  return [...getStore().values()].filter((survey) => isVisible(survey, organizationId));
+}
+
 // Insertion order: seeded surveys first, new ones at the end (the Map keeps it)
 export function listActiveSurveys(organizationId: string): Survey[] {
   return [...getStore().values()].filter((survey) => isVisible(survey, organizationId) && survey.isActive);

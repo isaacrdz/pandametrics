@@ -13,7 +13,6 @@
     "manage": "Administrar",
     "dashboard": "Dashboard",
     "surveys": "Encuestas",
-    "history": "Historial",
     "settings": "Configuración",
     "comingSoon": "{title} · Próximamente"
   },
@@ -42,7 +41,8 @@
     },
     "surveys": {
       "title": "Tus encuestas",
-      "subtitle": "Así se sienten tus clientes."
+      "subtitle": "Así se sienten tus clientes.",
+      "viewAll": "Ver todas"
     },
     "toolbar": {
       "search": "Buscar encuestas",
@@ -69,6 +69,37 @@
     "linkCopied": "Enlace copiado",
     "edit": "Ver / Editar encuesta",
     "editLabel": "Ver / Editar encuesta: {name}"
+  },
+  "surveys": {
+    "title": "Todas las encuestas",
+    "subtitle": "Administra tus encuestas y sigue cada respuesta.",
+    "caption": "Todas las encuestas",
+    "toolbar": {
+      "range": "Rango de fechas"
+    },
+    "columns": {
+      "survey": "Encuesta",
+      "type": "Tipo",
+      "status": "Estado",
+      "responses": "Respuestas",
+      "responsesRange": "Respuestas, {range}",
+      "updated": "Última actualización"
+    },
+    "status": {
+      "ACTIVE": "Activa",
+      "DRAFT": "Borrador"
+    },
+    "noResponses": "Sin respuestas",
+    "updated": {
+      "today": "Hoy, {time}",
+      "yesterday": "Ayer, {time}"
+    },
+    "empty": {
+      "title": "Aún no hay encuestas",
+      "description": "Crea tu primera encuesta para empezar a recibir feedback.",
+      "cta": "Crear encuesta"
+    },
+    "loading": "Cargando encuestas"
   },
   "results": {
     "title": "Resumen de respuestas",

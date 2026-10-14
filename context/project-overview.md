@@ -55,7 +55,7 @@ Code entry, QR scanning on every browser, one-question-at-a-time runner with fac
 
 Phase 2 — Survey management
 
-Auth and organizations, survey CRUD with category picker (Satisfaction, Rating, Poll), poll image upload, QR and public link panel, 5-active limit, history list.
+Auth and organizations, survey CRUD with category picker (Satisfaction, Rating, Poll), poll image upload, QR and public link panel, 5-active limit, survey table (search, filters and pagination).
 
 Phase 3 — Metrics
 
@@ -599,7 +599,6 @@ Panda Metrics            [ Search surveys…  ⌘K ]          [ + New survey ]
 
   Dashboard
   Surveys
-  History
   Settings
 ```
 
@@ -645,7 +644,6 @@ Recommended content order:
 ├── /surveys/new
 ├── /surveys/[id]
 ├── /surveys/[id]/metrics
-├── /history
 └── /settings
 ```
 
@@ -719,8 +717,7 @@ src/
 │   │   ├── surveys/page.tsx
 │   │   ├── surveys/new/page.tsx
 │   │   ├── surveys/[id]/page.tsx
-│   │   ├── surveys/[id]/metrics/page.tsx
-│   │   └── history/page.tsx
+│   │   └── surveys/[id]/metrics/page.tsx
 │   └── api/v1/
 │       ├── surveys/
 │       └── uploads/
@@ -776,7 +773,7 @@ This structure is a starting point, not a requirement to create every folder imm
 - [ ] Category picker and per-category question editor (faces, stars, poll options with image upload to S3)
 - [ ] QR panel generated on the client
 - [ ] Atomic 5-active limit
-- [ ] History list with search and pagination
+- [ ] Survey table with search, filters and pagination
 
 ### Metrics
 

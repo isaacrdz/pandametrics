@@ -1,7 +1,6 @@
 // Single data access point for the dashboard. Backed by the mock until Prisma exists.
 
 import { getDateRange, getTodayRange, type RangeKey } from "@/lib/date-range";
-import { normalizeSearch } from "@/lib/format";
 import {
   MOCK_CURRENT_ORGANIZATION,
   MOCK_CURRENT_USER,
@@ -10,6 +9,7 @@ import {
   getMockDashboardSummary,
   getMockSurveyMetrics,
 } from "@/lib/mock-data";
+import { matchesQuery } from "@/lib/surveys/search";
 import { listActiveSurveys } from "@/lib/surveys/service";
 import type {
   DashboardSummary,
@@ -49,15 +49,6 @@ export function getAppContext(): AppContext {
 export function getPublicSurveyUrl(code: string): string {
   const baseUrl = process.env.PANDA_PUBLIC_URL ?? "http://localhost:3000";
   return `${baseUrl.replace(/\/$/, "")}/s?code=${code}`;
-}
-
-function matchesQuery(survey: Survey, query: string): boolean {
-  if (!query) return true;
-  const normalized = normalizeSearch(query);
-  return (
-    normalizeSearch(survey.name).includes(normalized) ||
-    normalizeSearch(survey.code).includes(normalized)
-  );
 }
 
 export function getDashboardData(
