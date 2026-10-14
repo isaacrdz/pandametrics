@@ -1,28 +1,18 @@
-# Current Feature: Hide Dev Indicator
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `next.config.ts` sets `devIndicators: false` inside the existing `NextConfig` object (still wrapped by `withNextIntl`), with a short comment that errors still open the overlay and that static vs dynamic is checked in the `yarn build` route table (`○` / `◐` / `ƒ`)
-- The leftover `/* config options here */` boilerplate comment is removed
-- After restarting `yarn dev`, there is no floating Next.js "N" button at 375px or 1280px on `/` or `/dashboard`
-- A temporary runtime error in a Client Component still opens the Next.js error overlay (then reverted)
-- `yarn lint`, `tsc` and `yarn build` pass, and the build route table is unchanged
+<!-- Goals & requirements -->
 
 ## Notes
 
-- No spec: loaded inline from the research in `docs/dev-indicator.md` (prompt: `context/research/dev-indicator-research.md`)
-- Hide instead of move: no corner is free in both layouts.
-  - Bottom-left covers the landing hero and the sidebar.
-  - Bottom-right is taken by the sonner `Toaster`.
-  - Top corners sit over the nav and the top bar.
-- Committed for the whole team, not per developer (no env var)
-- Only `next.config.ts` changes: no components, messages, tokens or routes. The indicator never ships in production.
-- v16 removed `appIsrStatus`, `buildActivity` and `buildActivityPosition`; none are used. `experimental.agentFeedback` is unrelated and stays as is.
-- Next.js restarts the dev server when `next.config.ts` changes; if the button is still visible, restart `yarn dev` by hand and hard-refresh the tab
+<!-- Any extra notes -->
 
 ## History
 
@@ -36,3 +26,4 @@ In Progress
 - **Logo Assets** (2026-10-13): `scripts/brand-assets.mjs` (sharp) generates the app icon, Apple icon, logo tile, hero illustration and Open Graph / Twitter images from `design/logo-source.png` (losslessly recompressed to 9 MB); default favicon replaced; `metadataBase` from `PANDA_PUBLIC_URL`; `Logo` component in the sidebar (icon only when collapsed)
 - **Landing Page** (2026-10-13): public landing at `/` in a static `(marketing)` route group (redirect removed); nav with logo, section links, language switcher and account CTAs (to `/dashboard` via `LANDING_LINKS`); hero with panda illustration and accessible illustrative stat card; features, new "How it works" section, dark CTA banner and footer; copy fixed and translated (`landing` namespace); metadata and `themeColor`; contrast checks for the new pairs
 - **Landing Polish** (2026-10-13): `MobileNav` sheet (section links below `md`, full-width language switcher, account actions; closes on link click with focus back on the menu button); at `md – lg` the nav keeps logo + links + menu so the wordmark fits; 44px headline and full-width CTAs on phones, capped hero visual while stacked, centered footer; "Skip to content" link, solid pink `FOCUS_RING`, logo-pink ring on the dark CTA banner and banner border in dark mode; no overflow at 375/500/768/1280 in light, dark, English and Spanish
+- **Hide Dev Indicator** (2026-10-13): `devIndicators: false` in `next.config.ts` (no spec, from `docs/dev-indicator.md`); hidden rather than moved because no corner is free in the landing and the admin; the error overlay still opens; static vs dynamic checked in the `yarn build` route table
