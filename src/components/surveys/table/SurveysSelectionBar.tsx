@@ -50,22 +50,13 @@ export function SurveysSelectionBar({ ids, onDone }: SurveysSelectionBarProps) {
   }
 
   return (
-    // Narrow cards: count and clear on the first line, actions below. Wide cards: one line.
+    // Same order on screen and in the DOM: count, actions, clear. Narrow cards put the count on its
+    // own line and let the actions wrap; wide cards keep one line. The count is announced by the
+    // section's live region, which stays mounted.
     <div role="group" aria-label={t("bulk.label")} className="flex flex-wrap items-center gap-2 @2xl:flex-nowrap">
-      <p aria-live="polite" className="flex-1 text-sm font-semibold whitespace-nowrap text-foreground tabular-nums @2xl:mr-1 @2xl:flex-none">
+      <p className="basis-full text-sm font-semibold whitespace-nowrap text-foreground tabular-nums @2xl:mr-1 @2xl:basis-auto">
         {t("select.count", { count })}
       </p>
-      <Button
-        variant="ghost"
-        size="icon"
-        disabled={isPending}
-        onClick={onDone}
-        aria-label={t("bulk.clear")}
-        className="size-11 rounded-xl text-muted-foreground @2xl:order-last"
-      >
-        <XIcon aria-hidden />
-      </Button>
-      <span aria-hidden className="basis-full @2xl:hidden" />
       <Button
         variant="outline"
         disabled={isPending}
@@ -92,6 +83,16 @@ export function SurveysSelectionBar({ ids, onDone }: SurveysSelectionBarProps) {
       >
         <Trash2Icon aria-hidden />
         {t("bulk.delete")}
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        disabled={isPending}
+        onClick={onDone}
+        aria-label={t("bulk.clear")}
+        className="size-11 shrink-0 rounded-xl text-muted-foreground"
+      >
+        <XIcon aria-hidden />
       </Button>
 
       <AlertDialog open={confirmOpen} onOpenChange={(next) => !isPending && setConfirmOpen(next)}>

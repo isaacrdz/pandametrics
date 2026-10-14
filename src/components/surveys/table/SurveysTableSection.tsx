@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CalendarIcon, ClipboardListIcon, PlusIcon, SearchXIcon } from "lucide-react";
@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RANGE_KEYS, parseRange } from "@/lib/date-range";
 import type { SurveyListResult, SurveyRow } from "@/lib/surveys/list";
 import { DEFAULT_SURVEY_LIST_QUERY, buildSurveysHref, withFilters, type SurveyListQuery } from "@/lib/surveys/list-params";
+import { cn } from "@/lib/utils";
 
 interface SurveysTableSectionProps {
   data: SurveyListResult;
@@ -29,10 +30,26 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
   const tRange = useTranslations("dateRange");
   const format = useFormatter();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const cardRef = useRef<HTMLDivElement>(null);
 
+  // A transition keeps the current rows on screen (dimmed) until the new ones stream in
   function navigate(next: SurveyListQuery) {
-    router.replace(buildSurveysHref(next), { scroll: false });
+    startTransition(() => router.replace(buildSurveysHref(next), { scroll: false }));
   }
+
+  // Changing the page or the page size brings the top of the table into view (the pager sits
+  // at the bottom); filters do not move the page, since their controls are on top already
+  const pageKey = `${data.page}:${data.pageSize}`;
+  const previousPageKey = useRef(pageKey);
+  useEffect(() => {
+    if (previousPageKey.current === pageKey) return;
+    previousPageKey.current = pageKey;
+    const card = cardRef.current;
+    if (!card || card.getBoundingClientRect().top >= 0) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    card.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+  }, [pageKey]);
 
   const { search, handleChange, commit } = useUrlSearch(params.query, (query) =>
     navigate(withFilters(params, { query })),
@@ -65,6 +82,20 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
     onDelete: setDeleteTarget,
   };
 
+  // Announcements live in regions that stay mounted: a region that appears together with its text
+  // (the pager after "no results", the selection bar) is not read by screen readers
+  const resultsMessage =
+    data.totalAll === 0
+      ? ""
+      : data.total === 0
+        ? t("noResults.title")
+        : t("pagination.showing", {
+            from: format.number((data.page - 1) * data.pageSize + 1),
+            to: format.number(Math.min(data.page * data.pageSize, data.total)),
+            total: data.total,
+          });
+  const selectionMessage = selectedIds.length > 0 ? t("select.count", { count: selectedIds.length }) : "";
+
   // Clearing the filters keeps the range: it is not a filter, it is the responses window
   const clearFiltersHref = buildSurveysHref({ ...DEFAULT_SURVEY_LIST_QUERY, range: params.range });
 
@@ -73,8 +104,8 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 id="surveys-title" className="text-2xl font-bold text-foreground sm:text-3xl">
-            {t("title")}
-            <span className="ml-3 text-lg font-medium text-muted-foreground tabular-nums">{format.number(data.totalAll)}</span>
+            {t("title")}{" "}
+            <span className="ml-2 text-lg font-medium text-muted-foreground tabular-nums">{format.number(data.totalAll)}</span>
           </h1>
           <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
         </div>
@@ -113,12 +144,20 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
       ) : (
         // Container queries, not viewport breakpoints: the sidebar takes part of the width,
         // so at a 768px viewport the card is only ~450px wide
-        <div className="@container overflow-hidden rounded-3xl border border-card-border bg-card">
+        <div
+          ref={cardRef}
+          aria-busy={isPending}
+          className={cn(
+            "@container scroll-mt-24 overflow-hidden rounded-3xl border border-card-border bg-card transition-opacity",
+            isPending && "opacity-60",
+          )}
+        >
           <SurveysToolbar
             params={params}
             search={search}
             onSearchChange={handleChange}
             commitSearch={commit}
+            onNavigate={navigate}
             selectedIds={selectedIds}
             onClearSelection={() => updateSelection([])}
           />
@@ -158,6 +197,13 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
           )}
         </div>
       )}
+
+      <p aria-live="polite" className="sr-only">
+        {resultsMessage}
+      </p>
+      <p aria-live="polite" className="sr-only">
+        {selectionMessage}
+      </p>
 
       {deleteTarget && (
         <DeleteSurveyDialog

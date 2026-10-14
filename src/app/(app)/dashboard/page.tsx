@@ -3,6 +3,7 @@ import { CreateSurveyCallout } from "@/components/dashboard/CreateSurveyCallout"
 import { DashboardFooter } from "@/components/dashboard/DashboardFooter";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { DashboardTitle } from "@/components/dashboard/DashboardTitle";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { getAppContext, getDashboardData } from "@/lib/dashboard";
 import { parseRange } from "@/lib/date-range";
@@ -32,6 +33,7 @@ async function DashboardContent({ searchParams }: Pick<PageProps<"/dashboard">, 
 export default function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:px-8 md:py-10">
+      <DashboardTitle />
       <Suspense fallback={<DashboardSkeleton />}>
         <DashboardContent searchParams={searchParams} />
       </Suspense>

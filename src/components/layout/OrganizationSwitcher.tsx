@@ -33,7 +33,7 @@ export function OrganizationSwitcher({ organizations, currentId }: OrganizationS
           className="h-11 gap-2 rounded-full bg-card px-4 text-[0.95rem] font-normal shadow-xs"
         >
           <span aria-hidden className="size-2.5 rounded-full bg-success" />
-          <span className="hidden max-w-40 truncate sm:inline">{selected.name}</span>
+          <span className="hidden max-w-40 truncate @3xl:inline">{selected.name}</span>
           <ChevronDownIcon aria-hidden className="text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>

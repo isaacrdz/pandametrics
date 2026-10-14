@@ -41,14 +41,17 @@ export function Greeting({ name }: GreetingProps) {
   const firstName = name?.split(" ")[0] ?? "";
   const date = now === null ? null : new Date(now);
 
+  // Not a heading: every page names itself with its own h1, the greeting is the same everywhere.
+  // The date stays on one line: full on wide screens, short when the sidebar leaves little room.
   return (
     <div className="min-w-0">
-      <p className="hidden h-5 text-sm text-muted-foreground first-letter:uppercase sm:block">
-        {date ? format.dateTime(date, { dateStyle: "full" }) : ""}
+      <p className="hidden h-5 truncate text-sm text-muted-foreground first-letter:uppercase sm:block">
+        <span className="xl:hidden">{date ? format.dateTime(date, { dateStyle: "medium" }) : ""}</span>
+        <span className="hidden xl:inline">{date ? format.dateTime(date, { dateStyle: "full" }) : ""}</span>
       </p>
-      <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
+      <p className="truncate text-xl font-semibold text-foreground @3xl:text-2xl">
         {t("hello", { period: getPeriod(date), name: firstName })}
-      </h1>
+      </p>
     </div>
   );
 }

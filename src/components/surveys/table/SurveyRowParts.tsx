@@ -35,7 +35,7 @@ export function SurveyName({ row, className }: { row: SurveyRow; className?: str
       >
         {row.name}
       </Link>
-      <span className="font-mono text-xs tracking-wider text-muted-foreground uppercase">{row.code}</span>
+      <span className="font-mono text-xs tracking-wider whitespace-nowrap text-muted-foreground uppercase">{row.code}</span>
     </span>
   );
 }

@@ -38,8 +38,8 @@ export function SurveysPagination({ params, page, pageCount, pageSize, total, on
 
   return (
     <div className="flex flex-col items-center gap-3 border-t border-card-border px-4 py-4 @2xl:flex-row @2xl:justify-between @2xl:px-6">
-      {/* Announced after every filter change, since the server re-renders it */}
-      <p aria-live="polite" className="text-sm text-muted-foreground">
+      {/* Announced through the section's live region, which stays mounted */}
+      <p className="text-sm text-muted-foreground">
         {t("showing", { from: format.number(from), to: format.number(to), total })}
       </p>
 

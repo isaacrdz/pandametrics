@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { ChevronDownIcon, ListFilterIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,6 @@ import { SurveysSelectionBar } from "@/components/surveys/table/SurveysSelection
 import { SURVEY_CATEGORIES } from "@/lib/surveys/constants";
 import {
   SURVEY_STATUS_FILTERS,
-  buildSurveysHref,
   withFilters,
   type SurveyListQuery,
   type SurveyStatusFilter,
@@ -37,6 +35,8 @@ interface SurveysToolbarProps {
   search: string;
   onSearchChange: (value: string) => void;
   commitSearch: (value: string) => string;
+  // Every list change goes through the section, which shows it as pending
+  onNavigate: (next: SurveyListQuery) => void;
   // While rows are selected, the bulk actions replace the filters
   selectedIds: string[];
   onClearSelection: () => void;
@@ -47,20 +47,15 @@ export function SurveysToolbar({
   search,
   onSearchChange,
   commitSearch,
+  onNavigate,
   selectedIds,
   onClearSelection,
 }: SurveysToolbarProps) {
   const t = useTranslations("surveys");
   const tCategories = useTranslations("categories");
-  const router = useRouter();
-
-  function navigate(next: SurveyListQuery) {
-    router.replace(buildSurveysHref(next), { scroll: false });
-  }
-
   // A filter picked while a search is still pending writes both
   function applyFilter(changes: Partial<Pick<SurveyListQuery, "categories" | "status">>) {
-    navigate(withFilters(params, { ...changes, query: commitSearch(search) }));
+    onNavigate(withFilters(params, { ...changes, query: commitSearch(search) }));
   }
 
   function toggleCategory(category: SurveyListQuery["categories"][number], checked: boolean) {
