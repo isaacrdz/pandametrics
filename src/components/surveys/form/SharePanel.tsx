@@ -30,7 +30,7 @@ export function SharePanel({ code, publicUrl, createdAt, createdBy }: SharePanel
 
   return (
     <FormSection id="survey-share" number={4} title={t("title")} description={t("description")}>
-      <div className="grid gap-6 md:grid-cols-[16rem_1fr] md:gap-8">
+      <div className="grid gap-6 @xl:grid-cols-[16rem_1fr] @xl:gap-8">
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-card-border bg-accent/40 p-5">
           <span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <QrCodeIcon aria-hidden className="size-4" />

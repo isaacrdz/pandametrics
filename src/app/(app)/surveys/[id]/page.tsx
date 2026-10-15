@@ -1,4 +1,3 @@
-import { GreetingTopBar } from "@/components/layout/GreetingTopBar";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { SurveyForm } from "@/components/surveys/form/SurveyForm";
@@ -18,16 +17,12 @@ async function EditSurveyContent({ params }: Pick<PageProps<"/surveys/[id]">, "p
   return <SurveyForm mode="edit" defaultValues={data.values} meta={data.meta} />;
 }
 
+// The form renders its own top bar inside the <form>; while the survey loads, the skeleton
+// shows the same bar (static title, disabled submit), so the header never changes
 export default function EditSurveyPage({ params }: PageProps<"/surveys/[id]">) {
   return (
-    <>
-      {/* The page header; outside Suspense, so it is part of the static shell */}
-      <GreetingTopBar />
-      <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-8 md:py-10">
-        <Suspense fallback={<SurveyFormSkeleton />}>
-          <EditSurveyContent params={params} />
-        </Suspense>
-      </div>
-    </>
+    <Suspense fallback={<SurveyFormSkeleton />}>
+      <EditSurveyContent params={params} />
+    </Suspense>
   );
 }

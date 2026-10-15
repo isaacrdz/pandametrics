@@ -12,7 +12,9 @@ import { FORM_MODES, type SaveHelpers, type SurveyFormMode } from "@/components/
 import { QuestionsSection } from "@/components/surveys/form/QuestionsSection";
 import { SharePanel } from "@/components/surveys/form/SharePanel";
 import { SurveyDetailsSection } from "@/components/surveys/form/SurveyDetailsSection";
-import { FormHeader } from "@/components/form/FormHeader";
+import { AppTopBar } from "@/components/layout/AppTopBar";
+import { PageHeading } from "@/components/layout/PageHeading";
+import { DeleteIconButton, SubmitButton } from "@/components/layout/top-bar-actions";
 import { UnsavedChangesDialog } from "@/components/form/UnsavedChangesDialog";
 import { useBeforeUnloadWarning } from "@/components/form/form-hooks";
 import { ACTIVE_SURVEY_LIMIT } from "@/lib/surveys/constants";
@@ -32,6 +34,7 @@ interface SurveyFormProps {
 export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
   const config = FORM_MODES[mode];
   const t = useTranslations("surveyForm");
+  const tForm = useTranslations("form.actions");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -86,25 +89,34 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
 
   return (
     <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit(onValid, onInvalid)}
-        noValidate
-        className="flex flex-col gap-8"
-      >
-        <FormHeader
-          title={t(config.titleKey)}
-          subtitle={t(config.subtitleKey)}
-          submitLabel={t(`actions.${config.submitKey}`)}
-          isSubmitting={isPending}
-          onBack={goBack}
-          onDelete={config.showDelete && meta ? () => setDeleteOpen(true) : undefined}
+      {/* The top bar lives inside the form: its submit button is a real type="submit" */}
+      <form onSubmit={form.handleSubmit(onValid, onInvalid)} noValidate className="flex flex-col">
+        <AppTopBar
+          hideSwitchersWhenNarrow
+          heading={
+            <PageHeading back={{ onClick: goBack }} title={t(config.titleKey)} subtitle={t(config.subtitleKey)} />
+          }
+          actions={
+            <>
+              {config.showDelete && meta && (
+                <DeleteIconButton label={t("actions.deleteSurvey")} onClick={() => setDeleteOpen(true)} />
+              )}
+              <SubmitButton
+                label={t(`actions.${config.submitKey}`)}
+                pendingLabel={tForm("saving")}
+                pending={isPending}
+              />
+            </>
+          }
         />
-        <SurveyDetailsSection />
-        <CategoryPicker locked={config.lockCategory(meta)} />
-        <QuestionsSection />
-        {config.showShare && meta && (
-          <SharePanel code={meta.code} publicUrl={meta.publicUrl} createdAt={meta.createdAt} createdBy={meta.createdBy} />
-        )}
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-8 md:py-10">
+          <SurveyDetailsSection />
+          <CategoryPicker locked={config.lockCategory(meta)} />
+          <QuestionsSection />
+          {config.showShare && meta && (
+            <SharePanel code={meta.code} publicUrl={meta.publicUrl} createdAt={meta.createdAt} createdBy={meta.createdBy} />
+          )}
+        </div>
       </form>
       <UnsavedChangesDialog
         open={leaveOpen}

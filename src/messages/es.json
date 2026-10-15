@@ -369,13 +369,14 @@
     "comingSoon": "Próximamente"
   },
   "surveyForm": {
-    "createTitle": "Nueva encuesta",
+    "createTitle": "Crear encuesta",
     "createSubtitle": "Elige una categoría, escribe tus preguntas y publícala cuando quieras.",
     "editTitle": "Editar encuesta",
     "editSubtitle": "Actualiza la experiencia y las opciones de respuesta de tu encuesta.",
     "actions": {
       "create": "Crear encuesta",
-      "save": "Guardar encuesta"
+      "save": "Guardar cambios",
+      "deleteSurvey": "Eliminar encuesta"
     },
     "sections": {
       "details": {

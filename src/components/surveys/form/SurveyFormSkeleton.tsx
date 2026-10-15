@@ -1,6 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { AppTopBar } from "@/components/layout/AppTopBar";
+import { PageHeading } from "@/components/layout/PageHeading";
+import { SubmitButton } from "@/components/layout/top-bar-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function SectionSkeleton({ rows }: { rows: number }) {
@@ -20,20 +23,28 @@ function SectionSkeleton({ rows }: { rows: number }) {
   );
 }
 
+// Edit page fallback: the same top bar the form renders (static title, submit disabled until the
+// survey loads), so the header does not change when the content streams in
 export function SurveyFormSkeleton() {
-  const t = useTranslations("common");
+  const t = useTranslations("surveyForm");
+  const tForm = useTranslations("form.actions");
+  const tCommon = useTranslations("common");
 
   return (
-    <div role="status" aria-label={t("loading")} className="flex flex-col gap-8">
-      <div className="flex justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-9 w-56" />
-          <Skeleton className="h-4 w-80 max-w-full" />
-        </div>
-        <Skeleton className="hidden h-11 w-72 rounded-xl sm:block" />
+    <div className="flex flex-col">
+      <AppTopBar
+        hideSwitchersWhenNarrow
+        heading={<PageHeading back={{ href: "/dashboard" }} title={t("editTitle")} subtitle={t("editSubtitle")} />}
+        actions={<SubmitButton label={t("actions.save")} pendingLabel={tForm("saving")} pending={false} disabled />}
+      />
+      <div
+        role="status"
+        aria-label={tCommon("loading")}
+        className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-8 md:py-10"
+      >
+        <SectionSkeleton rows={3} />
+        <SectionSkeleton rows={1} />
       </div>
-      <SectionSkeleton rows={3} />
-      <SectionSkeleton rows={1} />
     </div>
   );
 }

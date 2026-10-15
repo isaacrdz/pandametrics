@@ -1,18 +1,25 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Top Bar Phase 2 — Survey Form
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `SurveyForm` renders `AppTopBar` inside its `<form>`: `PageHeading` with a back button (unsaved changes dialog as today), "Create survey" / "Edit survey" and the subtitle; actions = Delete icon button (edit only) + submit button
+- New shared `SubmitButton` (primary, `type="submit"`, check / spinner, pending "Saving…", label from `@md` of the bar, `aria-label` + tooltip below) and `DeleteIconButton` (outline destructive, `Trash2Icon`, `aria-label` + tooltip)
+- `FormHeader` no longer rendered by `SurveyForm`; the cards sit in a `max-w-5xl` container under the bar inside the form
+- `/surveys/new` and `/surveys/[id]` drop `GreetingTopBar` and their own `max-w` wrapper; "New survey" no longer shows on these pages
+- `SurveyFormSkeleton` (edit fallback) renders the same bar with the static "Edit survey" heading and a disabled submit, then the card skeletons
+- Messages: `surveyForm.createTitle` → "Create survey" / "Crear encuesta"; new `surveyForm.actions.deleteSurvey` ("Delete survey" / "Eliminar encuesta")
+- `yarn lint`, `tsc --noEmit`, `yarn build` (`/surveys/new` static, `/surveys/[id]` partial prerender); Enter submits; pending state, toasts, delete dialog and unsaved dialog work; after creating, the bar shows "Edit survey"; one `h1`; no overflow at 375 / 768 / 1024 / 1280 with the sidebar open and collapsed, light / dark, en / es
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/top-bar-phase-2-survey-form-spec.md`; research: `docs/contextual-top-bar.md` (sections 2 and 3)
+- Phase 2 of 3; phase 3 does the same for `UserForm` (create, edit, profile) and deletes `FormHeader`
+- The bar inside the `<form>` keeps a real `type="submit"` with the form's pending state (no `form="…"` attribute, no global state)
+- Back and Delete as icon buttons; the create title equals the submit label ("Create survey") by decision
 
 ## History
 

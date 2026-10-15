@@ -369,13 +369,14 @@
     "comingSoon": "Coming soon"
   },
   "surveyForm": {
-    "createTitle": "New survey",
+    "createTitle": "Create survey",
     "createSubtitle": "Pick a category, write your questions and publish it when you're ready.",
     "editTitle": "Edit survey",
     "editSubtitle": "Update your survey's experience and answer options.",
     "actions": {
       "create": "Create survey",
-      "save": "Save survey"
+      "save": "Save changes",
+      "deleteSurvey": "Delete survey"
     },
     "sections": {
       "details": {
