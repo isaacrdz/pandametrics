@@ -595,8 +595,17 @@
       "exitDescription": "Se perderán tus respuestas.",
       "cancel": "Cancelar",
       "confirmExit": "Salir",
-      "keyboardHint": "Usa las teclas 1 a 5 para elegir una respuesta y Enter para continuar. Las flechas arriba y abajo cambian de pregunta.",
-      "sendSoon": "El envío de respuestas llega en la siguiente fase."
+      "keyboardHint": "Usa las teclas 1 a 5 para elegir una respuesta y Enter para continuar. Las flechas arriba y abajo cambian de pregunta."
+    },
+    "thanks": {
+      "title": "La encuesta se envió correctamente",
+      "restart": "La encuesta se reiniciará en {seconds} s",
+      "tapToStart": "Toca para empezar"
+    },
+    "errors": {
+      "INVALID": "Faltan respuestas o alguna ya no es válida. Revísalas e inténtalo de nuevo.",
+      "RATE_LIMITED": "Demasiados envíos seguidos. Espera un momento e inténtalo de nuevo.",
+      "network": "No se pudieron enviar tus respuestas. Inténtalo de nuevo."
     }
   }
 }

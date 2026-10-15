@@ -1,18 +1,30 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Survey Kiosk Phase 3 — Submit and Restart
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Response store `src/lib/surveys/responses.ts` (server only, `globalThis`, seeded with a clone of `MOCK_RESPONSES`): `listResponses(surveyId?)`, `addResponse(response)`
+- `getMockSurveyMetrics`, `countMockResponses` and `getAnsweredOptionIds` read the store (same names), so a kiosk answer raises counts on `/dashboard` and `/surveys`, updates option metrics and locks the category
+- `submitPublicResponse` in `src/lib/surveys/public.ts`: survey by code (`NOT_FOUND`), active (`CLOSED`); exactly one item per non-archived question, no duplicates or unknown questions, each option a non-archived option of its question (`INVALID`); snapshot items (type, value, label); stored `source`, `deviceId`, `locale`, `durationMs` (clamped 0–24 h), `createdAt`
+- In-memory rate limit per `deviceId` and per IP: 1 per 3 s and 30 per 10 min (`RATE_LIMITED`); IP only when `deviceId` is missing
+- Public action `submitSurveyResponse` in `src/actions/kiosk.ts`: Zod (`code`, 1–50 `items`, `source` `KIOSK` | `LINK`, `deviceId` uuid or null, `locale` `en` | `es`, `durationMs` int ≥ 0), IP from `x-forwarded-for` / `x-real-ip`, revalidates `/dashboard` and `/surveys` on success, returns `{ ok }` or an error code (never throws to the client)
+- Runner: `deviceId` in `localStorage["panda-metrics:device-id"]` (`crypto.randomUUID()`, try/catch, `null` when blocked), `locale` from the app locale (`useAppLocale`, `en` / `es`; next-intl's `useLocale` returns `en-US`), `durationMs` from the first question shown, `source` `KIOSK` when reached from the code entry's Continue (one-time `sessionStorage` flag) else `LINK`
+- Send through one guarded `submit()` (ref + `useTransition`): input ignored while pending, Send shows a spinner and is disabled; errors → localized toast and answers kept; `CLOSED` / `NOT_FOUND` → `KioskMessage`; success → thanks
+- `ThanksScreen`: "The survey was sent successfully" (`role="status"`) and "The survey will restart in {seconds}s" counting 5 → 1; top-right actions stay; at 0 answers cleared, first question, new start time; tap to start when fullscreen was on at Send and is now off (and supported)
+- `TapToStart`: large "Tap to start" button (subtle pulse, none with reduced motion) that re-enters fullscreen and starts
+- `kiosk.thanks` / `kiosk.errors` messages in en / es; the phase 2 "next phase" toast removed
+- `yarn lint`, `tsc --noEmit`, `yarn build`; counts, category lock, double submit, rate limit, invalid payloads, closed survey, source / deviceId / duration, fullscreen restart, thanks screenshots at 375 / 1280 light / dark / en / es
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/survey-kiosk-phase-3-submit-spec.md`; research: `docs/survey-kiosk.md` (sections 3, 4.3, 4.4, 7, 9)
+- Reference: `context/screenshots/survey-landing-4.png`
+- Decisions: every question required (server rejects incomplete), 5-second countdown, `source` only `KIOSK` / `LINK`
+- Server Action instead of the `/api/v1/.../answers` route (the route can wrap the same service later)
+- Phase 4 enables QR scanning and upload on the code entry
 
 ## History
 

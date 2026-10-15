@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRightIcon, CornerDownLeftIcon } from "lucide-react";
+import { ArrowRightIcon, CornerDownLeftIcon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Ref } from "react";
 import { FaceOptions, PollOptions, StarOptions } from "@/components/kiosk/AnswerOptions";
@@ -19,12 +19,23 @@ interface QuestionViewProps {
   category: SurveyCategory;
   selectedId: string | undefined;
   isLast: boolean;
+  // The last answer is being sent: the button shows a spinner and takes no more clicks
+  sending: boolean;
   headingRef: Ref<HTMLHeadingElement>;
   onSelect: (optionId: string) => void;
   onConfirm: () => void;
 }
 
-export function QuestionView({ question, category, selectedId, isLast, headingRef, onSelect, onConfirm }: QuestionViewProps) {
+export function QuestionView({
+  question,
+  category,
+  selectedId,
+  isLast,
+  sending,
+  headingRef,
+  onSelect,
+  onConfirm,
+}: QuestionViewProps) {
   const t = useTranslations("kiosk.runner");
   const headingId = `question-${question.id}`;
   const Options = OPTIONS_BY_CATEGORY[category];
@@ -56,11 +67,12 @@ export function QuestionView({ question, category, selectedId, isLast, headingRe
         <Button
           type="button"
           onClick={onConfirm}
-          disabled={!selectedId}
+          disabled={!selectedId || sending}
+          aria-busy={sending || undefined}
           className="h-12 w-full gap-2 rounded-xl px-8 text-base font-semibold shadow-[0_10px_24px_-12px_var(--primary)] sm:w-auto [@media(max-height:520px)]:h-10"
         >
           {isLast ? t("send") : t("ok")}
-          <ArrowRightIcon aria-hidden />
+          {sending ? <Loader2Icon aria-hidden className="animate-spin" /> : <ArrowRightIcon aria-hidden />}
         </Button>
       </div>
     </div>

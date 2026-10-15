@@ -595,8 +595,17 @@
       "exitDescription": "Your answers will be lost.",
       "cancel": "Cancel",
       "confirmExit": "Exit",
-      "keyboardHint": "Use keys 1 to 5 to choose an answer and Enter to continue. Up and down arrows move between questions.",
-      "sendSoon": "Sending answers arrives in the next phase."
+      "keyboardHint": "Use keys 1 to 5 to choose an answer and Enter to continue. Up and down arrows move between questions."
+    },
+    "thanks": {
+      "title": "The survey was sent successfully",
+      "restart": "The survey will restart in {seconds}s",
+      "tapToStart": "Tap to start"
+    },
+    "errors": {
+      "INVALID": "Some answers are missing or no longer valid. Check them and try again.",
+      "RATE_LIMITED": "Too many submissions in a row. Wait a moment and try again.",
+      "network": "Couldn't send your answers. Try again."
     }
   }
 }

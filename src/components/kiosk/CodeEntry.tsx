@@ -7,6 +7,7 @@ import { type FormEvent, type ReactNode, useId, useState, useTransition } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { markKioskEntry } from "@/lib/kiosk/client-meta";
 import { enterFullscreen } from "@/lib/kiosk/fullscreen";
 import { SURVEY_CODE_LENGTH, parseSurveyCode } from "@/lib/surveys/code";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,8 @@ export function CodeEntry({ invalidValue }: CodeEntryProps) {
     if (!complete || pending) return;
     // The submit is a user gesture, the only moment a browser lets the kiosk go fullscreen
     enterFullscreen();
+    // Answers opened from here count as KIOSK; a shared link opened directly counts as LINK
+    markKioskEntry(code);
     startTransition(() => router.push(`/s?code=${code}`));
   }
 

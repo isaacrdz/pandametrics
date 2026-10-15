@@ -1,8 +1,18 @@
 import "server-only";
 
+import { randomBytes } from "node:crypto";
+import { takeSubmissionSlot } from "@/lib/kiosk/rate-limit";
 import { REACTION_VALUES } from "@/lib/surveys/constants";
+import { addResponse } from "@/lib/surveys/responses";
 import { getSurveyByCode } from "@/lib/surveys/service";
-import type { AnswerOption, AnswerType, ReactionValue, SurveyCategory } from "@/types/survey";
+import type {
+  AnswerOption,
+  AnswerType,
+  ReactionValue,
+  ResponseItem,
+  ResponseSource,
+  SurveyCategory,
+} from "@/types/survey";
 
 // What the public kiosk receives: no organization, user or date fields, no archived content
 
@@ -68,4 +78,71 @@ export function getPublicSurvey(code: string): PublicSurveyResult {
         })),
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Submissions
+// ---------------------------------------------------------------------------
+
+export type SubmitErrorCode = "NOT_FOUND" | "CLOSED" | "INVALID" | "RATE_LIMITED";
+
+export interface PublicSubmission {
+  code: string;
+  items: { questionId: string; answerOptionId: string }[];
+  source: Extract<ResponseSource, "KIOSK" | "LINK">;
+  deviceId: string | null;
+  locale: string;
+  durationMs: number;
+}
+
+const MAX_DURATION_MS = 24 * 60 * 60_000;
+
+// Validates a kiosk submission against the stored survey and saves it with a snapshot of each
+// answer, so later edits to the survey never change what was answered
+export function submitPublicResponse(
+  input: PublicSubmission,
+  meta: { ip: string | null; now?: Date },
+): { ok: true } | { ok: false; error: SubmitErrorCode } {
+  const survey = getSurveyByCode(input.code);
+  if (!survey) return { ok: false, error: "NOT_FOUND" };
+  if (!survey.isActive) return { ok: false, error: "CLOSED" };
+
+  // Every current question exactly once, each with one of its current options
+  const questions = survey.questions.filter((question) => !question.archivedAt);
+  if (input.items.length !== questions.length) return { ok: false, error: "INVALID" };
+
+  const answered = new Map(input.items.map((item) => [item.questionId, item.answerOptionId]));
+  if (answered.size !== input.items.length) return { ok: false, error: "INVALID" };
+
+  const items: ResponseItem[] = [];
+  for (const question of questions) {
+    const option = question.options.find((candidate) => candidate.id === answered.get(question.id) && !candidate.archivedAt);
+    if (!option) return { ok: false, error: "INVALID" };
+    items.push({
+      questionId: question.id,
+      answerOptionId: option.id,
+      answerType: option.type,
+      answerValue: option.value,
+      answerLabel: option.label,
+    });
+  }
+
+  const now = meta.now ?? new Date();
+  const limitKeys = [input.deviceId && `device:${input.deviceId}`, meta.ip && `ip:${meta.ip}`].filter(
+    (key): key is string => Boolean(key),
+  );
+  if (!takeSubmissionSlot(limitKeys, now.getTime())) return { ok: false, error: "RATE_LIMITED" };
+
+  addResponse({
+    id: randomBytes(12).toString("hex"),
+    surveyId: survey.id,
+    organizationId: survey.organizationId,
+    items,
+    source: input.source,
+    deviceId: input.deviceId,
+    locale: input.locale,
+    durationMs: Math.min(Math.max(Math.round(input.durationMs), 0), MAX_DURATION_MS),
+    createdAt: now,
+  });
+  return { ok: true };
 }

@@ -16,6 +16,7 @@ import type {
   SurveyResponse,
   User,
 } from "@/types/survey";
+import { listResponses } from "@/lib/surveys/responses";
 
 export const MOCK_NOW = new Date("2026-10-13T18:00:00.000Z");
 
@@ -407,8 +408,11 @@ export const MOCK_RESPONSES: SurveyResponse[] = SURVEY_SEEDS.flatMap((seed, i) =
 
 export const LAST_30_DAYS: DateRange = { from: daysAgo(30), to: daysAgo(-1) };
 
+// The mock lives on a fixed clock (MOCK_NOW). Kiosk submissions are stamped with the real time,
+// which is later, so they count as the mock's "now" and land in every range that includes today
 function inRange(response: SurveyResponse, range: DateRange): boolean {
-  return response.createdAt >= range.from && response.createdAt < range.to;
+  const at = response.createdAt > MOCK_NOW ? MOCK_NOW : response.createdAt;
+  return at >= range.from && at < range.to;
 }
 
 function buildQuestionMetrics(
@@ -444,10 +448,11 @@ function buildQuestionMetrics(
   };
 }
 
-// Surveys come from the survey store (src/lib/surveys/service.ts); responses stay static
+// Surveys come from the survey store (src/lib/surveys/service.ts), responses from the response
+// store (src/lib/surveys/responses.ts: the mock responses plus kiosk submissions)
 export function getMockSurveyMetrics(survey: Survey, range: DateRange = LAST_30_DAYS): SurveyMetrics {
   const surveyId = survey.id;
-  const responses = MOCK_RESPONSES.filter((r) => r.surveyId === surveyId && inRange(r, range));
+  const responses = listResponses(surveyId).filter((r) => inRange(r, range));
   const counts = new Map<string, number>();
   for (const response of responses) {
     for (const item of response.items) {
@@ -465,13 +470,12 @@ export function getMockSurveyMetrics(survey: Survey, range: DateRange = LAST_30_
 }
 
 export function countMockResponses(surveyId: string, range: DateRange = LAST_30_DAYS): number {
-  return MOCK_RESPONSES.filter((r) => r.surveyId === surveyId && inRange(r, range)).length;
+  return listResponses(surveyId).filter((r) => inRange(r, range)).length;
 }
 
 export function getAnsweredOptionIds(surveyId: string): Set<string> {
   const ids = new Set<string>();
-  for (const response of MOCK_RESPONSES) {
-    if (response.surveyId !== surveyId) continue;
+  for (const response of listResponses(surveyId)) {
     for (const item of response.items) ids.add(item.answerOptionId);
   }
   return ids;
