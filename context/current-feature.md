@@ -1,28 +1,18 @@
-# Current Feature: Top Bar Phase 1 — Infrastructure and Lists
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `AppShellProvider` (client context with `user`, `organizations`, `currentOrganizationId`, `useAppShell()`); `(app)/layout.tsx` provides it from `getAppContext()` and no longer renders `TopBar` (deleted)
-- `AppTopBar` (same sticky `@container` markup as today): mobile `SidebarTrigger`, `heading` slot, organization and language switchers, `actions` slot
-- `PageHeading`: `h1` title (truncated, `title` attribute), optional count, subtitle (hidden below `@md`), optional back icon button with tooltip
-- Dashboard renders `AppTopBar` with `Greeting` + `NewSurveyButton` outside Suspense: no visible change
-- `/surveys`: bar with "All surveys" (+ count), subtitle and "New survey"; heading removed from `SurveysTableSection`; date range select moved into `SurveysToolbar` (keeps `?range=`, survives "Clear filters"); skeleton updated
-- `/users`: bar with "Users" (+ count), subtitle and "New user"; heading and button removed from `UsersTableSection`; skeleton updated
-- Form pages (`/surveys/new`, `/surveys/[id]`, `/users/new`, `/users/[id]`, `/profile`) render `AppTopBar` with the greeting and "New survey" and keep `FormHeader` until phases 2 and 3 (no visible change)
-- Overview rule (section 9, "Top bar as the page header") matches what is built
-- `yarn lint`, `tsc --noEmit`, `yarn build` pass with the same route kinds; one `h1` per page; no flicker; no overflow at 375 / 768 / 1024 / 1280 with the sidebar open and collapsed, light / dark, en / es
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/top-bar-phase-1-lists-spec.md`; research: `docs/contextual-top-bar.md`
-- Phase 1 of 3; phase 2 moves the survey form and phase 3 the user forms and profile into the bar
-- Each page renders its bar before its `max-w` container and outside Suspense when the title does not depend on data (no parallel routes, portals or context-driven titles)
-- The list count can live in a nested Suspense in the bar or stay out of it (the toolbar already says "Showing X–Y of Z"); document the choice
-- Accepted decisions: create titles "Create survey" / "Create user" (phases 2 and 3), back and delete as icons, range select in the toolbar, users follow the same pattern
+<!-- Any extra notes -->
 
 ## History
 
@@ -47,3 +37,4 @@ In Progress
 - **Users Phase 1 — Data and List** (2026-10-15): phase 1 of 3. `User` gains `phone`, `isActive`, `deletedAt`; 8 mock users; in-memory user store (`src/lib/users/service.ts`) with `scrypt` hashes kept on the server, all-or-nothing activate / deactivate / soft delete (no self changes, one active owner kept); survey "created by" reads from it. `/users` list: heading + "New user", search by name / email / phone, status filter, pagination in the URL, checkbox + avatar (image or initials) + "You" badge + role + status + phone + last updated, stacked list on narrow cards; row menu Edit / Deactivate (confirmation) / Activate; bulk Activate / Deactivate / Delete with confirmations. Generic table parts moved to `src/components/table` and `src/lib/table/pagination` and reused by `/surveys` (generic messages in `table`). Users item in the sidebar; overview updated
 - **Users Phase 2 — Create and Edit Form** (2026-10-15): phase 2 of 3. One `UserForm` for `/users/new` and `/users/[id]` (modes in `user-form-modes.ts`): 01 details (name, email, phone; read-only status in edit), 02 password (create required / reset optional with a show toggle using `aria-pressed`), 03 permissions as a disabled "Coming soon" role preview. `userFormSchema(mode)` with lowercased email, normalized phone and password rules; the form submits raw strings and the server normalizes. `createUser` (active, Member) / `updateUser` (new hash only when sent) with global `EMAIL_TAKEN`; update revalidates the layout and `getAppContext` reads the signed-in user from the store, so renames show in the sidebar. Shared form pieces moved to `src/components/form` (`FormSection` with `badge`, `RequiredMark`, `FormHeader`, hooks, `UnsavedChangesDialog`, `form` messages); survey form unchanged
 - **Users Phase 3 — My Profile** (2026-10-15): phase 3 of 3. "My profile" in the sidebar user menu (above the theme toggle); the current user's row and `/users/<own id>` lead to `/profile`. `profile` mode in `UserForm` (details + change password with the current one, no permissions or status); `updateProfile` edits only the signed-in user, and `updateUser` also requires the current password when the id is your own (`WRONG_PASSWORD`). `/profile` with a 4 / 8 grid driven by `@container/profile` (from 56rem of content): sticky `ProfilePictureCard` (avatar or initials, name, email, role, disabled "Change photo" coming soon) and the form; stacked with the picture first below. `FormSection` content is a container so field grids follow the card width
+- **Top Bar Phase 1 — Infrastructure and Lists** (2026-10-15): phase 1 of 3 of the contextual top bar. `AppShellProvider` in the admin layout (user name, organizations); every page renders its own `AppTopBar` first, outside its `max-w` container and outside Suspense (static shell); `TopBar` removed. `PageHeading` (h1 with id `page-title`, count next to it and hidden on narrow bars, subtitle hidden on phones, optional back button). Dashboard and form pages keep the greeting and "New survey" (`GreetingTopBar`). `/surveys` and `/users`: title, count (computed in the page, revalidated by the actions) and subtitle in the bar with "New survey" / "New user"; headings removed from the content; the survey date range select moved into the table toolbar and skeleton. Overview rule "Top bar as the page header"
