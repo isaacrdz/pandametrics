@@ -1,29 +1,18 @@
-# Logo and Surfaces Phase 1 — Logo
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Drawn checkerboard background (the "specks") removed from `design/logo.svg`: clipped to the traced silhouette, 152 background paths dropped (cleaned source committed)
-- `svgo` dev dependency; `scripts/brand-assets.mjs` SVG step: square viewBox around the panda `-35 40 1968 1968`, no `width` / `height` / `preserveAspectRatio` / `style`, SVGO (`floatPrecision: 1`, viewBox kept)
-- Outputs: `src/assets/brand/logo.svg`, `src/app/icon.svg`, `src/app/icon.png` (512, transparent) and `src/app/apple-icon.png` (180, panda on `#db8396`, opaque), each logged with its size
-- `logo-icon.webp` output and file removed; HERO and OG steps unchanged
-- `Logo` uses the SVG (static import, `next/image`, `object-contain`), panda alone without the pink tile; sizes `sm` `size-10`, `md` `size-11`; `tile` renamed to `icon`
-- Accessible name unchanged (`alt=""` with the wordmark, brand name without it)
-- Panda outline checked on the dark sidebar; light `drop-shadow` only if the hood edge disappears
-- `docs/landing.md` asset table updated
-- Head has the SVG icon link, the PNG icon and `apple-touch-icon`; sidebar expanded / collapsed (centered at 32px) and landing nav checked in light and dark
-- `yarn lint`, `tsc --noEmit`, `yarn build` pass
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/logo-and-surfaces-phase-1-logo-spec.md`; research: `docs/logo-and-surfaces.md` (section 2)
-- Decisions: panda alone (no tile) in sidebar and landing; `apple-icon.png` on the brand pink for now; favicon SVG with PNG fallback
-- Hero (`panda-hero.webp`) and Open Graph / Twitter images keep coming from `design/logo-source.png`
-- Next sets `unoptimized` automatically for `.svg` sources; no `next.config` change
-- Phase 2 (surfaces: light and dark tokens) comes next in `logo-and-surfaces-phase-2-surfaces-spec.md`
+<!-- Any extra notes -->
 
 ## History
 
@@ -51,3 +40,4 @@ In Progress
 - **Top Bar Phase 1 — Infrastructure and Lists** (2026-10-15): phase 1 of 3 of the contextual top bar. `AppShellProvider` in the admin layout (user name, organizations); every page renders its own `AppTopBar` first, outside its `max-w` container and outside Suspense (static shell); `TopBar` removed. `PageHeading` (h1 with id `page-title`, count next to it and hidden on narrow bars, subtitle hidden on phones, optional back button). Dashboard and form pages keep the greeting and "New survey" (`GreetingTopBar`). `/surveys` and `/users`: title, count (computed in the page, revalidated by the actions) and subtitle in the bar with "New survey" / "New user"; headings removed from the content; the survey date range select moved into the table toolbar and skeleton. Overview rule "Top bar as the page header"
 - **Top Bar Phase 2 — Survey Form** (2026-10-15): phase 2 of 3 of the contextual top bar. `SurveyForm` renders `AppTopBar` inside its `<form>` (back button with the unsaved changes dialog, "Create survey" / "Edit survey" + subtitle, Delete icon in edit, real `type="submit"` with the pending state); "New survey" no longer shows on the form pages. Shared `SubmitButton` / `DeleteIconButton`; the edit fallback renders the same bar with the submit disabled. Form bars hide the organization and language switchers below 36rem (`hideSwitchersWhenNarrow`) and the submit label below 42rem, so the title keeps its room. Share panel grid follows the card width (fixed a 1px overflow at 768). Create title "Create survey", edit submit "Save changes"
 - **Top Bar Phase 3 — User Forms and Profile** (2026-10-15): phase 3 of 3 of the contextual top bar. `UserForm` renders `AppTopBar` inside its `<form>` for create, edit and profile (back button with the unsaved changes dialog, mode title and subtitle, `SubmitButton` with the pending state, switchers hidden on narrow bars); content under the bar in `max-w-5xl` / `max-w-6xl` from the mode config (profile 4 / 8 grid unchanged). `/users/new`, `/users/[id]` and `/profile` no longer show the greeting or "New survey"; the edit fallback renders the same bar with the submit disabled. `FormHeader` deleted with its only message; `GreetingTopBar` used by the dashboard only. Create title "Create user"
+- **Logo and Surfaces Phase 1 — Logo** (2026-10-15): phase 1 of 2. `design/logo.svg` cleaned: it was a trace with the transparency checkerboard drawn in, now clipped to the traced panda silhouette with 152 background paths dropped. `scripts/brand-assets.mjs` (with `svgo`) builds a square SVG around the panda (`-35 40 1968 1968`, 28 KB) for `src/assets/brand/logo.svg` and the `src/app/icon.svg` favicon, plus `icon.png` (512, transparent) and `apple-icon.png` (180, panda on the brand pink, opaque); `logo-icon.webp` removed, hero and Open Graph unchanged. `Logo` shows the panda alone (no pink tile) with `object-contain` in the sidebar and the landing nav; collapsed rail still centered, accessible name unchanged, readable on the dark sidebar without a backdrop
