@@ -1,31 +1,18 @@
-# Current Feature: Users Phase 1 — Data and List
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `User` gains `phone`, `isActive` and `deletedAt` (soft delete); `passwordHash` only in the server store (`StoredUser`); `MOCK_USERS` grows to ~8 Acme users (owner, admins, members, 2 inactive, some phones, one valid and one broken `image`), passwords seeded as hashes
-- `src/lib/users/service.ts` (in-memory store on `globalThis`): `listUsers`, `getUser` (skip deleted), `setUserActive`, `setUsersActive`, `softDeleteUsers`, all or nothing with `NOT_FOUND`, `SELF_DEACTIVATE`, `LAST_OWNER`; `password.ts` with `scrypt` hash / verify; the survey service `getUser` reads from the user store
-- `src/lib/users/list.ts` + `list-params.ts`: plain `UserRow`, search on name / email / phone (accent and case insensitive), status filter, sort by name, pagination 5 / 10 / 25 / 50 with clamping; URL `q`, `status`, `page`, `size`
-- Generic table parts moved to `src/components/table/` (pagination, search input, status filter menu, status pill, updated-at cell, skeleton rows, light checkbox, selection bar) with no visible or behavior change on `/surveys`
-- `setUserActive`, `setUsersActive` and `deleteUsers` Server Actions (Zod, mock session scope, `ActionResult` codes, `{ count }` for bulk), revalidate `/users`
-- `/users` page (Suspense, `loading.tsx`): heading + count + "New user" button, toolbar (search + Status), table from `@2xl` with checkbox column, avatar column (image or initials fallback), user (name link + email, "You" badge), role badge, status pill, phone (hidden below `@3xl`), last updated, actions; stacked list below `@2xl`; live regions, `aria-busy`, scroll on page change, no-results state
-- Checkboxes with select all (indeterminate), own row disabled, selection per list view; selection bar with Activate, Deactivate (confirmation), Delete (confirmation) and Clear; bulk toasts with counts
-- `UserActionsMenu`: Edit → `/users/[id]`; Deactivate… (confirmation `DeactivateUserDialog`) / Activate; disabled with a hint on the current user's row; toasts and error codes
-- Users item in the Manage group of the sidebar (above Settings), active on `/users` and children
-- `users.*` and `nav.users` messages in en / es; overview updated (User fields, routes, checklist)
-- `yarn lint`, `tsc --noEmit`, `yarn build` pass; no overflow at 375 / 768 / 1280 with the sidebar open and collapsed, light / dark, en / es; `passwordHash` absent from HTML and RSC payload
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/users-phase-1-list-spec.md`; research: `docs/users.md` (sections 2, 3 and 6)
-- Phase 1 of 3; "New user" and "Edit" point to routes built in phase 2 (404 until then)
-- Checkboxes and bulk actions (Activate, Deactivate, Delete) like the survey table; the row menu keeps only Edit and Deactivate / Activate
-- Delete is a soft delete (`deletedAt`): removed from the list, surveys keep "created by", no restore in the UI; the deleted user's email stays reserved
-- Activate needs no confirmation; Deactivate and Delete do; bulk actions are all or nothing
-- `/surveys` must look and behave the same after moving the shared table parts
+<!-- Any extra notes -->
 
 ## History
 
@@ -47,3 +34,4 @@ In Progress
 - **Survey Card Redesign** (2026-10-14): dashboard card as one panel ("Propuesta 3: Lista con caritas"): title, code · status and a single "…" menu instead of the copy link / edit buttons. `SurveyRowMenu` extracted to a shared `SurveyActionsMenu` (table, stacked list and card). New `OptionList` (small face / stars / plain label + count + percentage, best option first, poll in owner's order, archived last) replaces the three charts and `MetricBar`; `ReactionFace` `size` prop. Pager with "Question X of Y · N responses" (survey total), only the total for one question. Delete dialog in `SurveyGrid` staying on `/dashboard`; focus to the surveys heading after move to draft or delete. Skeleton updated, unused messages and `ui/progress` removed
 - **Dashboard Header Cleanup** (2026-10-14): removed the three stat cards (Total responses, Active surveys, Responses today) and everything only they used (`StatCards`, `StatCard`, `summary` / `todayResponses`, `getMockDashboardSummary`, `DashboardSummary`, `getTodayRange`, `dashboard.stats` messages); the surveys section is now the first block. "Your surveys" header and `CollectionsToolbar` sized by `@container/surveys` instead of the viewport (stacked header below 48rem, one-row toolbar with a growing search from 28rem), which fixes the 976px-wide page at 768px with the sidebar open; "View all" no longer wraps. Skeleton on the same container; no overflow at 375 / 500 / 640 / 768 / 1024 / 1280, sidebar open and collapsed
 - **Sidebar Collapse** (2026-10-14): collapsed rail widened to 4rem (`--sidebar-width-icon` on `SidebarProvider`) with the logo, nav buttons, toggle and avatar as centered 40px squares (they were up to 6px off center); nav labels, wordmark and user text `sr-only` when collapsed so names stay accessible. New `SidebarToggle` visible in both states (next to the logo when expanded, under it when collapsed) with state-specific icon and label, `aria-expanded` and a ⌘B / Ctrl B tooltip; "Close" in the mobile sheet. Settings uses `aria-disabled` so its "Coming soon" tooltip shows. No persistence across reloads yet
+- **Users Phase 1 — Data and List** (2026-10-15): phase 1 of 3. `User` gains `phone`, `isActive`, `deletedAt`; 8 mock users; in-memory user store (`src/lib/users/service.ts`) with `scrypt` hashes kept on the server, all-or-nothing activate / deactivate / soft delete (no self changes, one active owner kept); survey "created by" reads from it. `/users` list: heading + "New user", search by name / email / phone, status filter, pagination in the URL, checkbox + avatar (image or initials) + "You" badge + role + status + phone + last updated, stacked list on narrow cards; row menu Edit / Deactivate (confirmation) / Activate; bulk Activate / Deactivate / Delete with confirmations. Generic table parts moved to `src/components/table` and `src/lib/table/pagination` and reused by `/surveys` (generic messages in `table`). Users item in the sidebar; overview updated
