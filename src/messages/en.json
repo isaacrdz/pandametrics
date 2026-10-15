@@ -580,10 +580,23 @@
       },
       "tryAnother": "Try another code"
     },
-    "placeholder": {
+    "runner": {
+      "pressEnter": "press Enter",
+      "ok": "OK",
+      "send": "Send",
       "exit": "Exit survey",
-      "questions": "{count, plural, one {# question} other {# questions}}",
-      "soon": "Answering arrives in the next update."
+      "progress": "<strong>{percent}%</strong> completed",
+      "progressLabel": "Survey progress",
+      "previous": "Previous question",
+      "next": "Next question",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit fullscreen",
+      "exitTitle": "Exit the survey?",
+      "exitDescription": "Your answers will be lost.",
+      "cancel": "Cancel",
+      "confirmExit": "Exit",
+      "keyboardHint": "Use keys 1 to 5 to choose an answer and Enter to continue. Up and down arrows move between questions.",
+      "sendSoon": "Sending answers arrives in the next phase."
     }
   }
 }

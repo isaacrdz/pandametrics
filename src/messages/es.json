@@ -580,10 +580,23 @@
       },
       "tryAnother": "Probar otro código"
     },
-    "placeholder": {
+    "runner": {
+      "pressEnter": "presiona Enter",
+      "ok": "OK",
+      "send": "Enviar",
       "exit": "Salir de la encuesta",
-      "questions": "{count, plural, one {# pregunta} other {# preguntas}}",
-      "soon": "Responder llega en la siguiente actualización."
+      "progress": "<strong>{percent}%</strong> completado",
+      "progressLabel": "Progreso de la encuesta",
+      "previous": "Pregunta anterior",
+      "next": "Siguiente pregunta",
+      "fullscreen": "Pantalla completa",
+      "exitFullscreen": "Salir de pantalla completa",
+      "exitTitle": "¿Salir de la encuesta?",
+      "exitDescription": "Se perderán tus respuestas.",
+      "cancel": "Cancelar",
+      "confirmExit": "Salir",
+      "keyboardHint": "Usa las teclas 1 a 5 para elegir una respuesta y Enter para continuar. Las flechas arriba y abajo cambian de pregunta.",
+      "sendSoon": "El envío de respuestas llega en la siguiente fase."
     }
   }
 }

@@ -1,18 +1,33 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Survey Kiosk Phase 2 — Question Runner
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `SurveyRunner` (client) replaces `SurveyRunnerPlaceholder`: state `index`, `answers` by question id, transition direction; small muted survey name top left; top-right actions; progress card
+- `QuestionView`: h1 question (clamp size, `text-balance`, `tabIndex={-1}`, focused on change); answer area by category; action row with the "press Enter ↵" hint (hidden on touch-only) and the primary "OK →" / "Send →" (last question), disabled without an answer; sr-only keyboard hint
+- Options as a `radiogroup` labelled by the h1, each a `button` with `role="radio"`, `aria-checked` and roving tab index (arrows move inside the group)
+- `FaceOptions` with `ReactionFace size="lg"` (125px max) and a new `selected` prop (glow + check badge), Very bad → Excellent; `StarOptions` (5 large stars, hover / focus preview, `--star`, badge on the chosen star); `PollOptions` (text cards, position number, selected with primary border / ring / accent and primary badge)
+- Keyboard on `window` (ignoring inputs and the exit dialog): `1`–`5` select, `Enter` OK / Send, `↑` previous, `↓` next when answered
+- `FullscreenToggle` (round outline, tooltip, follows `fullscreenchange`, hidden without `document.fullscreenEnabled`, try/catch); code entry's Continue requests fullscreen before navigating
+- `ExitSurveyButton` (outline, primary text): confirmation `AlertDialog` only with answers; exits fullscreen and goes to `/s`
+- `ProgressCard` fixed bottom right: "N% completed" (live), `bg-primary` bar with `role="progressbar"`, ↑ / ↓ outline buttons (primary when enabled, muted when disabled)
+- Transitions: 350 ms out + 350 ms in (fade + 24px slide by direction), reduced motion 150 ms fade; focus to the new h1
+- Send in this phase: no storing; development toast "Sending arrives in the next phase"
+- Responsive: ≥ 1024 as the references (poll 3 + 2 wrap), 640–1023 clamp, < 640 one row of 5 faces / stars, stacked poll cards, full-width OK, full-width bottom progress bar; height ≤ 520 compact
+- `kiosk.runner` messages in en / es
+- `yarn lint`, `tsc --noEmit`, `yarn build`; each category by mouse, touch and keyboard; screen reader names; 375 / 768 / 1024 / 1280 and 1024×500, light and dark, English and Spanish
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/survey-kiosk-phase-2-runner-spec.md`; research: `docs/survey-kiosk.md` (sections 3–6, 9–11)
+- References: `context/screenshots/survey-landing-2.png`, `survey-landing-3.png`
+- Decisions: select then OK; every question required (OK / Send and ↓ disabled without a choice)
+- Faces keep `REACTION_COLORS`, stars keep `--star`; primary only on OK / Send, progress fill, enabled ↑ / ↓, selected poll card and focus rings
+- Poll options are text cards (no images until upload exists)
+- Phase 3 adds the submit action, thanks countdown (5 s), restart and tap to start
 
 ## History
 

@@ -1,7 +1,8 @@
 import "server-only";
 
+import { REACTION_VALUES } from "@/lib/surveys/constants";
 import { getSurveyByCode } from "@/lib/surveys/service";
-import type { AnswerType, SurveyCategory } from "@/types/survey";
+import type { AnswerOption, AnswerType, ReactionValue, SurveyCategory } from "@/types/survey";
 
 // What the public kiosk receives: no organization, user or date fields, no archived content
 
@@ -33,6 +34,18 @@ export type PublicSurveyResult =
   // Draft (inactive) survey: it exists but does not take answers
   | { status: "closed" };
 
+// The kiosk shows faces from Very bad to Excellent and stars from 1 to 5, whatever order they were
+// stored in, so keys 1–5 always mean the same thing. Poll options keep the owner's order
+function kioskOrder(category: SurveyCategory, options: AnswerOption[]): AnswerOption[] {
+  if (category === "SATISFACTION") {
+    return [...options].sort(
+      (a, b) => REACTION_VALUES.indexOf(a.value as ReactionValue) - REACTION_VALUES.indexOf(b.value as ReactionValue),
+    );
+  }
+  if (category === "RATING") return [...options].sort((a, b) => Number(a.value) - Number(b.value));
+  return options;
+}
+
 export function getPublicSurvey(code: string): PublicSurveyResult {
   const survey = getSurveyByCode(code);
   if (!survey) return { status: "notFound" };
@@ -49,7 +62,7 @@ export function getPublicSurvey(code: string): PublicSurveyResult {
         .map((question) => ({
           id: question.id,
           text: question.text,
-          options: question.options
+          options: kioskOrder(survey.category, question.options)
             .filter((option) => !option.archivedAt)
             .map(({ id, type, value, label, color }) => ({ id, type, value, label, color })),
         })),

@@ -3,7 +3,7 @@ import { CodeEntry } from "@/components/kiosk/CodeEntry";
 import { KioskFrame } from "@/components/kiosk/KioskFrame";
 import { KioskLoading } from "@/components/kiosk/KioskLoading";
 import { KioskMessage } from "@/components/kiosk/KioskMessage";
-import { SurveyRunnerPlaceholder } from "@/components/kiosk/SurveyRunnerPlaceholder";
+import { SurveyRunner } from "@/components/kiosk/SurveyRunner";
 import { parseSurveyCode } from "@/lib/surveys/code";
 import { getPublicSurvey } from "@/lib/surveys/public";
 
@@ -39,7 +39,8 @@ async function KioskEntry({ searchParams }: Pick<PageProps<"/s">, "searchParams"
     );
   }
 
-  return <SurveyRunnerPlaceholder survey={result.survey} />;
+  // key: opening another survey starts a fresh runner
+  return <SurveyRunner key={result.survey.code} survey={result.survey} />;
 }
 
 export default function KioskPage({ searchParams }: PageProps<"/s">) {

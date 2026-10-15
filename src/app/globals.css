@@ -190,3 +190,62 @@
     @apply font-sans;
   }
 }
+
+/* Kiosk question transition: the current question leaves, then the next one enters (no overlap).
+   The direction follows the navigation: forward moves up, back moves down */
+@keyframes kiosk-out-next {
+  to {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+@keyframes kiosk-out-prev {
+  to {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+@keyframes kiosk-in-next {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+@keyframes kiosk-in-prev {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+@keyframes kiosk-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes kiosk-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.kiosk-out-next {
+  animation: kiosk-out-next 350ms ease-in forwards;
+}
+.kiosk-out-prev {
+  animation: kiosk-out-prev 350ms ease-in forwards;
+}
+.kiosk-in-next {
+  animation: kiosk-in-next 350ms ease-out;
+}
+.kiosk-in-prev {
+  animation: kiosk-in-prev 350ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-out-next,
+  .kiosk-out-prev {
+    animation: kiosk-fade-out 75ms linear forwards;
+  }
+  .kiosk-in-next,
+  .kiosk-in-prev {
+    animation: kiosk-fade-in 75ms linear;
+  }
+}
