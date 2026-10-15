@@ -1,28 +1,18 @@
-# Logo and Surfaces Phase 2 — Surfaces
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Light tokens: `--background #f2f4f8` (planned `#f1f3f7`, lighter so the blue passes AA); `--card-border`, `--border`, `--input`, `--sidebar-border` `#e4e7ed`; `--muted`, `--secondary` `#f3f4f7`; `--muted-foreground #5b6170`; card, popover and sidebar stay `#ffffff`
-- Dark tokens: `--background #121418`; `--card`, `--popover` `#1b1e24`; `--sidebar #16191e`; `--muted`, `--secondary` `#262a31`; `--muted-foreground #a8aebb`; `--sidebar-foreground #c9ced8`; `--card-border #2e323a`; `--border`, `--sidebar-border` `rgb(255 255 255 / 10%)`; `--input` `rgb(255 255 255 / 15%)`; `--control-border #7b8190`
-- Blue primary (added on request): `#4263eb` light / `#748ffc` dark for primary, ring, sidebar primary / ring, chart 1; accent `#f0f4ff` / `#1f2a4d` with `#3b5bdb` / `#bac8ff` text; dark primary text `#0b1220`; chart 2 `#748ffc` / `#91a7ff`; neutral `--control-border #858b98`; dark `--inverse #2a2f38`
-- Unchanged: brand pink (logo, icons, landing illustrations), foreground, light inverse, charts 3–5, reactions, stars, success, destructive
-- `check-contrast.mjs` passes with its current pairs; a `destructive` on `background` pair is added only if destructive text sits on the page
-- Hardcoded pink surface colors outside the tokens replaced with tokens (survey data and brand pink stay)
-- Token changes only; no card shadow in this phase
-- Screenshots at 375 / 768 / 1280, light and dark: dashboard, surveys list, survey form with share panel, users list, new and edit user, profile, landing; white cards on the gray page, dark cards one step lighter than the page, no plum surfaces left, faces / stars / poll colors / landing illustration unchanged, buttons and active states blue, no overflow
-- `yarn lint`, `tsc --noEmit`, `yarn build` pass
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/logo-and-surfaces-phase-2-surfaces-spec.md`; research: `docs/logo-and-surfaces.md` (sections 3 and 4)
-- Expected contrast: light muted text 5.63 on page / 6.20 on card, blue text 4.52 on page / 4.98 on card, white on blue 4.98; dark muted text 8.29 / 7.50, blue text 6.21 / 5.63, control border 4.28 on card
-- Light destructive on the new page would be about 4.4 (below 4.5); today destructive text only sits on cards (4.83)
-- Accent tints (active sidebar item, number tiles, badges, row hover / selection, share panel QR box) follow the blue; pink only on the logo, icons and landing illustrations
-- Card shadow is decided after seeing the result (out of scope)
+<!-- Any extra notes -->
 
 ## History
 
@@ -51,3 +41,4 @@ In Progress
 - **Top Bar Phase 2 — Survey Form** (2026-10-15): phase 2 of 3 of the contextual top bar. `SurveyForm` renders `AppTopBar` inside its `<form>` (back button with the unsaved changes dialog, "Create survey" / "Edit survey" + subtitle, Delete icon in edit, real `type="submit"` with the pending state); "New survey" no longer shows on the form pages. Shared `SubmitButton` / `DeleteIconButton`; the edit fallback renders the same bar with the submit disabled. Form bars hide the organization and language switchers below 36rem (`hideSwitchersWhenNarrow`) and the submit label below 42rem, so the title keeps its room. Share panel grid follows the card width (fixed a 1px overflow at 768). Create title "Create survey", edit submit "Save changes"
 - **Top Bar Phase 3 — User Forms and Profile** (2026-10-15): phase 3 of 3 of the contextual top bar. `UserForm` renders `AppTopBar` inside its `<form>` for create, edit and profile (back button with the unsaved changes dialog, mode title and subtitle, `SubmitButton` with the pending state, switchers hidden on narrow bars); content under the bar in `max-w-5xl` / `max-w-6xl` from the mode config (profile 4 / 8 grid unchanged). `/users/new`, `/users/[id]` and `/profile` no longer show the greeting or "New survey"; the edit fallback renders the same bar with the submit disabled. `FormHeader` deleted with its only message; `GreetingTopBar` used by the dashboard only. Create title "Create user"
 - **Logo and Surfaces Phase 1 — Logo** (2026-10-15): phase 1 of 2. `design/logo.svg` cleaned: it was a trace with the transparency checkerboard drawn in, now clipped to the traced panda silhouette with 152 background paths dropped. `scripts/brand-assets.mjs` (with `svgo`) builds a square SVG around the panda (`-35 40 1968 1968`, 28 KB) for `src/assets/brand/logo.svg` and the `src/app/icon.svg` favicon, plus `icon.png` (512, transparent) and `apple-icon.png` (180, panda on the brand pink, opaque); `logo-icon.webp` removed, hero and Open Graph unchanged. `Logo` shows the panda alone (no pink tile) with `object-contain` in the sidebar and the landing nav; collapsed rail still centered, accessible name unchanged, readable on the dark sidebar without a backdrop
+- **Logo and Surfaces Phase 2 — Surfaces** (2026-10-15): phase 2 of 2. Token-only theme change following the reference card: light page `#f2f4f8` (planned `#f1f3f7`, lightened so the blue passes AA) with white cards, neutral `#e4e7ed` borders / inputs / card borders, `#f3f4f7` muted fills and `#5b6170` secondary text; dark neutral `#121418` page, `#1b1e24` cards, `#16191e` sidebar, white-alpha borders. Added on request: primary from pink to blue `#4263eb` (dark `#748ffc` with `#0b1220` text), blue accent tints (`#f0f4ff` / `#1f2a4d`) for active nav, tiles and badges, neutral checkbox border, neutral dark inverse; brand pink kept on the logo, icons and landing illustrations; faces, stars and survey colors unchanged. Contrast check passes (labels now say primary); no hardcoded tints found; no overflow at 375 / 768 / 1280 in light and dark. Overview palette (section 10), phase 2 spec and research updated; card shadow left for later
