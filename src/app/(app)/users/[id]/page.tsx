@@ -1,4 +1,3 @@
-import { GreetingTopBar } from "@/components/layout/GreetingTopBar";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
@@ -31,16 +30,12 @@ async function EditUserContent({ params }: Pick<PageProps<"/users/[id]">, "param
   );
 }
 
+// The form renders its own top bar inside the <form>; while the user loads, the skeleton shows
+// the same bar (static title, disabled submit), so the header never changes
 export default function EditUserPage({ params }: PageProps<"/users/[id]">) {
   return (
-    <>
-      {/* The page header; outside Suspense, so it is part of the static shell */}
-      <GreetingTopBar />
-      <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-8 md:py-10">
-        <Suspense fallback={<UserFormSkeleton />}>
-          <EditUserContent params={params} />
-        </Suspense>
-      </div>
-    </>
+    <Suspense fallback={<UserFormSkeleton />}>
+      <EditUserContent params={params} />
+    </Suspense>
   );
 }

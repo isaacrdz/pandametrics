@@ -1,4 +1,3 @@
-import { GreetingTopBar } from "@/components/layout/GreetingTopBar";
 import type { Metadata } from "next";
 import { ProfilePictureCard } from "@/components/users/ProfilePictureCard";
 import { UserForm } from "@/components/users/form/UserForm";
@@ -14,25 +13,20 @@ export const metadata: Metadata = {
 export default function ProfilePage() {
   const { user } = getAppContext();
 
+  // The form renders its own top bar inside the <form>, then the 4 / 8 grid with this card
   return (
-    <>
-      {/* The page header; outside Suspense, so it is part of the static shell */}
-      <GreetingTopBar />
-      <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 md:py-10">
-        <UserForm
-          mode="profile"
-          defaultValues={toUserFormValues(user)}
-          aside={
-            <ProfilePictureCard
-              name={user.name ?? user.email ?? ""}
-              email={user.email ?? ""}
-              role={user.role}
-              image={user.image}
-              initials={getInitials(user.name)}
-            />
-          }
+    <UserForm
+      mode="profile"
+      defaultValues={toUserFormValues(user)}
+      aside={
+        <ProfilePictureCard
+          name={user.name ?? user.email ?? ""}
+          email={user.email ?? ""}
+          role={user.role}
+          image={user.image}
+          initials={getInitials(user.name)}
         />
-      </div>
-    </>
+      }
+    />
   );
 }

@@ -243,7 +243,7 @@
     }
   },
   "userForm": {
-    "createTitle": "New user",
+    "createTitle": "Create user",
     "createSubtitle": "Add a person to your organization.",
     "editTitle": "Edit user",
     "editSubtitle": "Update the user's details and access.",
@@ -357,7 +357,6 @@
     "required": "(required)",
     "actions": {
       "back": "Back",
-      "delete": "Delete",
       "saving": "Saving…"
     },
     "unsaved": {

@@ -1,18 +1,26 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Top Bar Phase 3 — User Forms and Profile
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `UserForm` renders `AppTopBar` inside its `<form>` (with `hideSwitchersWhenNarrow`): `PageHeading` with a back button (unsaved changes dialog, `config.backHref`), the mode's title and subtitle; actions = `SubmitButton` with the form's pending state (no Delete)
+- Content under the bar in a `max-w` container inside the form: `max-w-5xl` for create / edit, `max-w-6xl` for the profile (the 4 / 8 grid with the picture card keeps working)
+- `/users/new`, `/users/[id]` and `/profile` drop `GreetingTopBar` and their own `max-w` wrapper; "New survey" no longer shows on these pages
+- `UserFormSkeleton` (`/users/[id]` fallback) renders the same bar with the static "Edit user" heading and a disabled submit, then the card skeletons
+- `FormHeader` is no longer used anywhere: delete `src/components/form/FormHeader.tsx` (and messages only it used, if any)
+- Messages: `userForm.createTitle` → "Create user" / "Crear usuario"
+- Overview rule (section 9) matches what was built in the three phases; `GreetingTopBar` only used by the dashboard
+- `yarn lint`, `tsc --noEmit`, `yarn build` (same route kinds); create / edit / profile flows still work (validation, email taken, wrong current password, toasts, redirects; after creating the bar shows "Edit user"); one `h1`; no overflow at 375 / 768 / 1024 / 1280 with the sidebar open and collapsed, light / dark, en / es
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/top-bar-phase-3-user-forms-spec.md`; research: `docs/contextual-top-bar.md`
+- Phase 3 of 3 of the contextual top bar; reuses `AppTopBar`, `PageHeading`, `SubmitButton` from phases 1 and 2
+- User forms have no Delete (users are deactivated or deleted from the list)
+- The profile keeps its 4 / 8 grid driven by `@container/profile`; the bar sits above it inside the form
 
 ## History
 

@@ -35,6 +35,8 @@ interface UserFormModeConfig {
   showStatus: boolean;
   // A user never edits their own role, so the profile has no permissions card
   showPermissions: boolean;
+  // Width of the content under the top bar: the profile has the picture card next to the form
+  containerClass: "max-w-5xl" | "max-w-6xl";
   backHref: string;
   // Returns the error to show, or null when the save succeeded
   save: (values: UserFormInput, meta: UserFormMeta | undefined, helpers: UserSaveHelpers) => Promise<UserActionError | null>;
@@ -48,6 +50,7 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
     passwordVariant: "create",
     showStatus: false,
     showPermissions: true,
+    containerClass: "max-w-5xl",
     backHref: "/users",
     async save(values, _meta, { navigate, notify }) {
       const result = await createUser(values);
@@ -64,6 +67,7 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
     passwordVariant: "reset",
     showStatus: true,
     showPermissions: true,
+    containerClass: "max-w-5xl",
     backHref: "/users",
     async save(values, meta, { reset, notify }) {
       if (!meta) return { code: "NOT_FOUND" };
@@ -82,6 +86,7 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
     passwordVariant: "change",
     showStatus: false,
     showPermissions: false,
+    containerClass: "max-w-6xl",
     backHref: "/dashboard",
     async save(values, _meta, { reset, notify }) {
       // No id: the server edits the signed-in user
