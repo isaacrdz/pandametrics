@@ -1,28 +1,18 @@
-# Current Feature: Users Phase 3 — My Profile
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `NavUser` dropdown: label "Account", separator, **My profile** (`UserRoundIcon`, link to `/profile`), then Dark / Light mode; no sidebar nav item and nothing highlighted on `/profile`
-- The current user's "Edit" in the user list links to `/profile`, and `/users/<own id>` redirects to `/profile`
-- Service `updateProfile(scope, input)` on `scope.userId`: same rules as `updateUser`, plus `currentPassword` checked with `verifyPassword` when a new password is sent (`WRONG_PASSWORD`); `EMAIL_TAKEN`
-- Action `updateProfile(values)` → `{ values }`, revalidates `/users` and the layout
-- `profile` mode in `USER_FORM_MODES`: "My profile" / "Update your personal details and password.", "Save changes", cards 01 Details and 02 Change password (current, new, confirm; optional as a group), no permissions card, no status line, toast "Profile updated" and reset, Back to `/dashboard`; `WRONG_PASSWORD` on the current password field
-- `/profile` page (`max-w-6xl`): the form wraps the header and a 12-column grid sized by a `@container/profile` (from `@4xl`, 56rem); `ProfilePictureCard` left (`col-span-4`, sticky), cards 01 and 02 right (`col-span-8`); stacked below with the picture card first and compact
-- `ProfilePictureCard`: "Profile picture" + "Coming soon" badge, explanation text, 128px `UserAvatar` (96px stacked), name, email and role badge, disabled "Change photo" button (`aria-disabled`, tooltip "Coming soon"), not part of the form
-- Messages: `userMenu.profile`, `profile.*`, `userForm.sections.password.change.*`, `userForm.fields.currentPassword`, `userForm.errors.WRONG_PASSWORD` in en / es
-- `yarn lint`, `tsc --noEmit`, `yarn build` pass; checked at 375 / 768 / 1280 with the sidebar open and collapsed, light / dark, en / es, keyboard; name changes show in the sidebar, greeting and list
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/users-phase-3-profile-spec.md`; research: `docs/users.md` (section 5)
-- Phase 3 of 3; reuses `UserForm`, `PasswordInput`, `UserDetailsSection`, `PasswordSection`, `UserAvatar` and the `profile` form messages
-- The profile edits only the signed-in user (id from the mock session, never from the client); no role, status or permissions
-- Grid 4 / 8 (changed from 6 / 6 on request after comparing 5 / 7 and 4 / 8): the form keeps fields in pairs and the page is shorter; field grids inside `FormSection` follow the card width (`@container`)
-- Picture upload is not built; the card only shows the avatar and a disabled button
+<!-- Any extra notes -->
 
 ## History
 
@@ -46,3 +36,4 @@ In Progress
 - **Sidebar Collapse** (2026-10-14): collapsed rail widened to 4rem (`--sidebar-width-icon` on `SidebarProvider`) with the logo, nav buttons, toggle and avatar as centered 40px squares (they were up to 6px off center); nav labels, wordmark and user text `sr-only` when collapsed so names stay accessible. New `SidebarToggle` visible in both states (next to the logo when expanded, under it when collapsed) with state-specific icon and label, `aria-expanded` and a ⌘B / Ctrl B tooltip; "Close" in the mobile sheet. Settings uses `aria-disabled` so its "Coming soon" tooltip shows. No persistence across reloads yet
 - **Users Phase 1 — Data and List** (2026-10-15): phase 1 of 3. `User` gains `phone`, `isActive`, `deletedAt`; 8 mock users; in-memory user store (`src/lib/users/service.ts`) with `scrypt` hashes kept on the server, all-or-nothing activate / deactivate / soft delete (no self changes, one active owner kept); survey "created by" reads from it. `/users` list: heading + "New user", search by name / email / phone, status filter, pagination in the URL, checkbox + avatar (image or initials) + "You" badge + role + status + phone + last updated, stacked list on narrow cards; row menu Edit / Deactivate (confirmation) / Activate; bulk Activate / Deactivate / Delete with confirmations. Generic table parts moved to `src/components/table` and `src/lib/table/pagination` and reused by `/surveys` (generic messages in `table`). Users item in the sidebar; overview updated
 - **Users Phase 2 — Create and Edit Form** (2026-10-15): phase 2 of 3. One `UserForm` for `/users/new` and `/users/[id]` (modes in `user-form-modes.ts`): 01 details (name, email, phone; read-only status in edit), 02 password (create required / reset optional with a show toggle using `aria-pressed`), 03 permissions as a disabled "Coming soon" role preview. `userFormSchema(mode)` with lowercased email, normalized phone and password rules; the form submits raw strings and the server normalizes. `createUser` (active, Member) / `updateUser` (new hash only when sent) with global `EMAIL_TAKEN`; update revalidates the layout and `getAppContext` reads the signed-in user from the store, so renames show in the sidebar. Shared form pieces moved to `src/components/form` (`FormSection` with `badge`, `RequiredMark`, `FormHeader`, hooks, `UnsavedChangesDialog`, `form` messages); survey form unchanged
+- **Users Phase 3 — My Profile** (2026-10-15): phase 3 of 3. "My profile" in the sidebar user menu (above the theme toggle); the current user's row and `/users/<own id>` lead to `/profile`. `profile` mode in `UserForm` (details + change password with the current one, no permissions or status); `updateProfile` edits only the signed-in user, and `updateUser` also requires the current password when the id is your own (`WRONG_PASSWORD`). `/profile` with a 4 / 8 grid driven by `@container/profile` (from 56rem of content): sticky `ProfilePictureCard` (avatar or initials, name, email, role, disabled "Change photo" coming soon) and the form; stacked with the picture first below. `FormSection` content is a container so field grids follow the card width
