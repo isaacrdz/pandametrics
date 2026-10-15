@@ -2,13 +2,26 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // Pieces of a table card skeleton, shared by the list pages so their loading states match
 
-export function TableToolbarSkeleton({ filters }: { filters: number }) {
+interface TableToolbarSkeletonProps {
+  filters: number;
+  // The first control takes its own row on narrow cards (e.g. the survey date range)
+  wideFirst?: boolean;
+}
+
+export function TableToolbarSkeleton({ filters, wideFirst = false }: TableToolbarSkeletonProps) {
   return (
     <div className="flex flex-col gap-3 border-b border-card-border p-4 @2xl:flex-row @2xl:justify-between @2xl:px-6">
       <Skeleton className="h-11 w-full rounded-xl @2xl:max-w-sm" />
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3 @2xl:flex-nowrap">
         {Array.from({ length: filters }, (_, i) => (
-          <Skeleton key={i} className="h-11 flex-1 rounded-xl @2xl:w-28 @2xl:flex-none" />
+          <Skeleton
+            key={i}
+            className={
+              wideFirst && i === 0
+                ? "h-11 w-full rounded-xl @2xl:w-48"
+                : "h-11 flex-1 rounded-xl @2xl:w-28 @2xl:flex-none"
+            }
+          />
         ))}
       </div>
     </div>

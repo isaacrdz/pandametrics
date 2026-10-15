@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { TopBar } from "@/components/layout/TopBar";
+import { AppShellProvider } from "@/components/layout/AppShellProvider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAppContext } from "@/lib/dashboard";
 
@@ -14,12 +14,12 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
     <SidebarProvider style={SIDEBAR_STYLE}>
       <AppSidebar user={user} />
       <SidebarInset className="min-w-0">
-        <TopBar
-          user={user}
-          organizations={organizations}
-          currentOrganizationId={organization.id}
-        />
-        <div className="flex-1">{children}</div>
+        {/* Each page renders its own AppTopBar (its header) from this shared data */}
+        <AppShellProvider
+          value={{ userName: user.name, organizations, currentOrganizationId: organization.id }}
+        >
+          <div className="flex-1">{children}</div>
+        </AppShellProvider>
       </SidebarInset>
     </SidebarProvider>
   );

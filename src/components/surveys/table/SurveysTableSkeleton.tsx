@@ -13,17 +13,9 @@ export function SurveysTableSkeleton() {
 
   return (
     <div role="status" aria-label={t("loading")} className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-8 w-56" />
-          <Skeleton className="h-4 w-80 max-w-full" />
-          {/* The subtitle wraps onto a second line on phones */}
-          <Skeleton className="h-4 w-24 sm:hidden" />
-        </div>
-        <Skeleton className="h-11 w-full rounded-full sm:w-48" />
-      </div>
       <div className="@container overflow-hidden rounded-3xl border border-card-border bg-card">
-        <TableToolbarSkeleton filters={2} />
+        {/* Range, Type and Status */}
+        <TableToolbarSkeleton filters={3} wideFirst />
         <div className="hidden h-12 items-center gap-6 border-b border-card-border px-6 @2xl:flex">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="ml-auto h-3 w-16" />

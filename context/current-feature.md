@@ -1,18 +1,28 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Top Bar Phase 1 — Infrastructure and Lists
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `AppShellProvider` (client context with `user`, `organizations`, `currentOrganizationId`, `useAppShell()`); `(app)/layout.tsx` provides it from `getAppContext()` and no longer renders `TopBar` (deleted)
+- `AppTopBar` (same sticky `@container` markup as today): mobile `SidebarTrigger`, `heading` slot, organization and language switchers, `actions` slot
+- `PageHeading`: `h1` title (truncated, `title` attribute), optional count, subtitle (hidden below `@md`), optional back icon button with tooltip
+- Dashboard renders `AppTopBar` with `Greeting` + `NewSurveyButton` outside Suspense: no visible change
+- `/surveys`: bar with "All surveys" (+ count), subtitle and "New survey"; heading removed from `SurveysTableSection`; date range select moved into `SurveysToolbar` (keeps `?range=`, survives "Clear filters"); skeleton updated
+- `/users`: bar with "Users" (+ count), subtitle and "New user"; heading and button removed from `UsersTableSection`; skeleton updated
+- Form pages (`/surveys/new`, `/surveys/[id]`, `/users/new`, `/users/[id]`, `/profile`) render `AppTopBar` with the greeting and "New survey" and keep `FormHeader` until phases 2 and 3 (no visible change)
+- Overview rule (section 9, "Top bar as the page header") matches what is built
+- `yarn lint`, `tsc --noEmit`, `yarn build` pass with the same route kinds; one `h1` per page; no flicker; no overflow at 375 / 768 / 1024 / 1280 with the sidebar open and collapsed, light / dark, en / es
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/top-bar-phase-1-lists-spec.md`; research: `docs/contextual-top-bar.md`
+- Phase 1 of 3; phase 2 moves the survey form and phase 3 the user forms and profile into the bar
+- Each page renders its bar before its `max-w` container and outside Suspense when the title does not depend on data (no parallel routes, portals or context-driven titles)
+- The list count can live in a nested Suspense in the bar or stay out of it (the toolbar already says "Showing X–Y of Z"); document the choice
+- Accepted decisions: create titles "Create survey" / "Create user" (phases 2 and 3), back and delete as icons, range select in the toolbar, users follow the same pattern
 
 ## History
 

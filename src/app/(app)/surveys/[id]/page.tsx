@@ -1,3 +1,4 @@
+import { GreetingTopBar } from "@/components/layout/GreetingTopBar";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { SurveyForm } from "@/components/surveys/form/SurveyForm";
@@ -19,10 +20,14 @@ async function EditSurveyContent({ params }: Pick<PageProps<"/surveys/[id]">, "p
 
 export default function EditSurveyPage({ params }: PageProps<"/surveys/[id]">) {
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-8 md:py-10">
-      <Suspense fallback={<SurveyFormSkeleton />}>
-        <EditSurveyContent params={params} />
-      </Suspense>
-    </div>
+    <>
+      {/* The page header; outside Suspense, so it is part of the static shell */}
+      <GreetingTopBar />
+      <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-8 md:py-10">
+        <Suspense fallback={<SurveyFormSkeleton />}>
+          <EditSurveyContent params={params} />
+        </Suspense>
+      </div>
+    </>
   );
 }

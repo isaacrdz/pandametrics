@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, SlidersHorizontalIcon } from "lucide-react";
+import { CalendarIcon, ChevronDownIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,8 @@ import {
 import { SurveysSelectionBar } from "@/components/surveys/table/SurveysSelectionBar";
 import { FILTER_ACTIVE_CLASS, FILTER_BUTTON_CLASS, FilterMenu } from "@/components/table/FilterMenu";
 import { TableSearch } from "@/components/table/TableSearch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RANGE_KEYS } from "@/lib/date-range";
 import { SURVEY_CATEGORIES } from "@/lib/surveys/constants";
 import {
   SURVEY_STATUS_FILTERS,
@@ -30,6 +32,8 @@ interface SurveysToolbarProps {
   commitSearch: (value: string) => string;
   // Every list change goes through the section, which shows it as pending
   onNavigate: (next: SurveyListQuery) => void;
+  // The responses window: not a filter (it never hides rows), but it sits with them
+  onRangeChange: (value: string) => void;
   // While rows are selected, the bulk actions replace the filters
   selectedIds: string[];
   onClearSelection: () => void;
@@ -41,10 +45,12 @@ export function SurveysToolbar({
   onSearchChange,
   commitSearch,
   onNavigate,
+  onRangeChange,
   selectedIds,
   onClearSelection,
 }: SurveysToolbarProps) {
   const t = useTranslations("surveys");
+  const tRange = useTranslations("dateRange");
   const tCategories = useTranslations("categories");
   // A filter picked while a search is still pending writes both
   function applyFilter(changes: Partial<Pick<SurveyListQuery, "categories" | "status">>) {
@@ -69,7 +75,24 @@ export function SurveysToolbar({
       {selectedIds.length > 0 ? (
         <SurveysSelectionBar ids={selectedIds} onDone={onClearSelection} />
       ) : (
-        <div className="flex gap-3">
+        // Narrow cards: the range takes its own row, Type and Status share the next one
+        <div className="flex flex-wrap gap-3 @2xl:flex-nowrap">
+          <Select value={params.range} onValueChange={onRangeChange}>
+            <SelectTrigger
+              aria-label={t("toolbar.range")}
+              className="h-11! w-full gap-2 rounded-xl bg-card px-4 text-[0.95rem] @2xl:w-48"
+            >
+              <CalendarIcon aria-hidden className="size-4 text-primary" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end" className="rounded-xl">
+              {RANGE_KEYS.map((key) => (
+                <SelectItem key={key} value={key}>
+                  {tRange(key)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { useFormatter, useTranslations } from "next-intl";
+import { useAppShell } from "@/components/layout/AppShellProvider";
 
 const MINUTE_MS = 60 * 1000;
 
@@ -30,11 +31,9 @@ function getPeriod(date: Date | null): Period {
   return "evening";
 }
 
-interface GreetingProps {
-  name: string | null;
-}
-
-export function Greeting({ name }: GreetingProps) {
+// Dashboard heading: date and "Good afternoon, Jordan", with the name from the app shell
+export function Greeting() {
+  const { userName: name } = useAppShell();
   const t = useTranslations("greeting");
   const format = useFormatter();
   const now = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

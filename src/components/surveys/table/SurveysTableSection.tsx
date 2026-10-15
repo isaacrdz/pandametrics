@@ -3,19 +3,19 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarIcon, ClipboardListIcon, PlusIcon, SearchXIcon } from "lucide-react";
+import { ClipboardListIcon, PlusIcon, SearchXIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { SurveysList } from "@/components/surveys/table/SurveysList";
 import { SurveysTable } from "@/components/surveys/table/SurveysTable";
 import { SurveysToolbar } from "@/components/surveys/table/SurveysToolbar";
+import { PAGE_TITLE_ID } from "@/components/layout/PageHeading";
 import { TablePagination } from "@/components/table/TablePagination";
 import type { RowControls } from "@/components/surveys/table/row-controls";
 import { DeleteSurveyDialog } from "@/components/surveys/form/DeleteSurveyDialog";
 import { Button } from "@/components/ui/button";
 import { useUrlSearch } from "@/hooks/use-url-search";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RANGE_KEYS, parseRange } from "@/lib/date-range";
+import { parseRange } from "@/lib/date-range";
 import type { SurveyListResult, SurveyRow } from "@/lib/surveys/list";
 import { DEFAULT_SURVEY_LIST_QUERY, buildSurveysHref, withFilters, type SurveyListQuery } from "@/lib/surveys/list-params";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,6 @@ interface SurveysTableSectionProps {
 
 export function SurveysTableSection({ data, params }: SurveysTableSectionProps) {
   const t = useTranslations("surveys");
-  const tRange = useTranslations("dateRange");
   const format = useFormatter();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -100,33 +99,8 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
   const clearFiltersHref = buildSurveysHref({ ...DEFAULT_SURVEY_LIST_QUERY, range: params.range });
 
   return (
-    <section aria-labelledby="surveys-title" className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 id="surveys-title" className="text-2xl font-bold text-foreground sm:text-3xl">
-            {t("title")}{" "}
-            <span className="ml-2 text-lg font-medium text-muted-foreground tabular-nums">{format.number(data.totalAll)}</span>
-          </h1>
-          <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
-        </div>
-        <Select value={params.range} onValueChange={handleRangeChange}>
-          <SelectTrigger
-            aria-label={t("toolbar.range")}
-            className="h-11! w-full gap-2 rounded-full bg-card px-4 text-[0.95rem] sm:w-48"
-          >
-            <CalendarIcon aria-hidden className="size-4 text-primary" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent align="end" className="rounded-xl">
-            {RANGE_KEYS.map((key) => (
-              <SelectItem key={key} value={key}>
-                {tRange(key)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
+    // Named by the page h1, which lives in the top bar
+    <section aria-labelledby={PAGE_TITLE_ID} className="flex flex-col gap-6">
       {data.totalAll === 0 ? (
         <EmptyState
           icon={ClipboardListIcon}
@@ -153,6 +127,7 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
           )}
         >
           <SurveysToolbar
+            onRangeChange={handleRangeChange}
             params={params}
             search={search}
             onSearchChange={handleChange}

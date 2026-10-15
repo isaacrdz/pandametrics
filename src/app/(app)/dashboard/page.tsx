@@ -1,3 +1,4 @@
+import { GreetingTopBar } from "@/components/layout/GreetingTopBar";
 import { Suspense } from "react";
 import { CreateSurveyCallout } from "@/components/dashboard/CreateSurveyCallout";
 import { DashboardFooter } from "@/components/dashboard/DashboardFooter";
@@ -28,13 +29,17 @@ async function DashboardContent({ searchParams }: Pick<PageProps<"/dashboard">, 
 
 export default function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:px-8 md:py-10">
-      <DashboardTitle />
-      <Suspense fallback={<DashboardSkeleton />}>
-        <DashboardContent searchParams={searchParams} />
-      </Suspense>
-      <CreateSurveyCallout />
-      <DashboardFooter />
-    </div>
+    <>
+      {/* The page header; outside Suspense, so it is part of the static shell */}
+      <GreetingTopBar />
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:px-8 md:py-10">
+        <DashboardTitle />
+        <Suspense fallback={<DashboardSkeleton />}>
+          <DashboardContent searchParams={searchParams} />
+        </Suspense>
+        <CreateSurveyCallout />
+        <DashboardFooter />
+      </div>
+    </>
   );
 }

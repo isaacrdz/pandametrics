@@ -670,6 +670,25 @@ Panda Metrics            [ Search surveys…  ⌘K ]          [ + New survey ]
 
 Illustrative navigation concept, not a finished screen design.
 
+### Top bar as the page header (rule for every admin view)
+
+Full research in `docs/contextual-top-bar.md`.
+
+- The sticky top bar is the page header. Every admin page renders `AppTopBar` first, outside its `max-w` container, and outside Suspense whenever its title does not depend on runtime data (so it is part of the static shell and never flickers). The layout only provides the global data (user, organizations) through `AppShellProvider`.
+- **Left side**: the dashboard shows the date and the greeting (its `h1` is sr-only). Every other view shows its own `h1`, an optional count and its subtitle (`PageHeading`), with a back button before the title on form and detail pages. Exactly one `h1` per page.
+- **Right side**: the organization and language switchers, then the view's primary action, a single strong button: "New survey" on the dashboard and the survey list, the entity's "New …" on other lists, the submit button ("Create …" / "Save changes") on forms. Secondary actions (Delete) are icon buttons with a tooltip.
+- **Forms** put the bar inside their `<form>`, so the submit button is a real `type="submit"` with the form's pending state; edit pages render the same bar (submit disabled) in their Suspense fallback.
+- Pages do not repeat the heading in their content. Labels collapse to icons when the bar is narrow (container queries), and the subtitle hides on phones.
+
+| View | Heading | Primary action |
+| --- | --- | --- |
+| Dashboard | Date + greeting | New survey |
+| Surveys | All surveys · count | New survey |
+| Create / edit survey | Create survey / Edit survey | Create survey / Save changes |
+| Users | Users · count | New user |
+| Create / edit user | Create user / Edit user | Create user / Save changes |
+| My profile | My profile | Save changes |
+
 ### Survey card requirements (dashboard)
 
 Each card should include:

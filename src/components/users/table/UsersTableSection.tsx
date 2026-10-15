@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PlusIcon, SearchXIcon } from "lucide-react";
+import { SearchXIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { setUserActive } from "@/actions/users";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import { PAGE_TITLE_ID } from "@/components/layout/PageHeading";
 import { TablePagination } from "@/components/table/TablePagination";
 import type { UserRowControls } from "@/components/users/table/row-controls";
 import { UserConfirmDialog } from "@/components/users/table/UserConfirmDialog";
@@ -113,23 +114,8 @@ export function UsersTableSection({ data, params }: UsersTableSectionProps) {
   const selectionMessage = selectedIds.length > 0 ? t("select.count", { count: selectedIds.length }) : "";
 
   return (
-    <section aria-labelledby="users-title" className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 id="users-title" className="text-2xl font-bold text-foreground sm:text-3xl">
-            {t("title")}{" "}
-            <span className="ml-2 text-lg font-medium text-muted-foreground tabular-nums">{format.number(data.totalAll)}</span>
-          </h1>
-          <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
-        </div>
-        <Button asChild className="h-11 gap-2 rounded-xl px-5 font-semibold shadow-[0_10px_24px_-12px_var(--primary)]">
-          <Link href="/users/new">
-            <PlusIcon aria-hidden />
-            {t("new")}
-          </Link>
-        </Button>
-      </div>
-
+    // Named by the page h1, which lives in the top bar
+    <section aria-labelledby={PAGE_TITLE_ID} className="flex flex-col gap-6">
       {/* Container queries, not viewport breakpoints: the sidebar takes part of the width */}
       <div
         ref={cardRef}
