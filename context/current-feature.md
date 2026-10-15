@@ -1,30 +1,18 @@
-# Current Feature: Users Phase 2 — Create and Edit Form
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Shared form pieces moved to `src/components/form/` (`FormSection` with an optional `badge`, `RequiredMark`, form header with labels as props, `useBeforeUnloadWarning`, `useValidationMessage`, `UnsavedChangesDialog` with the discard target as a prop); the survey form looks and behaves the same
-- `src/lib/users/schema.ts`: `userFormSchema(mode)` (name 1–80, email lowercased ≤ 254, phone optional and normalized to 7–15 digits, password 8–72 with a letter and a number + confirm; required in create, optional as a pair in edit) and `toUserFormValues(user)` with empty password fields
-- Service `createUser` (hash, active, `MEMBER`, scope organization) and `updateUser` (new hash only when sent); global email uniqueness (`EMAIL_TAKEN`), `NOT_FOUND` for other organizations
-- Actions `createUser` → `{ id }` and `updateUser` → `{ values }` with server-side Zod field errors and codes; revalidate `/users` and the layout on update
-- Pages `/users/new` (create, static) and `/users/[id]` (params in Suspense, `notFound()`, `UserFormSkeleton`), `max-w-5xl`
-- `UserForm` + `user-form-modes.ts` (create / edit): header with Back and Submit, unsaved changes dialog and `beforeunload`, `VALIDATION` / `EMAIL_TAKEN` on fields, other codes as toasts; create → toast and go to `/users/[id]`, edit → toast and reset
-- Card 01 `UserDetailsSection`: name, email and phone (side by side from `sm`); edit shows a read-only status line
-- Card 02 `PasswordSection`: create (required) / reset (optional) with `PasswordInput` (show / hide, `aria-pressed`), `new-password` autocomplete, rules hint; cleared after saving
-- Card 03 `PermissionsSection` with a "Coming soon" badge: disabled, non-focusable role preview (current role or Member); nothing submitted
-- `userForm.*` and `validation.email` / `phone` / `passwordRules` / `passwordMismatch` in en / es
-- `yarn lint`, `tsc --noEmit`, `yarn build` pass; checked at 375 / 768 / 1280, light / dark, en / es, keyboard; passwords and hashes never in HTML, RSC payload, toasts or logs
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/users-phase-2-form-spec.md`; research: `docs/users.md` (sections 2 and 4)
-- Phase 2 of 3; phase 3 adds the `profile` mode and `/profile`, and the redirect from `/users/<own id>` to `/profile`
-- No delete and no status control in the form (both live in the list); permissions not editable, new users are `MEMBER`
-- Edit never shows the current password; an empty password keeps it; no "send reset link" (no email service)
-- The phone is stored normalized (`+525512345678`); the list shows it as stored
+<!-- Any extra notes -->
 
 ## History
 
@@ -47,3 +35,4 @@ In Progress
 - **Dashboard Header Cleanup** (2026-10-14): removed the three stat cards (Total responses, Active surveys, Responses today) and everything only they used (`StatCards`, `StatCard`, `summary` / `todayResponses`, `getMockDashboardSummary`, `DashboardSummary`, `getTodayRange`, `dashboard.stats` messages); the surveys section is now the first block. "Your surveys" header and `CollectionsToolbar` sized by `@container/surveys` instead of the viewport (stacked header below 48rem, one-row toolbar with a growing search from 28rem), which fixes the 976px-wide page at 768px with the sidebar open; "View all" no longer wraps. Skeleton on the same container; no overflow at 375 / 500 / 640 / 768 / 1024 / 1280, sidebar open and collapsed
 - **Sidebar Collapse** (2026-10-14): collapsed rail widened to 4rem (`--sidebar-width-icon` on `SidebarProvider`) with the logo, nav buttons, toggle and avatar as centered 40px squares (they were up to 6px off center); nav labels, wordmark and user text `sr-only` when collapsed so names stay accessible. New `SidebarToggle` visible in both states (next to the logo when expanded, under it when collapsed) with state-specific icon and label, `aria-expanded` and a ⌘B / Ctrl B tooltip; "Close" in the mobile sheet. Settings uses `aria-disabled` so its "Coming soon" tooltip shows. No persistence across reloads yet
 - **Users Phase 1 — Data and List** (2026-10-15): phase 1 of 3. `User` gains `phone`, `isActive`, `deletedAt`; 8 mock users; in-memory user store (`src/lib/users/service.ts`) with `scrypt` hashes kept on the server, all-or-nothing activate / deactivate / soft delete (no self changes, one active owner kept); survey "created by" reads from it. `/users` list: heading + "New user", search by name / email / phone, status filter, pagination in the URL, checkbox + avatar (image or initials) + "You" badge + role + status + phone + last updated, stacked list on narrow cards; row menu Edit / Deactivate (confirmation) / Activate; bulk Activate / Deactivate / Delete with confirmations. Generic table parts moved to `src/components/table` and `src/lib/table/pagination` and reused by `/surveys` (generic messages in `table`). Users item in the sidebar; overview updated
+- **Users Phase 2 — Create and Edit Form** (2026-10-15): phase 2 of 3. One `UserForm` for `/users/new` and `/users/[id]` (modes in `user-form-modes.ts`): 01 details (name, email, phone; read-only status in edit), 02 password (create required / reset optional with a show toggle using `aria-pressed`), 03 permissions as a disabled "Coming soon" role preview. `userFormSchema(mode)` with lowercased email, normalized phone and password rules; the form submits raw strings and the server normalizes. `createUser` (active, Member) / `updateUser` (new hash only when sent) with global `EMAIL_TAKEN`; update revalidates the layout and `getAppContext` reads the signed-in user from the store, so renames show in the sidebar. Shared form pieces moved to `src/components/form` (`FormSection` with `badge`, `RequiredMark`, `FormHeader`, hooks, `UnsavedChangesDialog`, `form` messages); survey form unchanged
