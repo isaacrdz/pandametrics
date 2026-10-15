@@ -1,25 +1,18 @@
-# Current Feature: Top Bar Phase 2 — Survey Form
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `SurveyForm` renders `AppTopBar` inside its `<form>`: `PageHeading` with a back button (unsaved changes dialog as today), "Create survey" / "Edit survey" and the subtitle; actions = Delete icon button (edit only) + submit button
-- New shared `SubmitButton` (primary, `type="submit"`, check / spinner, pending "Saving…", label from `@md` of the bar, `aria-label` + tooltip below) and `DeleteIconButton` (outline destructive, `Trash2Icon`, `aria-label` + tooltip)
-- `FormHeader` no longer rendered by `SurveyForm`; the cards sit in a `max-w-5xl` container under the bar inside the form
-- `/surveys/new` and `/surveys/[id]` drop `GreetingTopBar` and their own `max-w` wrapper; "New survey" no longer shows on these pages
-- `SurveyFormSkeleton` (edit fallback) renders the same bar with the static "Edit survey" heading and a disabled submit, then the card skeletons
-- Messages: `surveyForm.createTitle` → "Create survey" / "Crear encuesta"; new `surveyForm.actions.deleteSurvey` ("Delete survey" / "Eliminar encuesta")
-- `yarn lint`, `tsc --noEmit`, `yarn build` (`/surveys/new` static, `/surveys/[id]` partial prerender); Enter submits; pending state, toasts, delete dialog and unsaved dialog work; after creating, the bar shows "Edit survey"; one `h1`; no overflow at 375 / 768 / 1024 / 1280 with the sidebar open and collapsed, light / dark, en / es
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/top-bar-phase-2-survey-form-spec.md`; research: `docs/contextual-top-bar.md` (sections 2 and 3)
-- Phase 2 of 3; phase 3 does the same for `UserForm` (create, edit, profile) and deletes `FormHeader`
-- The bar inside the `<form>` keeps a real `type="submit"` with the form's pending state (no `form="…"` attribute, no global state)
-- Back and Delete as icon buttons; the create title equals the submit label ("Create survey") by decision
+<!-- Any extra notes -->
 
 ## History
 
@@ -45,3 +38,4 @@ In Progress
 - **Users Phase 2 — Create and Edit Form** (2026-10-15): phase 2 of 3. One `UserForm` for `/users/new` and `/users/[id]` (modes in `user-form-modes.ts`): 01 details (name, email, phone; read-only status in edit), 02 password (create required / reset optional with a show toggle using `aria-pressed`), 03 permissions as a disabled "Coming soon" role preview. `userFormSchema(mode)` with lowercased email, normalized phone and password rules; the form submits raw strings and the server normalizes. `createUser` (active, Member) / `updateUser` (new hash only when sent) with global `EMAIL_TAKEN`; update revalidates the layout and `getAppContext` reads the signed-in user from the store, so renames show in the sidebar. Shared form pieces moved to `src/components/form` (`FormSection` with `badge`, `RequiredMark`, `FormHeader`, hooks, `UnsavedChangesDialog`, `form` messages); survey form unchanged
 - **Users Phase 3 — My Profile** (2026-10-15): phase 3 of 3. "My profile" in the sidebar user menu (above the theme toggle); the current user's row and `/users/<own id>` lead to `/profile`. `profile` mode in `UserForm` (details + change password with the current one, no permissions or status); `updateProfile` edits only the signed-in user, and `updateUser` also requires the current password when the id is your own (`WRONG_PASSWORD`). `/profile` with a 4 / 8 grid driven by `@container/profile` (from 56rem of content): sticky `ProfilePictureCard` (avatar or initials, name, email, role, disabled "Change photo" coming soon) and the form; stacked with the picture first below. `FormSection` content is a container so field grids follow the card width
 - **Top Bar Phase 1 — Infrastructure and Lists** (2026-10-15): phase 1 of 3 of the contextual top bar. `AppShellProvider` in the admin layout (user name, organizations); every page renders its own `AppTopBar` first, outside its `max-w` container and outside Suspense (static shell); `TopBar` removed. `PageHeading` (h1 with id `page-title`, count next to it and hidden on narrow bars, subtitle hidden on phones, optional back button). Dashboard and form pages keep the greeting and "New survey" (`GreetingTopBar`). `/surveys` and `/users`: title, count (computed in the page, revalidated by the actions) and subtitle in the bar with "New survey" / "New user"; headings removed from the content; the survey date range select moved into the table toolbar and skeleton. Overview rule "Top bar as the page header"
+- **Top Bar Phase 2 — Survey Form** (2026-10-15): phase 2 of 3 of the contextual top bar. `SurveyForm` renders `AppTopBar` inside its `<form>` (back button with the unsaved changes dialog, "Create survey" / "Edit survey" + subtitle, Delete icon in edit, real `type="submit"` with the pending state); "New survey" no longer shows on the form pages. Shared `SubmitButton` / `DeleteIconButton`; the edit fallback renders the same bar with the submit disabled. Form bars hide the organization and language switchers below 36rem (`hideSwitchersWhenNarrow`) and the submit label below 42rem, so the title keeps its room. Share panel grid follows the card width (fixed a 1px overflow at 768). Create title "Create survey", edit submit "Save changes"
