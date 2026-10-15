@@ -223,13 +223,13 @@ Docs to update in phase 1:
 
 ### Derivatives
 
-Generate them once with a script, using `sharp` (already installed with Next, v0.35), and commit both the outputs and the script (`scripts/brand-assets.mjs`). Measured from the real source:
+Generate them once with a script, using `sharp` (already installed with Next, v0.35) and `svgo` for the vector logo, and commit both the outputs and the script (`scripts/brand-assets.mjs`). Measured from the real source:
 
 | Asset | Crop / size | Format | Weight | Destination |
 | ----- | ----------- | ------ | ------ | ----------- |
-| App icon (panda head on pink) | square crop `left 1844, top 154, 1816×1816` → 512×512 | PNG | 134 KB | `src/app/icon.png` (Next adds `<link rel="icon">`) |
-| Apple icon | same crop → 180×180 | PNG | 20 KB | `src/app/apple-icon.png` |
-| Logo tile (nav, sidebar) | same crop → 128×128 (shown at 32–44 px, 2x) | WebP | ~3 KB | `src/assets/brand/logo-icon.webp` (static import) |
+| Logo (nav, sidebar) and SVG favicon | `design/logo.svg` (vector panda, transparent) with a square viewBox, optimized with SVGO | SVG | 28 KB | `src/assets/brand/logo.svg` (static import) and `src/app/icon.svg` (`<link rel="icon" type="image/svg+xml">`) |
+| App icon fallback | the same SVG → 512×512, transparent | PNG | 49 KB | `src/app/icon.png` |
+| Apple icon | the same SVG on the brand pink `#db8396` → 180×180, opaque | PNG | 11 KB | `src/app/apple-icon.png` |
 | Hero illustration | crop `left 1706, top 92, 2092 wide`, cut just above the "PANDA" letters (~0.62 of the height) → 1200 wide | AVIF + WebP | 30 KB / 51 KB | `src/assets/brand/panda-hero.webp` (static import; `next/image` serves AVIF / WebP itself) |
 | Open Graph / Twitter | full logo → 1200×630 cover | PNG | 373 KB | `src/app/opengraph-image.png` + `opengraph-image.alt.txt`, same for `twitter-image` |
 
@@ -239,7 +239,7 @@ Generate them once with a script, using `sharp` (already installed with Next, v0
 
 ### `Logo` component
 
-- `src/components/brand/Logo.tsx` (server-safe): the icon tile (`next/image` of `logo-icon.webp`, rounded) + the wordmark "Panda Metrics". Prop `showWordmark` (default true).
+- `src/components/brand/Logo.tsx` (server-safe): the panda (`next/image` of `logo.svg`, no tile; see `docs/logo-and-surfaces.md`) + the wordmark "Panda Metrics". Prop `showWordmark` (default true).
 - **Sidebar**: replaces the sparkles tile. In collapsed mode the wordmark is hidden with `group-data-[collapsible=icon]:hidden`, as today.
 - **Landing nav**: links to `/`. The sidebar logo links to `/dashboard`.
 - **Accessibility**:

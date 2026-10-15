@@ -1,18 +1,29 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Logo and Surfaces Phase 1 — Logo
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Drawn checkerboard background (the "specks") removed from `design/logo.svg`: clipped to the traced silhouette, 152 background paths dropped (cleaned source committed)
+- `svgo` dev dependency; `scripts/brand-assets.mjs` SVG step: square viewBox around the panda `-35 40 1968 1968`, no `width` / `height` / `preserveAspectRatio` / `style`, SVGO (`floatPrecision: 1`, viewBox kept)
+- Outputs: `src/assets/brand/logo.svg`, `src/app/icon.svg`, `src/app/icon.png` (512, transparent) and `src/app/apple-icon.png` (180, panda on `#db8396`, opaque), each logged with its size
+- `logo-icon.webp` output and file removed; HERO and OG steps unchanged
+- `Logo` uses the SVG (static import, `next/image`, `object-contain`), panda alone without the pink tile; sizes `sm` `size-10`, `md` `size-11`; `tile` renamed to `icon`
+- Accessible name unchanged (`alt=""` with the wordmark, brand name without it)
+- Panda outline checked on the dark sidebar; light `drop-shadow` only if the hood edge disappears
+- `docs/landing.md` asset table updated
+- Head has the SVG icon link, the PNG icon and `apple-touch-icon`; sidebar expanded / collapsed (centered at 32px) and landing nav checked in light and dark
+- `yarn lint`, `tsc --noEmit`, `yarn build` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/logo-and-surfaces-phase-1-logo-spec.md`; research: `docs/logo-and-surfaces.md` (section 2)
+- Decisions: panda alone (no tile) in sidebar and landing; `apple-icon.png` on the brand pink for now; favicon SVG with PNG fallback
+- Hero (`panda-hero.webp`) and Open Graph / Twitter images keep coming from `design/logo-source.png`
+- Next sets `unoptimized` automatically for `.svg` sources; no `next.config` change
+- Phase 2 (surfaces: light and dark tokens) comes next in `logo-and-surfaces-phase-2-surfaces-spec.md`
 
 ## History
 

@@ -1,14 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import logoIcon from "@/assets/brand/logo-icon.webp";
+import logoMark from "@/assets/brand/logo.svg";
 import { cn } from "@/lib/utils";
 
 // Brand name, the same in every language
 export const BRAND_NAME = "Panda Metrics";
 
 const SIZES = {
-  sm: { tile: "size-10", text: "text-lg" },
-  md: { tile: "size-11", text: "text-xl" },
+  sm: { icon: "size-10", text: "text-lg" },
+  md: { icon: "size-11", text: "text-xl" },
 };
 
 interface LogoProps {
@@ -16,7 +16,7 @@ interface LogoProps {
   size?: keyof typeof SIZES;
   showWordmark?: boolean;
   className?: string;
-  // Lets the sidebar shrink the tile and hide the wordmark when collapsed
+  // Lets the sidebar adjust the icon and hide the wordmark when collapsed
   iconClassName?: string;
   wordmarkClassName?: string;
 }
@@ -39,21 +39,10 @@ export function Logo({
         className,
       )}
     >
-      <span
-        className={cn(
-          "relative shrink-0 overflow-hidden rounded-xl bg-brand shadow-[0_8px_20px_-8px_var(--brand)]",
-          sizes.tile,
-          iconClassName,
-        )}
-      >
-        {/* The wordmark is the accessible name; the image is only decorative next to it */}
-        <Image
-          src={logoIcon}
-          alt={showWordmark ? "" : BRAND_NAME}
-          fill
-          sizes="48px"
-          className="object-cover"
-        />
+      <span className={cn("relative shrink-0", sizes.icon, iconClassName)}>
+        {/* The wordmark is the accessible name; the image is only decorative next to it.
+            SVG sources are served as is (Next skips optimization for .svg) */}
+        <Image src={logoMark} alt={showWordmark ? "" : BRAND_NAME} fill sizes="48px" className="object-contain" />
       </span>
       {showWordmark && (
         <span className={cn("truncate font-bold text-foreground", sizes.text, wordmarkClassName)}>
