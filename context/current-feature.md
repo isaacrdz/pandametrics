@@ -1,30 +1,18 @@
-# Survey Kiosk Phase 3 — Submit and Restart
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Response store `src/lib/surveys/responses.ts` (server only, `globalThis`, seeded with a clone of `MOCK_RESPONSES`): `listResponses(surveyId?)`, `addResponse(response)`
-- `getMockSurveyMetrics`, `countMockResponses` and `getAnsweredOptionIds` read the store (same names), so a kiosk answer raises counts on `/dashboard` and `/surveys`, updates option metrics and locks the category
-- `submitPublicResponse` in `src/lib/surveys/public.ts`: survey by code (`NOT_FOUND`), active (`CLOSED`); exactly one item per non-archived question, no duplicates or unknown questions, each option a non-archived option of its question (`INVALID`); snapshot items (type, value, label); stored `source`, `deviceId`, `locale`, `durationMs` (clamped 0–24 h), `createdAt`
-- In-memory rate limit per `deviceId` and per IP: 1 per 3 s and 30 per 10 min (`RATE_LIMITED`); IP only when `deviceId` is missing
-- Public action `submitSurveyResponse` in `src/actions/kiosk.ts`: Zod (`code`, 1–50 `items`, `source` `KIOSK` | `LINK`, `deviceId` uuid or null, `locale` `en` | `es`, `durationMs` int ≥ 0), IP from `x-forwarded-for` / `x-real-ip`, revalidates `/dashboard` and `/surveys` on success, returns `{ ok }` or an error code (never throws to the client)
-- Runner: `deviceId` in `localStorage["panda-metrics:device-id"]` (`crypto.randomUUID()`, try/catch, `null` when blocked), `locale` from the app locale (`useAppLocale`, `en` / `es`; next-intl's `useLocale` returns `en-US`), `durationMs` from the first question shown, `source` `KIOSK` when reached from the code entry's Continue (one-time `sessionStorage` flag) else `LINK`
-- Send through one guarded `submit()` (ref + `useTransition`): input ignored while pending, Send shows a spinner and is disabled; errors → localized toast and answers kept; `CLOSED` / `NOT_FOUND` → `KioskMessage`; success → thanks
-- `ThanksScreen`: "The survey was sent successfully" (`role="status"`) and "The survey will restart in {seconds}s" counting 5 → 1; top-right actions stay; at 0 answers cleared, first question, new start time; tap to start when fullscreen was on at Send and is now off (and supported)
-- `TapToStart`: large "Tap to start" button (subtle pulse, none with reduced motion) that re-enters fullscreen and starts
-- `kiosk.thanks` / `kiosk.errors` messages in en / es; the phase 2 "next phase" toast removed
-- `yarn lint`, `tsc --noEmit`, `yarn build`; counts, category lock, double submit, rate limit, invalid payloads, closed survey, source / deviceId / duration, fullscreen restart, thanks screenshots at 375 / 1280 light / dark / en / es
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/survey-kiosk-phase-3-submit-spec.md`; research: `docs/survey-kiosk.md` (sections 3, 4.3, 4.4, 7, 9)
-- Reference: `context/screenshots/survey-landing-4.png`
-- Decisions: every question required (server rejects incomplete), 5-second countdown, `source` only `KIOSK` / `LINK`
-- Server Action instead of the `/api/v1/.../answers` route (the route can wrap the same service later)
-- Phase 4 enables QR scanning and upload on the code entry
+<!-- Any extra notes -->
 
 ## History
 
@@ -56,3 +44,4 @@ In Progress
 - **Logo and Surfaces Phase 2 — Surfaces** (2026-10-15): phase 2 of 2. Token-only theme change following the reference card: light page `#f2f4f8` (planned `#f1f3f7`, lightened so the blue passes AA) with white cards, neutral `#e4e7ed` borders / inputs / card borders, `#f3f4f7` muted fills and `#5b6170` secondary text; dark neutral `#121418` page, `#1b1e24` cards, `#16191e` sidebar, white-alpha borders. Added on request: primary from pink to blue `#4263eb` (dark `#748ffc` with `#0b1220` text), blue accent tints (`#f0f4ff` / `#1f2a4d`) for active nav, tiles and badges, neutral checkbox border, neutral dark inverse; brand pink kept on the logo, icons and landing illustrations; faces, stars and survey colors unchanged. Contrast check passes (labels now say primary); no hardcoded tints found; no overflow at 375 / 768 / 1280 in light and dark. Overview palette (section 10), phase 2 spec and research updated; card shadow left for later
 - **Survey Kiosk Phase 1 — Route and Code Entry** (2026-10-15): phase 1 of 4 of the public kiosk. `(kiosk)` route group with `/s` (noindex / nofollow, "Answer a survey" title); the screen is picked from `?code=` inside Suspense (spinner fallback). `parseSurveyCode` (bare code, link with `?code=` or any text with a 6-character code; never throws) and `getPublicSurvey` / `getSurveyByCode` (reduced survey without organization, user, dates or archived content; `notFound` for unknown or deleted, `closed` for drafts). Code entry as in the reference: logo and language switcher, uppercase 6-character input that pulls the code out of a pasted link, primary "Continue →" (disabled until complete, Enter submits, pending spinner), inline invalid-code alert, "Scan QR" / "Upload QR image" outline with primary text and a "Coming soon" tooltip (`aria-disabled`). Not found / closed screens with a primary "Try another code"; a placeholder runner (name, question count, exit) until phase 2. Share panel "Open survey" opens the public link in a new tab (`openSoon` removed). `kiosk` messages in en / es; flows and 375 / 768 / 1280 light / dark / en / es checked
 - **Survey Kiosk Phase 2 — Question Runner** (2026-10-15): phase 2 of 4 of the public kiosk. `SurveyRunner` replaces the placeholder: one question at a time with the survey name, `FullscreenToggle` (follows `fullscreenchange`, hidden without support), `ExitSurveyButton` (confirmation only with answers, leaves fullscreen, back to `/s`) and `ProgressCard` (live percent, primary progress bar, ↑ / ↓; full-width bottom bar on phones). `QuestionView`: large h1 focused on each question, Enter hint, primary "OK →" / "Send →" disabled without an answer. Options as a radio group labelled by the question (← / → inside, roving tab index): faces with `ReactionFace size="lg"` and a `selected` glow + check badge, stars with hover / focus preview, poll text cards with the key number and a primary selected state; `getPublicSurvey` orders faces Very bad → Excellent and stars 1 → 5 so keys 1–5 always match. Keys 1–5, Enter, ↑ / ↓ on `window` (Enter left to focused buttons, ignored in fields and the exit dialog). 350 + 350 ms slide transition (150 ms fade with reduced motion) with a fallback timer. Continue on the code entry enters fullscreen. Send shows a "next phase" toast until phase 3. Checked by keyboard, mouse and screen reader names at 375 / 768 / 1280 and 1024×500, light and dark
+- **Survey Kiosk Phase 3 — Submit and Restart** (2026-10-15): phase 3 of 4 of the public kiosk. In-memory response store (`src/lib/surveys/responses.ts`, seeded with the mock responses) read by the metrics, survey counts and category lock; answers newer than the fixed mock clock count as its today, so a kiosk answer adds exactly one (1,842 → 1,843). `submitPublicResponse`: active survey by code, every current question answered once with one of its current options (`NOT_FOUND` / `CLOSED` / `INVALID`), answer snapshots, source / device / locale / duration; in-memory rate limit per device and per IP (1 per 3 s, 30 per 10 min, `RATE_LIMITED`). Public `submitSurveyResponse` action (Zod, IP from `x-forwarded-for` / `x-real-ip`, revalidates `/dashboard` and `/surveys`, codes only). Runner: one guarded submit (spinner, Enter + clicks store once), toasts keep the answers, closed / not found screens; `KIOSK` vs `LINK` from a session flag set by Continue (cached per code so remounts keep it), persistent device id, app locale (`useAppLocale`, not next-intl's `en-US`). `ThanksScreen` (5 s countdown, restart with empty answers) and `TapToStart` when fullscreen was lost. Service rules checked directly; tap to start still to be tried on a real browser
