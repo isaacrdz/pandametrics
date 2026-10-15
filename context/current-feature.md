@@ -1,18 +1,29 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Survey Kiosk Phase 1 — Route and Code Entry
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `(kiosk)` route group: layout with a full-height `bg-background` canvas, `robots` noindex / nofollow and the title "Answer a survey · Panda Metrics"
+- `/s` page: static frame + `<Suspense fallback={<KioskLoading />}>` around `KioskEntry`, which awaits `searchParams`; no code → `CodeEntry`; unparseable code → `CodeEntry` with the error and the raw value; `ok` → `SurveyRunnerPlaceholder` (name, question count, "Exit survey" to `/s`); `notFound` / `closed` → `KioskMessage`
+- `KioskLoading`: centered spinner, `role="status"`, sr-only "Loading survey"
+- `parseSurveyCode` in `src/lib/surveys/code.ts` (trim + uppercase, `?code=` from a URL, else the first 6-character `[A-Z0-9]` token, never throws) and `SURVEY_CODE_LENGTH = 6`
+- `getPublicSurvey(code)` in `src/lib/surveys/public.ts`: `ok` with `PublicSurvey` (code, name, category, non-archived questions and options, no org / user / dates), `notFound` (unknown or deleted), `closed` (inactive); case-insensitive lookup by code via `getSurveyByCode`
+- `CodeEntry`: logo top left, language switcher top right; h1 + subtitle; code input (uppercase, 6 chars without spaces, pasted link → code, mono tracking once filled); primary "Continue →" disabled until 6 characters, Enter submits, `router.push` in a transition with a spinner; inline `role="alert"` error; "Scan QR" / "Upload QR image" outline with primary text, disabled with a "Coming soon" tooltip (focusable)
+- `KioskMessage`: not found ("Check the code {code} and try again") and closed; primary "Try another code" to `/s`
+- Share panel: "Open survey" is a link to `publicUrl` in a new tab; disabled wrapper, tooltip and `openSoon` message removed
+- `kiosk` messages in en / es (Spanish as in the reference)
+- `yarn lint`, `tsc --noEmit`, `yarn build` (`/s` partial prerender); flows, noindex meta, 375 / 768 / 1280 light and dark, English and Spanish checked
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/survey-kiosk-phase-1-code-entry-spec.md`; research: `docs/survey-kiosk.md`
+- Reference: `context/screenshots/survey-landing-1.png`
+- Primary (`#4263eb`) on Continue and Try another code; Scan / Upload outline with primary text
+- Scan / Upload get enabled in phase 4 (QR); the runner replaces the placeholder in phase 2; submit and restart in phase 3
+- Decisions for later phases: every question required, select then OK, 5-second thanks countdown, `source` `KIOSK` / `LINK` only
 
 ## History
 

@@ -454,7 +454,6 @@
       "copyCode": "Copiar código",
       "codeCopied": "Código copiado",
       "openSurvey": "Abrir encuesta",
-      "openSoon": "Disponible cuando el kiosco esté listo",
       "createdAt": "Creada el {date}",
       "createdBy": "Creada por {name} ({email})",
       "createdByUnknown": "Creada por un usuario desconocido"
@@ -556,6 +555,35 @@
     "footer": {
       "copyright": "© {year} Panda Metrics",
       "tagline": "Feedback simple para equipos que escuchan."
+    }
+  },
+  "kiosk": {
+    "loading": "Cargando encuesta",
+    "codeEntry": {
+      "title": "Ingresa el código de la encuesta",
+      "subtitle": "Escribe el identificador de 6 caracteres o escanea el código QR",
+      "codeLabel": "Código",
+      "continue": "Continuar",
+      "invalid": "Ese código no parece correcto",
+      "scanQr": "Escanear QR",
+      "uploadQr": "Subir imagen QR",
+      "comingSoon": "Próximamente"
+    },
+    "message": {
+      "notFound": {
+        "title": "No encontramos esa encuesta",
+        "description": "Revisa el código {code} e inténtalo de nuevo"
+      },
+      "closed": {
+        "title": "Esta encuesta está cerrada",
+        "description": "Ya no recibe respuestas"
+      },
+      "tryAnother": "Probar otro código"
+    },
+    "placeholder": {
+      "exit": "Salir de la encuesta",
+      "questions": "{count, plural, one {# pregunta} other {# preguntas}}",
+      "soon": "Responder llega en la siguiente actualización."
     }
   }
 }

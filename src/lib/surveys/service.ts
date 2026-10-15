@@ -71,6 +71,15 @@ export function listActiveSurveys(organizationId: string): Survey[] {
   return [...getStore().values()].filter((survey) => isVisible(survey, organizationId) && survey.isActive);
 }
 
+// Public lookup for the kiosk: codes are unique across organizations. Deleted surveys are hidden
+export function getSurveyByCode(code: string): Survey | null {
+  const wanted = code.toUpperCase();
+  for (const survey of getStore().values()) {
+    if (survey.code === wanted && survey.deletedAt === null) return survey;
+  }
+  return null;
+}
+
 export function countActiveSurveys(organizationId: string): number {
   return listActiveSurveys(organizationId).length;
 }

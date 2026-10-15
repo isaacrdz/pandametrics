@@ -8,7 +8,6 @@ import { FormSection } from "@/components/form/FormSection";
 import { QrCode } from "@/components/surveys/form/QrCode";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { SurveyFormMeta } from "@/lib/surveys/form-values";
 
 const QR_DOWNLOAD_WIDTH = 1024;
@@ -76,18 +75,12 @@ export function SharePanel({ code, publicUrl, createdAt, createdBy }: SharePanel
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {/* The kiosk route (/s) does not exist yet: disabled instead of opening a 404 */}
-                <span className="inline-flex">
-                  <Button type="button" variant="outline" disabled className="h-11 gap-2 rounded-xl">
-                    <ExternalLinkIcon aria-hidden />
-                    {t("openSurvey")}
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>{t("openSoon")}</TooltipContent>
-            </Tooltip>
+            <Button asChild variant="outline" className="h-11 gap-2 rounded-xl">
+              <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLinkIcon aria-hidden />
+                {t("openSurvey")}
+              </a>
+            </Button>
             <Button
               type="button"
               onClick={() => void copy(publicUrl, t("linkCopied"))}

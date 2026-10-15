@@ -454,7 +454,6 @@
       "copyCode": "Copy code",
       "codeCopied": "Code copied",
       "openSurvey": "Open survey",
-      "openSoon": "Available when the kiosk is ready",
       "createdAt": "Created on {date}",
       "createdBy": "Created by {name} ({email})",
       "createdByUnknown": "Created by an unknown user"
@@ -556,6 +555,35 @@
     "footer": {
       "copyright": "© {year} Panda Metrics",
       "tagline": "Simple feedback for teams that listen."
+    }
+  },
+  "kiosk": {
+    "loading": "Loading survey",
+    "codeEntry": {
+      "title": "Enter the survey code",
+      "subtitle": "Type the 6-character code or scan the QR code",
+      "codeLabel": "Code",
+      "continue": "Continue",
+      "invalid": "That code doesn't look right",
+      "scanQr": "Scan QR",
+      "uploadQr": "Upload QR image",
+      "comingSoon": "Coming soon"
+    },
+    "message": {
+      "notFound": {
+        "title": "We couldn't find that survey",
+        "description": "Check the code {code} and try again"
+      },
+      "closed": {
+        "title": "This survey is closed",
+        "description": "It is no longer accepting answers"
+      },
+      "tryAnother": "Try another code"
+    },
+    "placeholder": {
+      "exit": "Exit survey",
+      "questions": "{count, plural, one {# question} other {# questions}}",
+      "soon": "Answering arrives in the next update."
     }
   }
 }
