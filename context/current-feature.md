@@ -1,33 +1,18 @@
-# Survey Kiosk Phase 2 — Question Runner
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `SurveyRunner` (client) replaces `SurveyRunnerPlaceholder`: state `index`, `answers` by question id, transition direction; small muted survey name top left; top-right actions; progress card
-- `QuestionView`: h1 question (clamp size, `text-balance`, `tabIndex={-1}`, focused on change); answer area by category; action row with the "press Enter ↵" hint (hidden on touch-only) and the primary "OK →" / "Send →" (last question), disabled without an answer; sr-only keyboard hint
-- Options as a `radiogroup` labelled by the h1, each a `button` with `role="radio"`, `aria-checked` and roving tab index (arrows move inside the group)
-- `FaceOptions` with `ReactionFace size="lg"` (125px max) and a new `selected` prop (glow + check badge), Very bad → Excellent; `StarOptions` (5 large stars, hover / focus preview, `--star`, badge on the chosen star); `PollOptions` (text cards, position number, selected with primary border / ring / accent and primary badge)
-- Keyboard on `window` (ignoring inputs and the exit dialog): `1`–`5` select, `Enter` OK / Send, `↑` previous, `↓` next when answered
-- `FullscreenToggle` (round outline, tooltip, follows `fullscreenchange`, hidden without `document.fullscreenEnabled`, try/catch); code entry's Continue requests fullscreen before navigating
-- `ExitSurveyButton` (outline, primary text): confirmation `AlertDialog` only with answers; exits fullscreen and goes to `/s`
-- `ProgressCard` fixed bottom right: "N% completed" (live), `bg-primary` bar with `role="progressbar"`, ↑ / ↓ outline buttons (primary when enabled, muted when disabled)
-- Transitions: 350 ms out + 350 ms in (fade + 24px slide by direction), reduced motion 150 ms fade; focus to the new h1
-- Send in this phase: no storing; development toast "Sending arrives in the next phase"
-- Responsive: ≥ 1024 as the references (poll 3 + 2 wrap), 640–1023 clamp, < 640 one row of 5 faces / stars, stacked poll cards, full-width OK, full-width bottom progress bar; height ≤ 520 compact
-- `kiosk.runner` messages in en / es
-- `yarn lint`, `tsc --noEmit`, `yarn build`; each category by mouse, touch and keyboard; screen reader names; 375 / 768 / 1024 / 1280 and 1024×500, light and dark, English and Spanish
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/survey-kiosk-phase-2-runner-spec.md`; research: `docs/survey-kiosk.md` (sections 3–6, 9–11)
-- References: `context/screenshots/survey-landing-2.png`, `survey-landing-3.png`
-- Decisions: select then OK; every question required (OK / Send and ↓ disabled without a choice)
-- Faces keep `REACTION_COLORS`, stars keep `--star`; primary only on OK / Send, progress fill, enabled ↑ / ↓, selected poll card and focus rings
-- Poll options are text cards (no images until upload exists)
-- Phase 3 adds the submit action, thanks countdown (5 s), restart and tap to start
+<!-- Any extra notes -->
 
 ## History
 
@@ -58,3 +43,4 @@ In Progress
 - **Logo and Surfaces Phase 1 — Logo** (2026-10-15): phase 1 of 2. `design/logo.svg` cleaned: it was a trace with the transparency checkerboard drawn in, now clipped to the traced panda silhouette with 152 background paths dropped. `scripts/brand-assets.mjs` (with `svgo`) builds a square SVG around the panda (`-35 40 1968 1968`, 28 KB) for `src/assets/brand/logo.svg` and the `src/app/icon.svg` favicon, plus `icon.png` (512, transparent) and `apple-icon.png` (180, panda on the brand pink, opaque); `logo-icon.webp` removed, hero and Open Graph unchanged. `Logo` shows the panda alone (no pink tile) with `object-contain` in the sidebar and the landing nav; collapsed rail still centered, accessible name unchanged, readable on the dark sidebar without a backdrop
 - **Logo and Surfaces Phase 2 — Surfaces** (2026-10-15): phase 2 of 2. Token-only theme change following the reference card: light page `#f2f4f8` (planned `#f1f3f7`, lightened so the blue passes AA) with white cards, neutral `#e4e7ed` borders / inputs / card borders, `#f3f4f7` muted fills and `#5b6170` secondary text; dark neutral `#121418` page, `#1b1e24` cards, `#16191e` sidebar, white-alpha borders. Added on request: primary from pink to blue `#4263eb` (dark `#748ffc` with `#0b1220` text), blue accent tints (`#f0f4ff` / `#1f2a4d`) for active nav, tiles and badges, neutral checkbox border, neutral dark inverse; brand pink kept on the logo, icons and landing illustrations; faces, stars and survey colors unchanged. Contrast check passes (labels now say primary); no hardcoded tints found; no overflow at 375 / 768 / 1280 in light and dark. Overview palette (section 10), phase 2 spec and research updated; card shadow left for later
 - **Survey Kiosk Phase 1 — Route and Code Entry** (2026-10-15): phase 1 of 4 of the public kiosk. `(kiosk)` route group with `/s` (noindex / nofollow, "Answer a survey" title); the screen is picked from `?code=` inside Suspense (spinner fallback). `parseSurveyCode` (bare code, link with `?code=` or any text with a 6-character code; never throws) and `getPublicSurvey` / `getSurveyByCode` (reduced survey without organization, user, dates or archived content; `notFound` for unknown or deleted, `closed` for drafts). Code entry as in the reference: logo and language switcher, uppercase 6-character input that pulls the code out of a pasted link, primary "Continue →" (disabled until complete, Enter submits, pending spinner), inline invalid-code alert, "Scan QR" / "Upload QR image" outline with primary text and a "Coming soon" tooltip (`aria-disabled`). Not found / closed screens with a primary "Try another code"; a placeholder runner (name, question count, exit) until phase 2. Share panel "Open survey" opens the public link in a new tab (`openSoon` removed). `kiosk` messages in en / es; flows and 375 / 768 / 1280 light / dark / en / es checked
+- **Survey Kiosk Phase 2 — Question Runner** (2026-10-15): phase 2 of 4 of the public kiosk. `SurveyRunner` replaces the placeholder: one question at a time with the survey name, `FullscreenToggle` (follows `fullscreenchange`, hidden without support), `ExitSurveyButton` (confirmation only with answers, leaves fullscreen, back to `/s`) and `ProgressCard` (live percent, primary progress bar, ↑ / ↓; full-width bottom bar on phones). `QuestionView`: large h1 focused on each question, Enter hint, primary "OK →" / "Send →" disabled without an answer. Options as a radio group labelled by the question (← / → inside, roving tab index): faces with `ReactionFace size="lg"` and a `selected` glow + check badge, stars with hover / focus preview, poll text cards with the key number and a primary selected state; `getPublicSurvey` orders faces Very bad → Excellent and stars 1 → 5 so keys 1–5 always match. Keys 1–5, Enter, ↑ / ↓ on `window` (Enter left to focused buttons, ignored in fields and the exit dialog). 350 + 350 ms slide transition (150 ms fade with reduced motion) with a fallback timer. Continue on the code entry enters fullscreen. Send shows a "next phase" toast until phase 3. Checked by keyboard, mouse and screen reader names at 375 / 768 / 1280 and 1024×500, light and dark
