@@ -7,9 +7,9 @@ import { CalendarIcon, ClipboardListIcon, PlusIcon, SearchXIcon } from "lucide-r
 import { useFormatter, useTranslations } from "next-intl";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { SurveysList } from "@/components/surveys/table/SurveysList";
-import { SurveysPagination } from "@/components/surveys/table/SurveysPagination";
 import { SurveysTable } from "@/components/surveys/table/SurveysTable";
 import { SurveysToolbar } from "@/components/surveys/table/SurveysToolbar";
+import { TablePagination } from "@/components/table/TablePagination";
 import type { RowControls } from "@/components/surveys/table/row-controls";
 import { DeleteSurveyDialog } from "@/components/surveys/form/DeleteSurveyDialog";
 import { Button } from "@/components/ui/button";
@@ -186,12 +186,12 @@ export function SurveysTableSection({ data, params }: SurveysTableSectionProps) 
             </>
           )}
           {data.total > 0 && (
-            <SurveysPagination
-              params={params}
+            <TablePagination
               page={data.page}
               pageCount={data.pageCount}
               pageSize={data.pageSize}
-              total={data.total}
+              showingLabel={resultsMessage}
+              hrefFor={(page) => buildSurveysHref({ ...params, page })}
               onPageSizeChange={(pageSize) => navigate(withFilters(params, { pageSize, query: commit(search) }))}
             />
           )}

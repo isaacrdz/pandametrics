@@ -5,13 +5,7 @@ import Link from "next/link";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  PAGE_SIZE_OPTIONS,
-  buildSurveysHref,
-  getPageItems,
-  type PageSize,
-  type SurveyListQuery,
-} from "@/lib/surveys/list-params";
+import { PAGE_SIZE_OPTIONS, getPageItems, type PageSize } from "@/lib/table/pagination";
 import { cn } from "@/lib/utils";
 
 const ELLIPSIS = "…";
@@ -19,28 +13,26 @@ const ELLIPSIS = "…";
 const PAGE_CLASS =
   "flex size-10 items-center justify-center rounded-xl text-sm font-semibold tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card";
 
-interface SurveysPaginationProps {
-  params: SurveyListQuery;
+interface TablePaginationProps {
   page: number;
   pageCount: number;
   pageSize: number;
-  total: number;
+  // "Showing 1–5 of 8 users": the noun belongs to each list
+  showingLabel: string;
+  hrefFor: (page: number) => string;
   onPageSizeChange: (pageSize: PageSize) => void;
 }
 
-export function SurveysPagination({ params, page, pageCount, pageSize, total, onPageSizeChange }: SurveysPaginationProps) {
-  const t = useTranslations("surveys.pagination");
+// Rows per page and page links under a table; pages are links, so they work without JavaScript
+export function TablePagination({ page, pageCount, pageSize, showingLabel, hrefFor, onPageSizeChange }: TablePaginationProps) {
+  const t = useTranslations("table.pagination");
   const format = useFormatter();
-  const hrefFor = (target: number) => buildSurveysHref({ ...params, page: target });
-
-  const from = (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, total);
 
   return (
     <div className="flex flex-col items-center gap-3 border-t border-card-border px-4 py-4 @2xl:flex-row @2xl:justify-between @2xl:px-6">
       {/* Announced through the section's live region, which stays mounted */}
       <p className="text-sm text-muted-foreground">
-        {t("showing", { from: format.number(from), to: format.number(to), total })}
+        {showingLabel}
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3">

@@ -3,8 +3,7 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
-import { TIME_ZONE } from "@/i18n/config";
-import { getDayOffset } from "@/lib/format";
+import { StatusPill } from "@/components/table/StatusPill";
 import { SURVEY_DOT_COLORS } from "@/lib/surveys/colors";
 import type { SurveyRow } from "@/lib/surveys/list";
 import { cn } from "@/lib/utils";
@@ -50,22 +49,9 @@ export function SurveyTypeBadge({ category }: { category: SurveyCategory }) {
   );
 }
 
-// Active: success-foreground on success/10 over the card measures 4.74:1 light, 8.0:1 dark
-// (alpha mixes are not read by check-contrast.mjs). Draft uses the checked muted pair.
 export function SurveyStatusPill({ isActive }: { isActive: boolean }) {
   const t = useTranslations("surveys.status");
-
-  return (
-    <span
-      className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap",
-        isActive ? "bg-success/10 text-success-foreground" : "bg-muted text-muted-foreground",
-      )}
-    >
-      <span aria-hidden className={cn("size-1.5 rounded-full", isActive ? "bg-success" : "bg-muted-foreground/60")} />
-      {t(isActive ? "ACTIVE" : "DRAFT")}
-    </span>
-  );
+  return <StatusPill tone={isActive ? "success" : "muted"} label={t(isActive ? "ACTIVE" : "DRAFT")} />;
 }
 
 export function SurveyResponses({ count }: { count: number }) {
@@ -80,19 +66,4 @@ export function SurveyResponses({ count }: { count: number }) {
     );
   }
   return <span className="font-semibold text-foreground tabular-nums">{format.number(count)}</span>;
-}
-
-export function SurveyUpdatedAt({ updatedAt, now }: { updatedAt: string; now: string }) {
-  const t = useTranslations("surveys.updated");
-  const format = useFormatter();
-  const date = new Date(updatedAt);
-  const offset = getDayOffset(date, new Date(now), TIME_ZONE);
-  const time = format.dateTime(date, { hour: "numeric", minute: "2-digit" });
-
-  let text: string;
-  if (offset === 0) text = t("today", { time });
-  else if (offset === 1) text = t("yesterday", { time });
-  else text = format.dateTime(date, { day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
-
-  return <time dateTime={updatedAt}>{text}</time>;
 }

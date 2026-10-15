@@ -14,6 +14,6 @@ const TABLE_CHECKBOX =
   "dark:data-[state=indeterminate]:bg-primary " +
   "focus-visible:border-control-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card";
 
-export function SurveyCheckbox({ className, ...props }: ComponentProps<typeof Checkbox>) {
+export function TableCheckbox({ className, ...props }: ComponentProps<typeof Checkbox>) {
   return <Checkbox className={cn(TABLE_CHECKBOX, className)} {...props} />;
 }

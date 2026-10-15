@@ -29,8 +29,13 @@ export interface User {
   name: string | null;
   email: string | null;
   image: string | null;
+  phone: string | null;
   role: Role;
+  // Inactive users stay in the organization but cannot sign in
+  isActive: boolean;
   organizationId: string | null;
+  // Soft delete: the user leaves every list, their surveys keep "created by"
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

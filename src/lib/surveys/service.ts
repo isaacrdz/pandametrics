@@ -1,10 +1,10 @@
 import "server-only";
 
 import { randomBytes, randomInt } from "node:crypto";
-import { MOCK_SURVEYS, MOCK_USERS, getAnsweredOptionIds } from "@/lib/mock-data";
+import { MOCK_SURVEYS, getAnsweredOptionIds } from "@/lib/mock-data";
 import { ACTIVE_SURVEY_LIMIT, RATING_COLOR, RATING_VALUES } from "@/lib/surveys/constants";
 import type { SurveyFormValues } from "@/lib/surveys/schema";
-import type { AnswerOption, AnswerType, Question, Survey, SurveyCategory, User } from "@/types/survey";
+import type { AnswerOption, AnswerType, Question, Survey, SurveyCategory } from "@/types/survey";
 
 // In-memory survey store with the same functions the Prisma services will have.
 // It lives on globalThis so it survives Fast Refresh; it resets when the server restarts
@@ -77,10 +77,6 @@ export function countActiveSurveys(organizationId: string): number {
 
 export function hasResponses(surveyId: string): boolean {
   return getAnsweredOptionIds(surveyId).size > 0;
-}
-
-export function getUser(id: string): User | null {
-  return MOCK_USERS.find((user) => user.id === id) ?? null;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CircleCheckIcon, CircleDashedIcon, Loader2Icon, Trash2Icon, XIcon } from "lucide-react";
+import { CircleCheckIcon, CircleDashedIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { deleteSurveys, setSurveysActive, type ActionResult } from "@/actions/surveys";
@@ -15,13 +15,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BAR_BUTTON_CLASS, SelectionBar } from "@/components/table/SelectionBar";
 import { Button } from "@/components/ui/button";
 import { ACTIVE_SURVEY_LIMIT } from "@/lib/surveys/constants";
 
 type SuccessKey = "toasts.bulkActivated" | "toasts.bulkDeactivated" | "toasts.bulkDeleted";
-
-const BAR_BUTTON_CLASS =
-  "h-11 flex-1 gap-2 rounded-xl px-3.5 text-[0.95rem] font-medium @2xl:flex-none [&_svg:not([class*='size-'])]:size-4";
 
 interface SurveysSelectionBarProps {
   ids: string[];
@@ -50,13 +48,12 @@ export function SurveysSelectionBar({ ids, onDone }: SurveysSelectionBarProps) {
   }
 
   return (
-    // Same order on screen and in the DOM: count, actions, clear. Narrow cards put the count on its
-    // own line and let the actions wrap; wide cards keep one line. The count is announced by the
-    // section's live region, which stays mounted.
-    <div role="group" aria-label={t("bulk.label")} className="flex flex-wrap items-center gap-2 @2xl:flex-nowrap">
-      <p className="basis-full text-sm font-semibold whitespace-nowrap text-foreground tabular-nums @2xl:mr-1 @2xl:basis-auto">
-        {t("select.count", { count })}
-      </p>
+    <SelectionBar
+      label={t("bulk.label")}
+      countLabel={t("select.count", { count })}
+      disabled={isPending}
+      onClear={onDone}
+    >
       <Button
         variant="outline"
         disabled={isPending}
@@ -84,16 +81,6 @@ export function SurveysSelectionBar({ ids, onDone }: SurveysSelectionBarProps) {
         <Trash2Icon aria-hidden />
         {t("bulk.delete")}
       </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        disabled={isPending}
-        onClick={onDone}
-        aria-label={t("bulk.clear")}
-        className="size-11 shrink-0 rounded-xl text-muted-foreground"
-      >
-        <XIcon aria-hidden />
-      </Button>
 
       <AlertDialog open={confirmOpen} onOpenChange={(next) => !isPending && setConfirmOpen(next)}>
         <AlertDialogContent>
@@ -118,6 +105,6 @@ export function SurveysSelectionBar({ ids, onDone }: SurveysSelectionBarProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </SelectionBar>
   );
 }

@@ -105,27 +105,35 @@ export const MOCK_ORGANIZATIONS: Organization[] = [
   },
 ];
 
+// Seed for the user store: Acme's team with every state the user list has to show
+function mockUser(
+  n: number,
+  fields: Pick<User, "name" | "email" | "role"> & Partial<Pick<User, "phone" | "image" | "isActive">>,
+  createdDaysAgo: number,
+  updatedDaysAgo: number,
+): User {
+  return {
+    id: n === 1 ? JORDAN_ID : n === 2 ? ANA_ID : objectId(ID_KIND.user, n),
+    image: null,
+    phone: null,
+    isActive: true,
+    organizationId: ACME_ID,
+    deletedAt: null,
+    createdAt: daysAgo(createdDaysAgo),
+    updatedAt: daysAgo(updatedDaysAgo),
+    ...fields,
+  };
+}
+
 export const MOCK_USERS: User[] = [
-  {
-    id: JORDAN_ID,
-    name: "Jordan Davis",
-    email: "jordan@acme.co",
-    image: null,
-    role: "OWNER",
-    organizationId: ACME_ID,
-    createdAt: daysAgo(180),
-    updatedAt: daysAgo(1),
-  },
-  {
-    id: ANA_ID,
-    name: "Ana López",
-    email: "ana@acme.co",
-    image: null,
-    role: "ADMIN",
-    organizationId: ACME_ID,
-    createdAt: daysAgo(120),
-    updatedAt: daysAgo(10),
-  },
+  mockUser(1, { name: "Jordan Davis", email: "jordan@acme.co", role: "OWNER", phone: "+525512345678" }, 180, 1),
+  mockUser(2, { name: "Ana López", email: "ana@acme.co", role: "ADMIN" }, 120, 10),
+  mockUser(3, { name: "Sofía Ramírez", email: "sofia@acme.co", role: "ADMIN", phone: "+525598765432", image: "/avatars/sofia.svg" }, 90, 0),
+  mockUser(4, { name: "Marco Silva", email: "marco@acme.co", role: "MEMBER", image: "/avatars/missing.jpg" }, 75, 3),
+  mockUser(5, { name: "Lucía Fernández", email: "lucia@acme.co", role: "MEMBER", phone: "+523312344321" }, 60, 6),
+  mockUser(6, { name: "Diego Herrera", email: "diego@acme.co", role: "MEMBER", isActive: false }, 50, 20),
+  mockUser(7, { name: "Emily Chen", email: "emily@acme.co", role: "MEMBER", phone: "+14155550134" }, 30, 2),
+  mockUser(8, { name: "Tomás Ortega", email: "tomas@acme.co", role: "MEMBER", isActive: false }, 20, 15),
 ];
 
 export const MOCK_CURRENT_USER = MOCK_USERS[0];

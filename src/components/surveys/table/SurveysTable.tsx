@@ -7,10 +7,10 @@ import {
   SurveyResponses,
   SurveyStatusPill,
   SurveyTypeBadge,
-  SurveyUpdatedAt,
 } from "@/components/surveys/table/SurveyRowParts";
 import type { RowControls } from "@/components/surveys/table/row-controls";
-import { SurveyCheckbox } from "@/components/surveys/table/SurveyCheckbox";
+import { TableCheckbox } from "@/components/table/TableCheckbox";
+import { UpdatedAt } from "@/components/table/UpdatedAt";
 import { SurveyActionsMenu } from "@/components/surveys/SurveyActionsMenu";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { RangeKey } from "@/lib/date-range";
@@ -36,7 +36,7 @@ export function SurveysTable({ rows, now, range, controls }: SurveysTableProps) 
       <TableHeader>
         <TableRow className="border-card-border hover:bg-transparent">
           <TableHead scope="col" className="w-12 pr-0 pl-6">
-            <SurveyCheckbox
+            <TableCheckbox
               checked={controls.allState}
               onCheckedChange={(checked) => controls.onToggleAll(checked === true)}
               aria-label={t("select.all")}
@@ -71,7 +71,7 @@ export function SurveysTable({ rows, now, range, controls }: SurveysTableProps) 
             className="border-card-border hover:bg-accent/40 data-[state=selected]:bg-accent/60"
           >
             <TableCell className="w-12 py-4 pr-0 pl-6">
-              <SurveyCheckbox
+              <TableCheckbox
                 checked={controls.isSelected(row.id)}
                 onCheckedChange={(checked) => controls.onToggle(row.id, checked === true)}
                 aria-label={t("select.row", { name: row.name })}
@@ -98,7 +98,7 @@ export function SurveysTable({ rows, now, range, controls }: SurveysTableProps) 
               <SurveyResponses count={row.responses} />
             </TableCell>
             <TableCell className="px-4 py-4 text-muted-foreground">
-              <SurveyUpdatedAt updatedAt={row.updatedAt} now={now} />
+              <UpdatedAt updatedAt={row.updatedAt} now={now} />
             </TableCell>
             <TableCell className="py-4 pr-4 text-right">
               <SurveyActionsMenu survey={row} activeCount={controls.activeCount} onDelete={controls.onDelete} />

@@ -7,6 +7,7 @@ import {
   ClipboardListIcon,
   LayoutGridIcon,
   SlidersHorizontalIcon,
+  UsersIcon,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -20,7 +21,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
-type NavKey = "dashboard" | "surveys" | "settings";
+type NavKey = "dashboard" | "surveys" | "users" | "settings";
 
 interface NavItem {
   key: NavKey;
@@ -45,7 +46,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: "manage",
-    items: [{ key: "settings", href: "/settings", icon: SlidersHorizontalIcon, enabled: false }],
+    items: [
+      { key: "users", href: "/users", icon: UsersIcon, enabled: true },
+      { key: "settings", href: "/settings", icon: SlidersHorizontalIcon, enabled: false },
+    ],
   },
 ];
 

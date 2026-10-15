@@ -7,6 +7,7 @@ import { getSurveyColorIndex } from "@/lib/surveys/colors";
 import type { SurveyListQuery } from "@/lib/surveys/list-params";
 import { matchesQuery } from "@/lib/surveys/search";
 import { listSurveys as listStoredSurveys } from "@/lib/surveys/service";
+import { paginate } from "@/lib/table/pagination";
 import type { SurveyCategory } from "@/types/survey";
 
 // Data for the survey table (/surveys), with the shape of the future GET /api/v1/surveys:
@@ -53,22 +54,19 @@ export function listSurveys(organizationId: string, params: SurveyListQuery): Su
     .filter((survey) => params.status === "all" || survey.isActive === (params.status === "active"))
     .toSorted((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime() || a.name.localeCompare(b.name));
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const page = Math.min(Math.max(1, params.page), pageCount);
+  const { page, pageCount, items } = paginate(filtered, params.page, pageSize);
 
-  const rows = filtered
-    .slice((page - 1) * pageSize, page * pageSize)
-    .map((survey) => ({
-      id: survey.id,
-      code: survey.code,
-      name: survey.name,
-      category: survey.category,
-      isActive: survey.isActive,
-      responses: countMockResponses(survey.id, range),
-      updatedAt: survey.updatedAt.toISOString(),
-      publicUrl: getPublicSurveyUrl(survey.code),
-      colorIndex: getSurveyColorIndex(survey.id),
-    }));
+  const rows = items.map((survey) => ({
+    id: survey.id,
+    code: survey.code,
+    name: survey.name,
+    category: survey.category,
+    isActive: survey.isActive,
+    responses: countMockResponses(survey.id, range),
+    updatedAt: survey.updatedAt.toISOString(),
+    publicUrl: getPublicSurveyUrl(survey.code),
+    colorIndex: getSurveyColorIndex(survey.id),
+  }));
 
   return {
     rows,

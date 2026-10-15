@@ -1,18 +1,31 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Users Phase 1 — Data and List
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `User` gains `phone`, `isActive` and `deletedAt` (soft delete); `passwordHash` only in the server store (`StoredUser`); `MOCK_USERS` grows to ~8 Acme users (owner, admins, members, 2 inactive, some phones, one valid and one broken `image`), passwords seeded as hashes
+- `src/lib/users/service.ts` (in-memory store on `globalThis`): `listUsers`, `getUser` (skip deleted), `setUserActive`, `setUsersActive`, `softDeleteUsers`, all or nothing with `NOT_FOUND`, `SELF_DEACTIVATE`, `LAST_OWNER`; `password.ts` with `scrypt` hash / verify; the survey service `getUser` reads from the user store
+- `src/lib/users/list.ts` + `list-params.ts`: plain `UserRow`, search on name / email / phone (accent and case insensitive), status filter, sort by name, pagination 5 / 10 / 25 / 50 with clamping; URL `q`, `status`, `page`, `size`
+- Generic table parts moved to `src/components/table/` (pagination, search input, status filter menu, status pill, updated-at cell, skeleton rows, light checkbox, selection bar) with no visible or behavior change on `/surveys`
+- `setUserActive`, `setUsersActive` and `deleteUsers` Server Actions (Zod, mock session scope, `ActionResult` codes, `{ count }` for bulk), revalidate `/users`
+- `/users` page (Suspense, `loading.tsx`): heading + count + "New user" button, toolbar (search + Status), table from `@2xl` with checkbox column, avatar column (image or initials fallback), user (name link + email, "You" badge), role badge, status pill, phone (hidden below `@3xl`), last updated, actions; stacked list below `@2xl`; live regions, `aria-busy`, scroll on page change, no-results state
+- Checkboxes with select all (indeterminate), own row disabled, selection per list view; selection bar with Activate, Deactivate (confirmation), Delete (confirmation) and Clear; bulk toasts with counts
+- `UserActionsMenu`: Edit → `/users/[id]`; Deactivate… (confirmation `DeactivateUserDialog`) / Activate; disabled with a hint on the current user's row; toasts and error codes
+- Users item in the Manage group of the sidebar (above Settings), active on `/users` and children
+- `users.*` and `nav.users` messages in en / es; overview updated (User fields, routes, checklist)
+- `yarn lint`, `tsc --noEmit`, `yarn build` pass; no overflow at 375 / 768 / 1280 with the sidebar open and collapsed, light / dark, en / es; `passwordHash` absent from HTML and RSC payload
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/users-phase-1-list-spec.md`; research: `docs/users.md` (sections 2, 3 and 6)
+- Phase 1 of 3; "New user" and "Edit" point to routes built in phase 2 (404 until then)
+- Checkboxes and bulk actions (Activate, Deactivate, Delete) like the survey table; the row menu keeps only Edit and Deactivate / Activate
+- Delete is a soft delete (`deletedAt`): removed from the list, surveys keep "created by", no restore in the UI; the deleted user's email stays reserved
+- Activate needs no confirmation; Deactivate and Delete do; bulk actions are all or nothing
+- `/surveys` must look and behave the same after moving the shared table parts
 
 ## History
 

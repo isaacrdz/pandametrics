@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, ListFilterIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react";
+import { ChevronDownIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,12 +8,11 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { SurveysSelectionBar } from "@/components/surveys/table/SurveysSelectionBar";
+import { FILTER_ACTIVE_CLASS, FILTER_BUTTON_CLASS, FilterMenu } from "@/components/table/FilterMenu";
+import { TableSearch } from "@/components/table/TableSearch";
 import { SURVEY_CATEGORIES } from "@/lib/surveys/constants";
 import {
   SURVEY_STATUS_FILTERS,
@@ -22,12 +21,6 @@ import {
   type SurveyStatusFilter,
 } from "@/lib/surveys/list-params";
 import { cn } from "@/lib/utils";
-
-const FILTER_BUTTON_CLASS =
-  "h-11 flex-1 gap-2 rounded-xl bg-card px-4 text-[0.95rem] font-normal @2xl:flex-none [&_svg:not([class*='size-'])]:size-4";
-
-// Highlighted while the filter narrows the list
-const FILTER_ACTIVE_CLASS = "border-primary/60 text-primary hover:text-primary";
 
 interface SurveysToolbarProps {
   params: SurveyListQuery;
@@ -71,20 +64,7 @@ export function SurveysToolbar({
 
   return (
     <div className="flex flex-col gap-3 border-b border-card-border p-4 @2xl:flex-row @2xl:items-center @2xl:justify-between @2xl:px-6">
-      <div className="relative w-full min-w-0 @2xl:max-w-sm @2xl:flex-1">
-        <SearchIcon
-          aria-hidden
-          className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          type="search"
-          value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder={t("toolbar.search")}
-          aria-label={t("toolbar.search")}
-          className="h-11 w-full rounded-xl bg-card pl-10 text-[0.95rem]"
-        />
-      </div>
+      <TableSearch value={search} onChange={onSearchChange} label={t("toolbar.search")} />
 
       {selectedIds.length > 0 ? (
         <SurveysSelectionBar ids={selectedIds} onDone={onClearSelection} />
@@ -119,35 +99,14 @@ export function SurveysToolbar({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                aria-label={t("toolbar.statusLabel", { status: statusName(params.status) })}
-                className={cn(FILTER_BUTTON_CLASS, params.status !== "all" && FILTER_ACTIVE_CLASS)}
-              >
-                <ListFilterIcon aria-hidden />
-                {t("toolbar.status")}
-                {params.status !== "all" && <span className="font-semibold">· {statusName(params.status)}</span>}
-                <ChevronDownIcon aria-hidden className="ml-auto text-muted-foreground @2xl:ml-0" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-44 rounded-xl">
-              <DropdownMenuLabel>{t("toolbar.status")}</DropdownMenuLabel>
-              <DropdownMenuRadioGroup
-                value={params.status}
-                onValueChange={(value) =>
-                  applyFilter({ status: SURVEY_STATUS_FILTERS.find((s) => s === value) ?? "all" })
-                }
-              >
-                {SURVEY_STATUS_FILTERS.map((status) => (
-                  <DropdownMenuRadioItem key={status} value={status}>
-                    {statusName(status)}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <FilterMenu
+            label={t("toolbar.status")}
+            triggerLabel={t("toolbar.statusLabel", { status: statusName(params.status) })}
+            options={SURVEY_STATUS_FILTERS.map((status) => ({ value: status, label: statusName(status) }))}
+            value={params.status}
+            defaultValue="all"
+            onChange={(status) => applyFilter({ status })}
+          />
         </div>
       )}
     </div>

@@ -290,9 +290,12 @@ model User {
   email          String?   @unique
   emailVerified  DateTime?
   image          String?
+  phone          String?
   passwordHash   String?
   role           Role      @default(MEMBER)
+  isActive       Boolean   @default(true)
   organizationId String?
+  deletedAt      DateTime?
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   accounts     Account[]
@@ -303,6 +306,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@index([organizationId])
+  @@index([organizationId, isActive])
 }
 
 model Account {
@@ -466,7 +470,9 @@ Changing `category` is rejected once the survey has responses (`409`), because p
 
 **Code generation:** generate random A-Z0-9 codes, reject reserved tokens (`SURVEY`, `PUBLIC`, `PANDA`) and retry on the unique-constraint error (`P2002`).
 
-**Soft delete:** every survey query filters `deletedAt: null`.
+**Soft delete:** every survey and user query filters `deletedAt: null`. Deleted users keep their surveys (`createdById`), and their email stays taken because `email` is unique.
+
+**Users:** a user cannot deactivate or delete themselves, and the organization always keeps one active `OWNER`; bulk changes check every id first and are all or nothing. `passwordHash` never leaves the server.
 
 ### Prisma 7 configuration
 
@@ -704,6 +710,10 @@ Recommended content order:
 ├── /surveys/new
 ├── /surveys/[id]
 ├── /surveys/[id]/metrics
+├── /users
+├── /users/new
+├── /users/[id]
+├── /profile
 └── /settings
 ```
 
@@ -838,6 +848,7 @@ This structure is a starting point, not a requirement to create every folder imm
 - [ ] QR panel generated on the client
 - [ ] Atomic 5-active limit
 - [ ] Survey table with search, filters and pagination
+- [ ] User management: list (avatar, search, status filter, bulk activate / deactivate / soft delete), create / edit form, my profile
 
 ### Metrics
 

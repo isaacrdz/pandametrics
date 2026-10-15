@@ -6,10 +6,10 @@ import {
   SurveyName,
   SurveyStatusPill,
   SurveyTypeBadge,
-  SurveyUpdatedAt,
 } from "@/components/surveys/table/SurveyRowParts";
 import type { RowControls } from "@/components/surveys/table/row-controls";
-import { SurveyCheckbox } from "@/components/surveys/table/SurveyCheckbox";
+import { TableCheckbox } from "@/components/table/TableCheckbox";
+import { UpdatedAt } from "@/components/table/UpdatedAt";
 import { SurveyActionsMenu } from "@/components/surveys/SurveyActionsMenu";
 import type { SurveyRow } from "@/lib/surveys/list";
 
@@ -32,7 +32,7 @@ export function SurveysList({ rows, now, controls }: SurveysListProps) {
           className={`flex flex-col gap-3 py-4 pr-3 pl-5 ${controls.isSelected(row.id) ? "bg-accent/60" : ""}`}
         >
           <div className="flex items-center gap-3">
-            <SurveyCheckbox
+            <TableCheckbox
               checked={controls.isSelected(row.id)}
               onCheckedChange={(checked) => controls.onToggle(row.id, checked === true)}
               aria-label={t("select.row", { name: row.name })}
@@ -51,7 +51,7 @@ export function SurveysList({ rows, now, controls }: SurveysListProps) {
           <p className="flex flex-wrap gap-x-1.5 pl-12 text-sm text-muted-foreground">
             <span>{t("columns.updated")}</span>
             <span aria-hidden>·</span>
-            <SurveyUpdatedAt updatedAt={row.updatedAt} now={now} />
+            <UpdatedAt updatedAt={row.updatedAt} now={now} />
           </p>
         </li>
       ))}

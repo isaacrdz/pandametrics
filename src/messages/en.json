@@ -13,6 +13,7 @@
     "manage": "Manage",
     "dashboard": "Dashboard",
     "surveys": "Surveys",
+    "users": "Users",
     "settings": "Settings",
     "comingSoon": "{title} · Coming soon"
   },
@@ -60,6 +61,20 @@
   "surveyCard": {
     "linkCopied": "Link copied"
   },
+  "table": {
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page}",
+      "rowsPerPage": "Rows per page"
+    },
+    "updated": {
+      "today": "Today, {time}",
+      "yesterday": "Yesterday, {time}"
+    },
+    "clearSelection": "Clear selection"
+  },
   "surveys": {
     "title": "All surveys",
     "subtitle": "Manage your surveys and keep track of every response.",
@@ -70,8 +85,8 @@
       "type": "Type",
       "typeLabel": "Type filter, {count, plural, =0 {all types} one {# selected} other {# selected}}",
       "status": "Status",
-      "statusAll": "All",
-      "statusLabel": "Status filter, {status}"
+      "statusLabel": "Status filter, {status}",
+      "statusAll": "All"
     },
     "columns": {
       "survey": "Survey",
@@ -88,10 +103,6 @@
       "DRAFT": "Draft"
     },
     "noResponses": "No responses",
-    "updated": {
-      "today": "Today, {time}",
-      "yesterday": "Yesterday, {time}"
-    },
     "empty": {
       "title": "No surveys yet",
       "description": "Create your first survey to start collecting feedback.",
@@ -99,12 +110,7 @@
     },
     "loading": "Loading surveys",
     "pagination": {
-      "label": "Pagination",
-      "previous": "Previous page",
-      "next": "Next page",
-      "page": "Page {page}",
-      "showing": "Showing {from}–{to} of {total, plural, one {# survey} other {# surveys}}",
-      "rowsPerPage": "Rows per page"
+      "showing": "Showing {from}–{to} of {total, plural, one {# survey} other {# surveys}}"
     },
     "noResults": {
       "title": "No surveys match your filters",
@@ -138,12 +144,99 @@
       "activate": "Activate",
       "deactivate": "Move to draft",
       "delete": "Delete",
-      "clear": "Clear selection",
       "deleteTitle": "Delete {count, plural, one {# survey} other {# surveys}}?",
       "deleteDescription": "Their responses are kept, but the surveys stop accepting answers and leave this list.",
       "deleteConfirm": "Delete",
       "deleting": "Deleting…",
       "cancel": "Cancel"
+    }
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Manage who has access to your organization.",
+    "new": "New user",
+    "caption": "Users",
+    "loading": "Loading users",
+    "toolbar": {
+      "search": "Search by name, email or phone",
+      "status": "Status",
+      "statusAll": "All",
+      "statusLabel": "Status filter, {status}"
+    },
+    "columns": {
+      "avatar": "Profile picture",
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "phone": "Phone",
+      "updated": "Last updated",
+      "actions": "Actions"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "roles": {
+      "OWNER": "Owner",
+      "ADMIN": "Admin",
+      "MEMBER": "Member"
+    },
+    "you": "You",
+    "noPhone": "No phone",
+    "pagination": {
+      "showing": "Showing {from}–{to} of {total, plural, one {# user} other {# users}}"
+    },
+    "noResults": {
+      "title": "No users match your filters",
+      "description": "Try another search or clear the filters.",
+      "clear": "Clear filters"
+    },
+    "select": {
+      "row": "Select {name}",
+      "all": "Select all users on this page",
+      "self": "You can't select yourself",
+      "count": "{count, plural, one {# selected} other {# selected}}"
+    },
+    "actions": {
+      "label": "Actions for {name}",
+      "edit": "Edit",
+      "deactivate": "Deactivate…",
+      "activate": "Activate",
+      "selfHint": "You can't deactivate yourself"
+    },
+    "bulk": {
+      "label": "Selected users",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    },
+    "deactivate": {
+      "title": "Deactivate {name}?",
+      "titleMany": "Deactivate {count, plural, one {# user} other {# users}}?",
+      "description": "They will lose access to Panda Metrics. Their surveys and responses are kept. You can activate them again later.",
+      "confirm": "Deactivate",
+      "pending": "Deactivating…"
+    },
+    "delete": {
+      "title": "Delete {count, plural, one {# user} other {# users}}?",
+      "description": "They will be removed from this list and lose access to Panda Metrics. Their surveys and responses are kept. This can't be undone from Panda Metrics.",
+      "confirm": "Delete",
+      "pending": "Deleting…"
+    },
+    "toasts": {
+      "activated": "User activated",
+      "deactivated": "User deactivated",
+      "bulkActivated": "{count, plural, one {# user activated} other {# users activated}}",
+      "bulkDeactivated": "{count, plural, one {# user deactivated} other {# users deactivated}}",
+      "bulkDeleted": "{count, plural, one {# user deleted} other {# users deleted}}"
+    },
+    "errors": {
+      "NOT_FOUND": "This user no longer exists. Refresh the list and try again.",
+      "SELF_DEACTIVATE": "You can't deactivate or delete yourself.",
+      "LAST_OWNER": "The organization needs at least one active owner.",
+      "VALIDATION": "Check the selection and try again.",
+      "UNKNOWN": "Something went wrong. Try again."
     }
   },
   "results": {

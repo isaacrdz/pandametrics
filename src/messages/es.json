@@ -13,6 +13,7 @@
     "manage": "Administrar",
     "dashboard": "Dashboard",
     "surveys": "Encuestas",
+    "users": "Usuarios",
     "settings": "Configuración",
     "comingSoon": "{title} · Próximamente"
   },
@@ -60,6 +61,20 @@
   "surveyCard": {
     "linkCopied": "Enlace copiado"
   },
+  "table": {
+    "pagination": {
+      "label": "Paginación",
+      "previous": "Página anterior",
+      "next": "Página siguiente",
+      "page": "Página {page}",
+      "rowsPerPage": "Filas por página"
+    },
+    "updated": {
+      "today": "Hoy, {time}",
+      "yesterday": "Ayer, {time}"
+    },
+    "clearSelection": "Limpiar selección"
+  },
   "surveys": {
     "title": "Todas las encuestas",
     "subtitle": "Administra tus encuestas y sigue cada respuesta.",
@@ -70,8 +85,8 @@
       "type": "Tipo",
       "typeLabel": "Filtro de tipo, {count, plural, =0 {todos los tipos} one {# seleccionado} other {# seleccionados}}",
       "status": "Estado",
-      "statusAll": "Todas",
-      "statusLabel": "Filtro de estado, {status}"
+      "statusLabel": "Filtro de estado, {status}",
+      "statusAll": "Todas"
     },
     "columns": {
       "survey": "Encuesta",
@@ -88,10 +103,6 @@
       "DRAFT": "Borrador"
     },
     "noResponses": "Sin respuestas",
-    "updated": {
-      "today": "Hoy, {time}",
-      "yesterday": "Ayer, {time}"
-    },
     "empty": {
       "title": "Aún no hay encuestas",
       "description": "Crea tu primera encuesta para empezar a recibir feedback.",
@@ -99,12 +110,7 @@
     },
     "loading": "Cargando encuestas",
     "pagination": {
-      "label": "Paginación",
-      "previous": "Página anterior",
-      "next": "Página siguiente",
-      "page": "Página {page}",
-      "showing": "Mostrando {from}–{to} de {total, plural, one {# encuesta} other {# encuestas}}",
-      "rowsPerPage": "Filas por página"
+      "showing": "Mostrando {from}–{to} de {total, plural, one {# encuesta} other {# encuestas}}"
     },
     "noResults": {
       "title": "Ninguna encuesta coincide con tus filtros",
@@ -138,12 +144,99 @@
       "activate": "Activar",
       "deactivate": "Pasar a borrador",
       "delete": "Eliminar",
-      "clear": "Limpiar selección",
       "deleteTitle": "¿Eliminar {count, plural, one {# encuesta} other {# encuestas}}?",
       "deleteDescription": "Sus respuestas se conservan, pero las encuestas dejan de recibir respuestas y salen de esta lista.",
       "deleteConfirm": "Eliminar",
       "deleting": "Eliminando…",
       "cancel": "Cancelar"
+    }
+  },
+  "users": {
+    "title": "Usuarios",
+    "subtitle": "Administra quién tiene acceso a tu organización.",
+    "new": "Nuevo usuario",
+    "caption": "Usuarios",
+    "loading": "Cargando usuarios",
+    "toolbar": {
+      "search": "Buscar por nombre, email o teléfono",
+      "status": "Estado",
+      "statusAll": "Todos",
+      "statusLabel": "Filtro de estado, {status}"
+    },
+    "columns": {
+      "avatar": "Foto de perfil",
+      "user": "Usuario",
+      "role": "Rol",
+      "status": "Estado",
+      "phone": "Teléfono",
+      "updated": "Última actualización",
+      "actions": "Acciones"
+    },
+    "status": {
+      "ACTIVE": "Activo",
+      "INACTIVE": "Inactivo"
+    },
+    "roles": {
+      "OWNER": "Propietario",
+      "ADMIN": "Administrador",
+      "MEMBER": "Miembro"
+    },
+    "you": "Tú",
+    "noPhone": "Sin teléfono",
+    "pagination": {
+      "showing": "Mostrando {from}–{to} de {total, plural, one {# usuario} other {# usuarios}}"
+    },
+    "noResults": {
+      "title": "Ningún usuario coincide con tus filtros",
+      "description": "Prueba otra búsqueda o limpia los filtros.",
+      "clear": "Limpiar filtros"
+    },
+    "select": {
+      "row": "Seleccionar a {name}",
+      "all": "Seleccionar todos los usuarios de esta página",
+      "self": "No puedes seleccionarte a ti mismo",
+      "count": "{count, plural, one {# seleccionado} other {# seleccionados}}"
+    },
+    "actions": {
+      "label": "Acciones para {name}",
+      "edit": "Editar",
+      "deactivate": "Desactivar…",
+      "activate": "Activar",
+      "selfHint": "No puedes desactivarte a ti mismo"
+    },
+    "bulk": {
+      "label": "Usuarios seleccionados",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "delete": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "deactivate": {
+      "title": "¿Desactivar a {name}?",
+      "titleMany": "¿Desactivar {count, plural, one {# usuario} other {# usuarios}}?",
+      "description": "{count, plural, one {Perderá el acceso a Panda Metrics. Sus encuestas y respuestas se conservan. Puedes volver a activarlo después.} other {Perderán el acceso a Panda Metrics. Sus encuestas y respuestas se conservan. Puedes volver a activarlos después.}}",
+      "confirm": "Desactivar",
+      "pending": "Desactivando…"
+    },
+    "delete": {
+      "title": "¿Eliminar {count, plural, one {# usuario} other {# usuarios}}?",
+      "description": "{count, plural, one {Saldrá de esta lista y perderá el acceso a Panda Metrics. Sus encuestas y respuestas se conservan. Esto no se puede deshacer desde Panda Metrics.} other {Saldrán de esta lista y perderán el acceso a Panda Metrics. Sus encuestas y respuestas se conservan. Esto no se puede deshacer desde Panda Metrics.}}",
+      "confirm": "Eliminar",
+      "pending": "Eliminando…"
+    },
+    "toasts": {
+      "activated": "Usuario activado",
+      "deactivated": "Usuario desactivado",
+      "bulkActivated": "{count, plural, one {# usuario activado} other {# usuarios activados}}",
+      "bulkDeactivated": "{count, plural, one {# usuario desactivado} other {# usuarios desactivados}}",
+      "bulkDeleted": "{count, plural, one {# usuario eliminado} other {# usuarios eliminados}}"
+    },
+    "errors": {
+      "NOT_FOUND": "Este usuario ya no existe. Actualiza la lista e inténtalo de nuevo.",
+      "SELF_DEACTIVATE": "No puedes desactivarte ni eliminarte a ti mismo.",
+      "LAST_OWNER": "La organización necesita al menos un propietario activo.",
+      "VALIDATION": "Revisa la selección e inténtalo de nuevo.",
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
     }
   },
   "results": {

@@ -4,7 +4,7 @@ import * as z from "zod";
 import { refresh, revalidatePath } from "next/cache";
 import { getAppContext } from "@/lib/dashboard";
 import { toFormValues } from "@/lib/surveys/form-values";
-import { MAX_PAGE_SIZE } from "@/lib/surveys/list-params";
+import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
 import { surveyFormSchema, type SurveyFormInput, type SurveyFormValues } from "@/lib/surveys/schema";
 import * as surveyService from "@/lib/surveys/service";
 import { SurveyServiceError, type SurveyErrorCode } from "@/lib/surveys/service";
