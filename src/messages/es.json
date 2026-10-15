@@ -19,6 +19,7 @@
   },
   "userMenu": {
     "account": "Mi cuenta",
+    "profile": "Mi perfil",
     "darkMode": "Modo oscuro",
     "lightMode": "Modo claro"
   },
@@ -237,7 +238,8 @@
       "LAST_OWNER": "La organización necesita al menos un propietario activo.",
       "VALIDATION": "Revisa la selección e inténtalo de nuevo.",
       "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
-      "EMAIL_TAKEN": "Este email ya lo usa otro usuario."
+      "EMAIL_TAKEN": "Este email ya lo usa otro usuario.",
+      "WRONG_PASSWORD": "Tu contraseña actual no es correcta."
     }
   },
   "userForm": {
@@ -262,6 +264,10 @@
         "reset": {
           "title": "Restablecer contraseña",
           "description": "Define una nueva contraseña para este usuario. Déjala vacía para conservar la actual."
+        },
+        "change": {
+          "title": "Cambiar contraseña",
+          "description": "Déjala vacía para conservar tu contraseña actual."
         }
       },
       "permissions": {
@@ -285,7 +291,9 @@
       "password": "Contraseña",
       "confirmPassword": "Confirmar contraseña",
       "showPassword": "Mostrar contraseña",
-      "passwordRules": "Al menos 8 caracteres, con una letra y un número."
+      "passwordRules": "Al menos 8 caracteres, con una letra y un número.",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Nueva contraseña"
     },
     "statusHint": "Cambia el estado desde la lista de usuarios.",
     "toasts": {
@@ -298,7 +306,20 @@
       "SELF_DEACTIVATE": "No puedes desactivarte ni eliminarte a ti mismo.",
       "LAST_OWNER": "La organización necesita al menos un propietario activo.",
       "VALIDATION": "Revisa los campos marcados.",
-      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
+      "WRONG_PASSWORD": "Tu contraseña actual no es correcta."
+    }
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "subtitle": "Actualiza tus datos personales y tu contraseña.",
+    "picture": {
+      "title": "Foto de perfil",
+      "description": "Aquí podrás subir una foto. Por ahora mostramos tus iniciales.",
+      "change": "Cambiar foto"
+    },
+    "toasts": {
+      "updated": "Perfil actualizado"
     }
   },
   "results": {

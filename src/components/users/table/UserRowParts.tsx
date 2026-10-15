@@ -19,7 +19,8 @@ export function UserName({ row, className }: { row: UserRow; className?: string 
     <span className={cn("flex min-w-0 flex-col gap-0.5", className)}>
       <span className="flex min-w-0 items-center gap-2">
         <Link
-          href={`/users/${row.id}`}
+          // Your own row opens your profile (no permissions or status there)
+          href={row.isCurrentUser ? "/profile" : `/users/${row.id}`}
           title={row.name}
           className="truncate rounded-sm font-semibold text-foreground outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
         >

@@ -12,7 +12,8 @@ import type { UserFormInput } from "@/lib/users/schema";
 
 interface PasswordSectionProps {
   // create: required. reset: optional, an empty pair keeps the current password.
-  variant: "create" | "reset";
+  // change (profile): optional, and a new password asks for the current one first.
+  variant: "create" | "reset" | "change";
 }
 
 export function PasswordSection({ variant }: PasswordSectionProps) {
@@ -20,6 +21,7 @@ export function PasswordSection({ variant }: PasswordSectionProps) {
   const validationMessage = useValidationMessage();
   const { control } = useFormContext<UserFormInput>();
   const required = variant === "create";
+  const isChange = variant === "change";
 
   return (
     <FormSection
@@ -28,14 +30,36 @@ export function PasswordSection({ variant }: PasswordSectionProps) {
       title={t(`sections.password.${variant}.title`)}
       description={t(`sections.password.${variant}.description`)}
     >
-      <FieldGroup className="grid gap-6 sm:grid-cols-2">
+      <FieldGroup className="grid gap-6 @lg:grid-cols-2">
+        {isChange && (
+          <Controller
+            name="currentPassword"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="@lg:col-span-2 @lg:max-w-[calc(50%-0.75rem)]">
+                <FieldLabel htmlFor="user-current-password" className="font-semibold text-muted-foreground">
+                  {t("fields.currentPassword")}
+                </FieldLabel>
+                <PasswordInput
+                  {...field}
+                  id="user-current-password"
+                  autoComplete="current-password"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.invalid ? "user-current-password-error" : undefined}
+                  className={USER_INPUT_CLASS}
+                />
+                <FieldError id="user-current-password-error">{validationMessage(fieldState.error?.message)}</FieldError>
+              </Field>
+            )}
+          />
+        )}
         <Controller
           name="password"
           control={control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-password-input" className="font-semibold text-muted-foreground">
-                {t("fields.password")} {required && <RequiredMark />}
+                {t(isChange ? "fields.newPassword" : "fields.password")} {required && <RequiredMark />}
               </FieldLabel>
               <PasswordInput
                 {...field}

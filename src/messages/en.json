@@ -19,6 +19,7 @@
   },
   "userMenu": {
     "account": "My account",
+    "profile": "My profile",
     "darkMode": "Dark mode",
     "lightMode": "Light mode"
   },
@@ -237,7 +238,8 @@
       "LAST_OWNER": "The organization needs at least one active owner.",
       "VALIDATION": "Check the selection and try again.",
       "UNKNOWN": "Something went wrong. Try again.",
-      "EMAIL_TAKEN": "This email is already used by another user."
+      "EMAIL_TAKEN": "This email is already used by another user.",
+      "WRONG_PASSWORD": "Your current password is not correct."
     }
   },
   "userForm": {
@@ -262,6 +264,10 @@
         "reset": {
           "title": "Reset password",
           "description": "Set a new password for this user. Leave it empty to keep the current one."
+        },
+        "change": {
+          "title": "Change password",
+          "description": "Leave it empty to keep your current password."
         }
       },
       "permissions": {
@@ -285,7 +291,9 @@
       "password": "Password",
       "confirmPassword": "Confirm password",
       "showPassword": "Show password",
-      "passwordRules": "At least 8 characters, with a letter and a number."
+      "passwordRules": "At least 8 characters, with a letter and a number.",
+      "currentPassword": "Current password",
+      "newPassword": "New password"
     },
     "statusHint": "Change the status from the user list.",
     "toasts": {
@@ -298,7 +306,20 @@
       "SELF_DEACTIVATE": "You can't deactivate or delete yourself.",
       "LAST_OWNER": "The organization needs at least one active owner.",
       "VALIDATION": "Check the highlighted fields.",
-      "UNKNOWN": "Something went wrong. Try again."
+      "UNKNOWN": "Something went wrong. Try again.",
+      "WRONG_PASSWORD": "Your current password is not correct."
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Update your personal details and password.",
+    "picture": {
+      "title": "Profile picture",
+      "description": "You'll be able to upload a photo here. For now we show your initials.",
+      "change": "Change photo"
+    },
+    "toasts": {
+      "updated": "Profile updated"
     }
   },
   "results": {

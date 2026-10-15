@@ -54,7 +54,7 @@ export function UserActionsMenu({ row, onDeactivate }: UserActionsMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-52 rounded-xl">
         <DropdownMenuItem asChild>
-          <Link href={`/users/${row.id}`}>
+          <Link href={row.isCurrentUser ? "/profile" : `/users/${row.id}`}>
             <PencilIcon aria-hidden />
             {t("actions.edit")}
           </Link>

@@ -38,7 +38,9 @@ export function FormSection({ id, number, title, description, badge, children }:
           <p className="mt-1 text-muted-foreground">{description}</p>
         </div>
       </header>
-      <div className="mt-6 sm:mt-8">{children}</div>
+      {/* A container: field layouts follow the card width, not the viewport (the profile puts
+          cards in a half-width column) */}
+      <div className="@container mt-6 sm:mt-8">{children}</div>
     </section>
   );
 }

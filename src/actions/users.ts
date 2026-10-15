@@ -123,3 +123,17 @@ export async function updateUser(id: string, values: UserFormInput): Promise<Use
     return toErrorResult(error);
   }
 }
+
+// Always the signed-in user (from the session), never an id sent by the client
+export async function updateProfile(values: UserFormInput): Promise<UserActionResult<{ values: UserFormInput }>> {
+  const validation = validate(values, "profile");
+  if (!validation.ok) return validation.result;
+  try {
+    const user = userService.updateProfile(getScope(), validation.data);
+    // The name shows up in the sidebar, the greeting, the user list and "created by"
+    revalidatePath("/", "layout");
+    return { success: true, data: { values: toUserFormValues(user) } };
+  } catch (error) {
+    return toErrorResult(error);
+  }
+}

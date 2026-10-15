@@ -30,7 +30,7 @@ export function PermissionsSection({ role, isNew }: PermissionsSectionProps) {
       badge={tForm("comingSoon")}
     >
       <div aria-disabled="true" className="flex flex-col gap-4">
-        <ul className="grid gap-3 opacity-60 sm:grid-cols-3">
+        <ul className="grid gap-3 opacity-60 @xl:grid-cols-3">
           {ROLES.map((value) => {
             const isCurrent = value === role;
             return (

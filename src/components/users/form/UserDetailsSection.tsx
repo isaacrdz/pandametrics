@@ -53,7 +53,7 @@ export function UserDetailsSection({ isActive }: UserDetailsSectionProps) {
           )}
         />
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-6 @lg:grid-cols-2">
           <Controller
             name="email"
             control={control}

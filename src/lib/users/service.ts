@@ -2,14 +2,14 @@ import "server-only";
 
 import { randomBytes } from "node:crypto";
 import { MOCK_USERS } from "@/lib/mock-data";
-import { hashPassword } from "@/lib/users/password";
+import { hashPassword, verifyPassword } from "@/lib/users/password";
 import type { UserFormValues } from "@/lib/users/schema";
 import type { User } from "@/types/survey";
 
 // In-memory user store with the same functions the Prisma services will have, like the survey
 // store. The password hash never leaves this module's callers on the server.
 
-export type UserErrorCode = "NOT_FOUND" | "SELF_DEACTIVATE" | "LAST_OWNER" | "EMAIL_TAKEN";
+export type UserErrorCode = "NOT_FOUND" | "SELF_DEACTIVATE" | "LAST_OWNER" | "EMAIL_TAKEN" | "WRONG_PASSWORD";
 
 export class UserServiceError extends Error {
   constructor(readonly code: UserErrorCode) {
@@ -153,6 +153,11 @@ export function createUser(scope: UserScope, input: UserFormValues): User {
 export function updateUser(scope: UserScope, id: string, input: UserFormValues): User {
   const user = getStore().get(id);
   if (!user || !isListed(user, scope.organizationId)) throw new UserServiceError("NOT_FOUND");
+  // Your own password always needs the current one, even when the edit comes from the
+  // user form instead of the profile (the page redirects, but the action can be called directly)
+  if (id === scope.userId && input.password && !verifyPassword(input.currentPassword, user.passwordHash)) {
+    throw new UserServiceError("WRONG_PASSWORD");
+  }
   assertEmailFree(input.email, id);
 
   user.name = input.name;
@@ -161,4 +166,10 @@ export function updateUser(scope: UserScope, id: string, input: UserFormValues):
   if (input.password) user.passwordHash = hashPassword(input.password);
   user.updatedAt = new Date();
   return toUser(user);
+}
+
+// The signed-in user's own profile: never another id. A new password needs the current one.
+export function updateProfile(scope: UserScope, input: UserFormValues): User {
+  // updateUser checks the current password whenever the id is the signed-in user's
+  return updateUser(scope, scope.userId, input);
 }

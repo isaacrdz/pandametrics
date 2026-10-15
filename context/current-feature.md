@@ -1,18 +1,28 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Users Phase 3 — My Profile
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `NavUser` dropdown: label "Account", separator, **My profile** (`UserRoundIcon`, link to `/profile`), then Dark / Light mode; no sidebar nav item and nothing highlighted on `/profile`
+- The current user's "Edit" in the user list links to `/profile`, and `/users/<own id>` redirects to `/profile`
+- Service `updateProfile(scope, input)` on `scope.userId`: same rules as `updateUser`, plus `currentPassword` checked with `verifyPassword` when a new password is sent (`WRONG_PASSWORD`); `EMAIL_TAKEN`
+- Action `updateProfile(values)` → `{ values }`, revalidates `/users` and the layout
+- `profile` mode in `USER_FORM_MODES`: "My profile" / "Update your personal details and password.", "Save changes", cards 01 Details and 02 Change password (current, new, confirm; optional as a group), no permissions card, no status line, toast "Profile updated" and reset, Back to `/dashboard`; `WRONG_PASSWORD` on the current password field
+- `/profile` page (`max-w-6xl`): the form wraps the header and a 12-column grid sized by a `@container/profile` (from `@4xl`, 56rem); `ProfilePictureCard` left (`col-span-4`, sticky), cards 01 and 02 right (`col-span-8`); stacked below with the picture card first and compact
+- `ProfilePictureCard`: "Profile picture" + "Coming soon" badge, explanation text, 128px `UserAvatar` (96px stacked), name, email and role badge, disabled "Change photo" button (`aria-disabled`, tooltip "Coming soon"), not part of the form
+- Messages: `userMenu.profile`, `profile.*`, `userForm.sections.password.change.*`, `userForm.fields.currentPassword`, `userForm.errors.WRONG_PASSWORD` in en / es
+- `yarn lint`, `tsc --noEmit`, `yarn build` pass; checked at 375 / 768 / 1280 with the sidebar open and collapsed, light / dark, en / es, keyboard; name changes show in the sidebar, greeting and list
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/users-phase-3-profile-spec.md`; research: `docs/users.md` (section 5)
+- Phase 3 of 3; reuses `UserForm`, `PasswordInput`, `UserDetailsSection`, `PasswordSection`, `UserAvatar` and the `profile` form messages
+- The profile edits only the signed-in user (id from the mock session, never from the client); no role, status or permissions
+- Grid 4 / 8 (changed from 6 / 6 on request after comparing 5 / 7 and 4 / 8): the form keeps fields in pairs and the page is shorter; field grids inside `FormSection` follow the card width (`@container`)
+- Picture upload is not built; the card only shows the avatar and a disabled button
 
 ## History
 

@@ -233,7 +233,7 @@ max-w-6xl
 - Below `lg` the columns stack with the picture card first and compact (avatar 96px, row layout), then the form.
 - The picture card is `lg:sticky lg:top-24` so it stays in view next to the longer form.
 
-Option to consider: a 6 / 6 split gives the picture card as much width as the form, and the card has little content. A 5 / 7 or 4 / 8 split reads better on wide screens; kept at 6 / 6 as requested.
+Update: implemented as **4 / 8** after comparing 5 / 7 and 4 / 8 in the browser (the form keeps its fields in pairs and the page is shorter), with the columns driven by a container query (from 56rem of content) instead of `lg`.
 
 ### Profile picture card (coming soon)
 
@@ -310,4 +310,4 @@ Decisions to confirm before the specs:
 - ~~No checkboxes or bulk actions~~ — changed: the list has checkboxes and bulk Activate / Deactivate / Delete (soft delete). See `context/features/users-phase-1-list-spec.md`.
 - The Deactivate item becomes "Activate" on inactive rows, so deactivation can be undone.
 - Permissions card shows the current role as a disabled preview; new users are created as Member.
-- Profile grid stays 6 / 6 (a 5 / 7 split would give the form more room).
+- ~~Profile grid stays 6 / 6~~ — changed to 4 / 8.

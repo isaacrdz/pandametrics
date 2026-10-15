@@ -14,7 +14,8 @@ export const USER_LIMITS = {
 } as const;
 
 // create: the password is required. edit: an empty pair keeps the current password.
-export type UserFormSchemaMode = "create" | "edit";
+// profile: like edit, and changing the password also asks for the current one.
+export type UserFormSchemaMode = "create" | "edit" | "profile";
 
 // Spaces, dashes, dots and parentheses are dropped; a leading "+" is kept
 export function normalizePhone(value: string): string {
@@ -58,12 +59,22 @@ const baseSchema = z.object({
   phone: phoneSchema,
   password: z.string(),
   confirmPassword: z.string(),
+  // Profile only: checked against the stored hash on the server, never stored
+  currentPassword: z.string(),
 });
 
 export function userFormSchema(mode: UserFormSchemaMode) {
   return baseSchema.superRefine((values, ctx) => {
-    const wantsPassword = mode === "create" || values.password !== "" || values.confirmPassword !== "";
+    const wantsPassword =
+      mode === "create" ||
+      values.password !== "" ||
+      values.confirmPassword !== "" ||
+      (mode === "profile" && values.currentPassword !== "");
     if (!wantsPassword) return;
+
+    if (mode === "profile" && values.currentPassword === "") {
+      ctx.addIssue({ code: "custom", path: ["currentPassword"], message: "required" });
+    }
 
     if (values.password === "") {
       ctx.addIssue({ code: "custom", path: ["password"], message: "required" });
@@ -90,6 +101,7 @@ export const EMPTY_USER_VALUES: UserFormInput = {
   phone: "",
   password: "",
   confirmPassword: "",
+  currentPassword: "",
 };
 
 // Never carries a password: the form always starts with empty password fields
@@ -100,5 +112,6 @@ export function toUserFormValues(user: { name: string | null; email: string | nu
     phone: user.phone ?? "",
     password: "",
     confirmPassword: "",
+    currentPassword: "",
   };
 }

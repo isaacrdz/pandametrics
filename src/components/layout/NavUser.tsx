@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronsUpDownIcon, MoonIcon, SunIcon } from "lucide-react";
+import Link from "next/link";
+import { ChevronsUpDownIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -59,6 +60,12 @@ export function NavUser({ name, email }: NavUserProps) {
           >
             <DropdownMenuLabel>{t("account")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/profile">
+                <UserRoundIcon aria-hidden />
+                {t("profile")}
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setTheme(isDark ? "light" : "dark")}>
               {isDark ? <SunIcon aria-hidden /> : <MoonIcon aria-hidden />}
               {isDark ? t("lightMode") : t("darkMode")}

@@ -6,7 +6,7 @@ Phase 3 of 3 of user management: the signed-in user's own profile.
 
 - A **"My profile"** item in the sidebar user menu, above the theme toggle.
 - `/profile` with the user form in a new `profile` mode: details and change password, **no permissions**.
-- A 6 / 6 grid: the form on the right, a **profile picture** card on the left, disabled and marked "Coming soon".
+- A 4 / 8 grid: the form on the right, a **profile picture** card on the left, disabled and marked "Coming soon".
 
 Requires phases 1 and 2. Full research in `docs/users.md` (section 5).
 
@@ -17,7 +17,7 @@ Requires phases 1 and 2. Full research in `docs/users.md` (section 5).
 - **Changing the password asks for the current one**.
 - **No role, status or permissions** in the profile: a user cannot change their own access.
 - **Picture upload is not built**: the card shows the avatar and a disabled "Change photo" button.
-- **Grid 6 / 6** as requested (a 5 / 7 split would give the form more room; noted, not applied).
+- **Grid 4 / 8**: changed from 6 / 6 after comparing 5 / 7 and 4 / 8 in the browser. 4 / 8 keeps the form fields in pairs (like `/users/new`) and a shorter page; the picture card still fits a 128px avatar.
 
 ## Requirements
 
@@ -50,9 +50,9 @@ Requires phases 1 and 2. Full research in `docs/users.md` (section 5).
 
 - Metadata "My profile · Panda Metrics"; data from the mock session (`getAppContext()`), passed as plain values (no `passwordHash`).
 - Width `max-w-6xl`. The `<form>` wraps the header and the grid, so Save stays at the top as in the other forms.
-- Header spans the full width; below it `grid gap-8 lg:grid-cols-12`:
-  - left `lg:col-span-6`: `ProfilePictureCard`, `lg:sticky lg:top-24`;
-  - right `lg:col-span-6`: cards 01 and 02.
+- Header spans the full width; below it a 12-column grid sized by its container (`@container/profile`, columns from `@4xl` = 56rem, because the sidebar takes part of the width):
+  - left `col-span-4`: `ProfilePictureCard`, sticky `top-24`;
+  - right `col-span-8`: cards 01 and 02 (their field grids follow the card width).
 - Below `lg` the columns stack: the picture card first, compact (avatar 96px next to the text), then the form.
 
 ### Profile picture card (`src/components/users/ProfilePictureCard.tsx`)
@@ -71,7 +71,7 @@ Requires phases 1 and 2. Full research in `docs/users.md` (section 5).
 
 - `yarn lint`, `tsc --noEmit`, `yarn build` (`/profile` in the route table).
 - Menu: "My profile" above the theme toggle, opens `/profile`; keyboard and screen reader names correct.
-- Layout: at 1280 the picture card is on the left and the form on the right, 6 / 6, the card stays in view while scrolling; at 768 and 375 they stack with the picture card first; no overflow with the sidebar open and collapsed.
+- Layout: at 1280 the picture card is on the left and the form on the right, 4 / 8, the card stays in view while scrolling; at 768 and 375 they stack with the picture card first; no overflow with the sidebar open and collapsed.
 - Saving name, email or phone updates the sidebar user, the greeting and the user list; no permissions or status shown.
 - Password: empty keeps it; wrong current password → error on that field; correct one replaces it; mismatch and rules validated.
 - Email already used → error on the field.
