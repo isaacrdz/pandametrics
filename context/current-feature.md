@@ -1,29 +1,18 @@
-# Survey Kiosk Phase 1 — Route and Code Entry
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `(kiosk)` route group: layout with a full-height `bg-background` canvas, `robots` noindex / nofollow and the title "Answer a survey · Panda Metrics"
-- `/s` page: static frame + `<Suspense fallback={<KioskLoading />}>` around `KioskEntry`, which awaits `searchParams`; no code → `CodeEntry`; unparseable code → `CodeEntry` with the error and the raw value; `ok` → `SurveyRunnerPlaceholder` (name, question count, "Exit survey" to `/s`); `notFound` / `closed` → `KioskMessage`
-- `KioskLoading`: centered spinner, `role="status"`, sr-only "Loading survey"
-- `parseSurveyCode` in `src/lib/surveys/code.ts` (trim + uppercase, `?code=` from a URL, else the first 6-character `[A-Z0-9]` token, never throws) and `SURVEY_CODE_LENGTH = 6`
-- `getPublicSurvey(code)` in `src/lib/surveys/public.ts`: `ok` with `PublicSurvey` (code, name, category, non-archived questions and options, no org / user / dates), `notFound` (unknown or deleted), `closed` (inactive); case-insensitive lookup by code via `getSurveyByCode`
-- `CodeEntry`: logo top left, language switcher top right; h1 + subtitle; code input (uppercase, 6 chars without spaces, pasted link → code, mono tracking once filled); primary "Continue →" disabled until 6 characters, Enter submits, `router.push` in a transition with a spinner; inline `role="alert"` error; "Scan QR" / "Upload QR image" outline with primary text, disabled with a "Coming soon" tooltip (focusable)
-- `KioskMessage`: not found ("Check the code {code} and try again") and closed; primary "Try another code" to `/s`
-- Share panel: "Open survey" is a link to `publicUrl` in a new tab; disabled wrapper, tooltip and `openSoon` message removed
-- `kiosk` messages in en / es (Spanish as in the reference)
-- `yarn lint`, `tsc --noEmit`, `yarn build` (`/s` partial prerender); flows, noindex meta, 375 / 768 / 1280 light and dark, English and Spanish checked
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/survey-kiosk-phase-1-code-entry-spec.md`; research: `docs/survey-kiosk.md`
-- Reference: `context/screenshots/survey-landing-1.png`
-- Primary (`#4263eb`) on Continue and Try another code; Scan / Upload outline with primary text
-- Scan / Upload get enabled in phase 4 (QR); the runner replaces the placeholder in phase 2; submit and restart in phase 3
-- Decisions for later phases: every question required, select then OK, 5-second thanks countdown, `source` `KIOSK` / `LINK` only
+<!-- Any extra notes -->
 
 ## History
 
@@ -53,3 +42,4 @@ In Progress
 - **Top Bar Phase 3 — User Forms and Profile** (2026-10-15): phase 3 of 3 of the contextual top bar. `UserForm` renders `AppTopBar` inside its `<form>` for create, edit and profile (back button with the unsaved changes dialog, mode title and subtitle, `SubmitButton` with the pending state, switchers hidden on narrow bars); content under the bar in `max-w-5xl` / `max-w-6xl` from the mode config (profile 4 / 8 grid unchanged). `/users/new`, `/users/[id]` and `/profile` no longer show the greeting or "New survey"; the edit fallback renders the same bar with the submit disabled. `FormHeader` deleted with its only message; `GreetingTopBar` used by the dashboard only. Create title "Create user"
 - **Logo and Surfaces Phase 1 — Logo** (2026-10-15): phase 1 of 2. `design/logo.svg` cleaned: it was a trace with the transparency checkerboard drawn in, now clipped to the traced panda silhouette with 152 background paths dropped. `scripts/brand-assets.mjs` (with `svgo`) builds a square SVG around the panda (`-35 40 1968 1968`, 28 KB) for `src/assets/brand/logo.svg` and the `src/app/icon.svg` favicon, plus `icon.png` (512, transparent) and `apple-icon.png` (180, panda on the brand pink, opaque); `logo-icon.webp` removed, hero and Open Graph unchanged. `Logo` shows the panda alone (no pink tile) with `object-contain` in the sidebar and the landing nav; collapsed rail still centered, accessible name unchanged, readable on the dark sidebar without a backdrop
 - **Logo and Surfaces Phase 2 — Surfaces** (2026-10-15): phase 2 of 2. Token-only theme change following the reference card: light page `#f2f4f8` (planned `#f1f3f7`, lightened so the blue passes AA) with white cards, neutral `#e4e7ed` borders / inputs / card borders, `#f3f4f7` muted fills and `#5b6170` secondary text; dark neutral `#121418` page, `#1b1e24` cards, `#16191e` sidebar, white-alpha borders. Added on request: primary from pink to blue `#4263eb` (dark `#748ffc` with `#0b1220` text), blue accent tints (`#f0f4ff` / `#1f2a4d`) for active nav, tiles and badges, neutral checkbox border, neutral dark inverse; brand pink kept on the logo, icons and landing illustrations; faces, stars and survey colors unchanged. Contrast check passes (labels now say primary); no hardcoded tints found; no overflow at 375 / 768 / 1280 in light and dark. Overview palette (section 10), phase 2 spec and research updated; card shadow left for later
+- **Survey Kiosk Phase 1 — Route and Code Entry** (2026-10-15): phase 1 of 4 of the public kiosk. `(kiosk)` route group with `/s` (noindex / nofollow, "Answer a survey" title); the screen is picked from `?code=` inside Suspense (spinner fallback). `parseSurveyCode` (bare code, link with `?code=` or any text with a 6-character code; never throws) and `getPublicSurvey` / `getSurveyByCode` (reduced survey without organization, user, dates or archived content; `notFound` for unknown or deleted, `closed` for drafts). Code entry as in the reference: logo and language switcher, uppercase 6-character input that pulls the code out of a pasted link, primary "Continue →" (disabled until complete, Enter submits, pending spinner), inline invalid-code alert, "Scan QR" / "Upload QR image" outline with primary text and a "Coming soon" tooltip (`aria-disabled`). Not found / closed screens with a primary "Try another code"; a placeholder runner (name, question count, exit) until phase 2. Share panel "Open survey" opens the public link in a new tab (`openSoon` removed). `kiosk` messages in en / es; flows and 375 / 768 / 1280 light / dark / en / es checked
