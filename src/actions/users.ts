@@ -4,6 +4,7 @@ import * as z from "zod";
 import { refresh, revalidatePath } from "next/cache";
 import { getAppContext } from "@/lib/dashboard";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
+import { toUserFormValues, userFormSchema, type UserFormInput, type UserFormSchemaMode, type UserFormValues } from "@/lib/users/schema";
 import * as userService from "@/lib/users/service";
 import { UserServiceError, type UserErrorCode } from "@/lib/users/service";
 
@@ -11,9 +12,14 @@ import { UserServiceError, type UserErrorCode } from "@/lib/users/service";
 
 export type UserActionErrorCode = UserErrorCode | "VALIDATION" | "UNKNOWN";
 
+export interface UserFieldError {
+  path: string;
+  message: string;
+}
+
 export type UserActionResult<T> =
   | { success: true; data: T }
-  | { success: false; error: { code: UserActionErrorCode } };
+  | { success: false; error: { code: UserActionErrorCode; fieldErrors?: UserFieldError[] } };
 
 function getScope(): userService.UserScope {
   // Mock session until Auth.js: the organization and user never come from the client
@@ -69,6 +75,50 @@ export async function deleteUsers(ids: string[]): Promise<UserActionResult<{ cou
     const count = userService.softDeleteUsers(getScope(), ids);
     afterChange();
     return { success: true, data: { count } };
+  } catch (error) {
+    return toErrorResult(error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// User form
+// ---------------------------------------------------------------------------
+
+type Validation =
+  | { ok: true; data: UserFormValues }
+  | { ok: false; result: UserActionResult<never> };
+
+// The client already validated, but the server never trusts it
+function validate(values: unknown, mode: UserFormSchemaMode): Validation {
+  const parsed = userFormSchema(mode).safeParse(values);
+  if (parsed.success) return { ok: true, data: parsed.data };
+
+  const fieldErrors = parsed.error.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message }));
+  return { ok: false, result: { success: false, error: { code: "VALIDATION", fieldErrors } } };
+}
+
+export async function createUser(values: UserFormInput): Promise<UserActionResult<{ id: string }>> {
+  const validation = validate(values, "create");
+  if (!validation.ok) return validation.result;
+  try {
+    const user = userService.createUser(getScope(), validation.data);
+    revalidatePath("/users");
+    return { success: true, data: { id: user.id } };
+  } catch (error) {
+    return toErrorResult(error);
+  }
+}
+
+export async function updateUser(id: string, values: UserFormInput): Promise<UserActionResult<{ values: UserFormInput }>> {
+  if (!idSchema.safeParse(id).success) return VALIDATION_ERROR;
+  const validation = validate(values, "edit");
+  if (!validation.ok) return validation.result;
+  try {
+    const user = userService.updateUser(getScope(), id, validation.data);
+    // Names show up in the sidebar, the greeting and "created by"
+    revalidatePath("/", "layout");
+    // Normalized values with empty password fields: the form resets to them
+    return { success: true, data: { values: toUserFormValues(user) } };
   } catch (error) {
     return toErrorResult(error);
   }

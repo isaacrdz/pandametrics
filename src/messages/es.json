@@ -236,6 +236,68 @@
       "SELF_DEACTIVATE": "No puedes desactivarte ni eliminarte a ti mismo.",
       "LAST_OWNER": "La organización necesita al menos un propietario activo.",
       "VALIDATION": "Revisa la selección e inténtalo de nuevo.",
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
+      "EMAIL_TAKEN": "Este email ya lo usa otro usuario."
+    }
+  },
+  "userForm": {
+    "createTitle": "Nuevo usuario",
+    "createSubtitle": "Agrega a una persona a tu organización.",
+    "editTitle": "Editar usuario",
+    "editSubtitle": "Actualiza los datos y el acceso del usuario.",
+    "actions": {
+      "create": "Crear usuario",
+      "save": "Guardar cambios"
+    },
+    "sections": {
+      "details": {
+        "title": "Datos del usuario",
+        "description": "Nombre e información de contacto."
+      },
+      "password": {
+        "create": {
+          "title": "Crear contraseña",
+          "description": "El usuario inicia sesión con esta contraseña. Compártela de forma segura."
+        },
+        "reset": {
+          "title": "Restablecer contraseña",
+          "description": "Define una nueva contraseña para este usuario. Déjala vacía para conservar la actual."
+        }
+      },
+      "permissions": {
+        "title": "Permisos",
+        "description": "Elige qué puede ver y hacer este usuario.",
+        "note": "Los permisos se podrán editar en una próxima versión. Los usuarios nuevos entran como Miembro.",
+        "current": "Rol actual",
+        "default": "Rol por defecto",
+        "roles": {
+          "OWNER": "Acceso total, incluida la organización y sus usuarios.",
+          "ADMIN": "Administra encuestas y usuarios.",
+          "MEMBER": "Crea encuestas y ve sus resultados."
+        }
+      }
+    },
+    "fields": {
+      "name": "Nombre",
+      "email": "Email",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+52 55 1234 5678",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "showPassword": "Mostrar contraseña",
+      "passwordRules": "Al menos 8 caracteres, con una letra y un número."
+    },
+    "statusHint": "Cambia el estado desde la lista de usuarios.",
+    "toasts": {
+      "created": "Usuario creado",
+      "saved": "Cambios guardados"
+    },
+    "errors": {
+      "NOT_FOUND": "Este usuario ya no existe.",
+      "EMAIL_TAKEN": "Este email ya lo usa otro usuario.",
+      "SELF_DEACTIVATE": "No puedes desactivarte ni eliminarte a ti mismo.",
+      "LAST_OWNER": "La organización necesita al menos un propietario activo.",
+      "VALIDATION": "Revisa los campos marcados.",
       "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
     }
   },
@@ -270,17 +332,29 @@
     "en": "English",
     "es": "Español"
   },
+  "form": {
+    "required": "(obligatorio)",
+    "actions": {
+      "back": "Regresar",
+      "delete": "Borrar",
+      "saving": "Guardando…"
+    },
+    "unsaved": {
+      "title": "¿Descartar cambios?",
+      "description": "Tienes cambios sin guardar. Si sales ahora, se perderán.",
+      "confirm": "Descartar y salir",
+      "cancel": "Seguir editando"
+    },
+    "comingSoon": "Próximamente"
+  },
   "surveyForm": {
     "createTitle": "Nueva encuesta",
     "createSubtitle": "Elige una categoría, escribe tus preguntas y publícala cuando quieras.",
     "editTitle": "Editar encuesta",
     "editSubtitle": "Actualiza la experiencia y las opciones de respuesta de tu encuesta.",
     "actions": {
-      "back": "Regresar",
-      "delete": "Borrar",
       "create": "Crear encuesta",
-      "save": "Guardar encuesta",
-      "saving": "Guardando…"
+      "save": "Guardar encuesta"
     },
     "sections": {
       "details": {
@@ -298,8 +372,7 @@
     },
     "fields": {
       "name": "Nombre",
-      "description": "Descripción",
-      "required": "(obligatorio)"
+      "description": "Descripción"
     },
     "publish": {
       "title": "Publicar encuesta",
@@ -371,12 +444,6 @@
       "confirm": "Borrar encuesta",
       "deleting": "Borrando…",
       "cancel": "Cancelar"
-    },
-    "unsaved": {
-      "title": "¿Descartar cambios?",
-      "description": "Tienes cambios sin guardar. Si sales ahora, se perderán.",
-      "confirm": "Descartar y salir",
-      "cancel": "Seguir editando"
     }
   },
   "categories": {
@@ -402,7 +469,11 @@
     "maxOptions": "Usa hasta {max} respuestas.",
     "duplicateReaction": "Cada reacción solo se puede usar una vez.",
     "invalidReaction": "Elige una reacción válida.",
-    "invalidColor": "Elige un color válido."
+    "invalidColor": "Elige un color válido.",
+    "invalidEmail": "Escribe un email válido.",
+    "invalidPhone": "Escribe de 7 a 15 dígitos, con un + opcional al inicio.",
+    "passwordRules": "Usa de 8 a 72 caracteres con al menos una letra y un número.",
+    "passwordMismatch": "Las contraseñas no coinciden."
   },
   "reactions": {
     "VERY_BAD": "Muy malo",

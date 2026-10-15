@@ -19,7 +19,7 @@ interface UnsavedChangesDialogProps {
 }
 
 export function UnsavedChangesDialog({ open, onOpenChange, onDiscard }: UnsavedChangesDialogProps) {
-  const t = useTranslations("surveyForm.unsaved");
+  const t = useTranslations("form.unsaved");
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

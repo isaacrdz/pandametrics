@@ -3,9 +3,10 @@
 import { PlusIcon } from "lucide-react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { FormSection } from "@/components/surveys/form/FormSection";
+import { FormSection } from "@/components/form/FormSection";
 import { QuestionEditor } from "@/components/surveys/form/QuestionEditor";
-import { useArrayError, useDefaultOptionLabels, useValidationMessage } from "@/components/surveys/form/form-hooks";
+import { useValidationMessage } from "@/components/form/form-hooks";
+import { useArrayError, useDefaultOptionLabels } from "@/components/surveys/form/form-hooks";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";

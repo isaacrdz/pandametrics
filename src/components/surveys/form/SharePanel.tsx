@@ -4,7 +4,7 @@ import { CalendarIcon, CopyIcon, DownloadIcon, ExternalLinkIcon, QrCodeIcon, Use
 import { useFormatter, useTranslations } from "next-intl";
 import { toDataURL } from "qrcode";
 import { CopyButton, useCopyToClipboard } from "@/components/dashboard/CopyButton";
-import { FormSection } from "@/components/surveys/form/FormSection";
+import { FormSection } from "@/components/form/FormSection";
 import { QrCode } from "@/components/surveys/form/QrCode";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";

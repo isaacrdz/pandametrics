@@ -4,7 +4,7 @@ import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
-interface SurveyFormHeaderProps {
+interface FormHeaderProps {
   title: string;
   subtitle: string;
   submitLabel: string;
@@ -14,15 +14,16 @@ interface SurveyFormHeaderProps {
   onDelete?: () => void;
 }
 
-export function SurveyFormHeader({
+// Page title and the form actions (Back, optional Delete, Submit), shared by every form
+export function FormHeader({
   title,
   subtitle,
   submitLabel,
   isSubmitting,
   onBack,
   onDelete,
-}: SurveyFormHeaderProps) {
-  const t = useTranslations("surveyForm.actions");
+}: FormHeaderProps) {
+  const t = useTranslations("form.actions");
 
   return (
     <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

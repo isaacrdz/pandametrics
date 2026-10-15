@@ -10,6 +10,7 @@ import {
 } from "@/lib/mock-data";
 import { matchesQuery } from "@/lib/surveys/search";
 import { listActiveSurveys } from "@/lib/surveys/service";
+import { getUserById } from "@/lib/users/service";
 import type {
   Organization,
   Survey,
@@ -36,7 +37,9 @@ export interface DashboardData {
 
 export function getAppContext(): AppContext {
   return {
-    user: MOCK_CURRENT_USER,
+    // Mock session: the signed-in user comes from the user store, so profile edits show up
+    // in the sidebar and the greeting
+    user: getUserById(MOCK_CURRENT_USER.id) ?? MOCK_CURRENT_USER,
     organization: MOCK_CURRENT_ORGANIZATION,
     organizations: MOCK_ORGANIZATIONS,
   };

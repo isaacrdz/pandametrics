@@ -1,13 +1,15 @@
 import "server-only";
 
+import { randomBytes } from "node:crypto";
 import { MOCK_USERS } from "@/lib/mock-data";
 import { hashPassword } from "@/lib/users/password";
+import type { UserFormValues } from "@/lib/users/schema";
 import type { User } from "@/types/survey";
 
 // In-memory user store with the same functions the Prisma services will have, like the survey
 // store. The password hash never leaves this module's callers on the server.
 
-export type UserErrorCode = "NOT_FOUND" | "SELF_DEACTIVATE" | "LAST_OWNER";
+export type UserErrorCode = "NOT_FOUND" | "SELF_DEACTIVATE" | "LAST_OWNER" | "EMAIL_TAKEN";
 
 export class UserServiceError extends Error {
   constructor(readonly code: UserErrorCode) {
@@ -113,4 +115,50 @@ export function softDeleteUsers(scope: UserScope, ids: string[]): number {
     user.updatedAt = now;
   }
   return users.length;
+}
+
+// ---------------------------------------------------------------------------
+// Create and update (user form)
+// ---------------------------------------------------------------------------
+
+// Emails are unique across the app, deleted users included (their email stays taken)
+function assertEmailFree(email: string, exceptId?: string) {
+  const taken = [...getStore().values()].some((user) => user.email === email && user.id !== exceptId);
+  if (taken) throw new UserServiceError("EMAIL_TAKEN");
+}
+
+export function createUser(scope: UserScope, input: UserFormValues): User {
+  assertEmailFree(input.email);
+  const now = new Date();
+  const user: StoredUser = {
+    id: randomBytes(12).toString("hex"),
+    name: input.name,
+    email: input.email,
+    phone: input.phone,
+    image: null,
+    // Permissions are not editable yet: everyone joins as a member
+    role: "MEMBER",
+    isActive: true,
+    organizationId: scope.organizationId,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    passwordHash: hashPassword(input.password),
+  };
+  getStore().set(user.id, user);
+  return toUser(user);
+}
+
+// Name, email and phone; the password only changes when a new one was sent
+export function updateUser(scope: UserScope, id: string, input: UserFormValues): User {
+  const user = getStore().get(id);
+  if (!user || !isListed(user, scope.organizationId)) throw new UserServiceError("NOT_FOUND");
+  assertEmailFree(input.email, id);
+
+  user.name = input.name;
+  user.email = input.email;
+  user.phone = input.phone;
+  if (input.password) user.passwordHash = hashPassword(input.password);
+  user.updatedAt = new Date();
+  return toUser(user);
 }

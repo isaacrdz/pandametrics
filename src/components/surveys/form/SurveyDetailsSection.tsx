@@ -2,10 +2,10 @@
 
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { FormSection } from "@/components/surveys/form/FormSection";
+import { FormSection } from "@/components/form/FormSection";
 import { PublishToggle } from "@/components/surveys/form/PublishToggle";
-import { RequiredMark } from "@/components/surveys/form/RequiredMark";
-import { useValidationMessage } from "@/components/surveys/form/form-hooks";
+import { RequiredMark } from "@/components/form/RequiredMark";
+import { useValidationMessage } from "@/components/form/form-hooks";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

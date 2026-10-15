@@ -2,7 +2,7 @@
 
 import { Controller, useFormContext, type FieldPath } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { useValidationMessage } from "@/components/surveys/form/form-hooks";
+import { useValidationMessage } from "@/components/form/form-hooks";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import type { SurveyFormInput } from "@/lib/surveys/schema";

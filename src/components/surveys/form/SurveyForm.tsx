@@ -12,9 +12,9 @@ import { FORM_MODES, type SaveHelpers, type SurveyFormMode } from "@/components/
 import { QuestionsSection } from "@/components/surveys/form/QuestionsSection";
 import { SharePanel } from "@/components/surveys/form/SharePanel";
 import { SurveyDetailsSection } from "@/components/surveys/form/SurveyDetailsSection";
-import { SurveyFormHeader } from "@/components/surveys/form/SurveyFormHeader";
-import { UnsavedChangesDialog } from "@/components/surveys/form/UnsavedChangesDialog";
-import { useBeforeUnloadWarning } from "@/components/surveys/form/form-hooks";
+import { FormHeader } from "@/components/form/FormHeader";
+import { UnsavedChangesDialog } from "@/components/form/UnsavedChangesDialog";
+import { useBeforeUnloadWarning } from "@/components/form/form-hooks";
 import { ACTIVE_SURVEY_LIMIT } from "@/lib/surveys/constants";
 import type { SurveyFormMeta } from "@/lib/surveys/form-values";
 import { surveyFormSchema, type SurveyFormInput, type SurveyFormValues } from "@/lib/surveys/schema";
@@ -91,7 +91,7 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
         noValidate
         className="flex flex-col gap-8"
       >
-        <SurveyFormHeader
+        <FormHeader
           title={t(config.titleKey)}
           subtitle={t(config.subtitleKey)}
           submitLabel={t(`actions.${config.submitKey}`)}

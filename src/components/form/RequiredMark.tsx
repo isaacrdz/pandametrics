@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 // Visible asterisk plus text for screen readers
 export function RequiredMark() {
-  const t = useTranslations("surveyForm.fields");
+  const t = useTranslations("form");
 
   return (
     <>

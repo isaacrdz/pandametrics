@@ -5,11 +5,13 @@ interface FormSectionProps {
   number: number;
   title: string;
   description: string;
+  // Shown next to the title, e.g. "Coming soon"
+  badge?: string;
   children: ReactNode;
 }
 
 // Numbered card from the form screenshots; text comes from client parents
-export function FormSection({ id, number, title, description, children }: FormSectionProps) {
+export function FormSection({ id, number, title, description, badge, children }: FormSectionProps) {
   return (
     <section
       aria-labelledby={`${id}-title`}
@@ -23,9 +25,16 @@ export function FormSection({ id, number, title, description, children }: FormSe
           {String(number).padStart(2, "0")}
         </span>
         <div className="min-w-0">
-          <h2 id={`${id}-title`} className="text-xl font-bold text-foreground sm:text-2xl">
-            {title}
-          </h2>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <h2 id={`${id}-title`} className="text-xl font-bold text-foreground sm:text-2xl">
+              {title}
+            </h2>
+            {badge && (
+              <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-accent-foreground">
+                {badge}
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-muted-foreground">{description}</p>
         </div>
       </header>

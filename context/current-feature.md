@@ -1,18 +1,30 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Users Phase 2 — Create and Edit Form
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Shared form pieces moved to `src/components/form/` (`FormSection` with an optional `badge`, `RequiredMark`, form header with labels as props, `useBeforeUnloadWarning`, `useValidationMessage`, `UnsavedChangesDialog` with the discard target as a prop); the survey form looks and behaves the same
+- `src/lib/users/schema.ts`: `userFormSchema(mode)` (name 1–80, email lowercased ≤ 254, phone optional and normalized to 7–15 digits, password 8–72 with a letter and a number + confirm; required in create, optional as a pair in edit) and `toUserFormValues(user)` with empty password fields
+- Service `createUser` (hash, active, `MEMBER`, scope organization) and `updateUser` (new hash only when sent); global email uniqueness (`EMAIL_TAKEN`), `NOT_FOUND` for other organizations
+- Actions `createUser` → `{ id }` and `updateUser` → `{ values }` with server-side Zod field errors and codes; revalidate `/users` and the layout on update
+- Pages `/users/new` (create, static) and `/users/[id]` (params in Suspense, `notFound()`, `UserFormSkeleton`), `max-w-5xl`
+- `UserForm` + `user-form-modes.ts` (create / edit): header with Back and Submit, unsaved changes dialog and `beforeunload`, `VALIDATION` / `EMAIL_TAKEN` on fields, other codes as toasts; create → toast and go to `/users/[id]`, edit → toast and reset
+- Card 01 `UserDetailsSection`: name, email and phone (side by side from `sm`); edit shows a read-only status line
+- Card 02 `PasswordSection`: create (required) / reset (optional) with `PasswordInput` (show / hide, `aria-pressed`), `new-password` autocomplete, rules hint; cleared after saving
+- Card 03 `PermissionsSection` with a "Coming soon" badge: disabled, non-focusable role preview (current role or Member); nothing submitted
+- `userForm.*` and `validation.email` / `phone` / `passwordRules` / `passwordMismatch` in en / es
+- `yarn lint`, `tsc --noEmit`, `yarn build` pass; checked at 375 / 768 / 1280, light / dark, en / es, keyboard; passwords and hashes never in HTML, RSC payload, toasts or logs
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/users-phase-2-form-spec.md`; research: `docs/users.md` (sections 2 and 4)
+- Phase 2 of 3; phase 3 adds the `profile` mode and `/profile`, and the redirect from `/users/<own id>` to `/profile`
+- No delete and no status control in the form (both live in the list); permissions not editable, new users are `MEMBER`
+- Edit never shows the current password; an empty password keeps it; no "send reset link" (no email service)
+- The phone is stored normalized (`+525512345678`); the list shows it as stored
 
 ## History
 
