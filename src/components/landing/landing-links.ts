@@ -11,8 +11,8 @@ export const SECTION_IDS = {
   howItWorks: "how-it-works",
 } as const;
 
-// Solid pink ring with a gap, 3:1 on the page and on cards (checked in check-contrast.mjs).
-// The shared button ring is 50% pink, too faint for the landing's large surfaces.
+// Solid primary ring with a gap, 3:1 on the page and on cards (checked in check-contrast.mjs).
+// The shared button ring is 50% primary, too faint for the landing's large surfaces.
 export const FOCUS_RING =
   "outline-none focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 

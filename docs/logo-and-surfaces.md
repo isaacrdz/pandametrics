@@ -93,7 +93,7 @@ Cards white, page a cool light gray, neutral borders and fills; everything pink 
 
 | Token | Today | Proposed | Why |
 | --- | --- | --- | --- |
-| `--background` | `#fdf8f9` | **`#f1f3f7`** | the paper, between the sampled `#eceef3` and `#efefef` |
+| `--background` | `#fdf8f9` | **`#f1f3f7`** (shipped `#f2f4f8`, see 4b) | the paper, between the sampled `#eceef3` and `#efefef` |
 | `--card` / `--popover` | `#ffffff` | `#ffffff` | unchanged |
 | `--sidebar` | `#ffffff` | `#ffffff` | the sidebar reads as one more white surface on the gray |
 | `--card-border` | `#fcccd5` | **`#e4e7ed`** | the reference card has almost no border; a neutral hairline keeps cards separate on the gray |
@@ -170,6 +170,22 @@ Measured contrast (WCAG):
 | control-border on card / page | 4.28 / 4.73 |
 
 All pairs in `check-contrast.mjs` pass. The pink `--accent` (`#3b2830`) on the neutral card reads as a warm tint for the active nav and tiles, as in light mode.
+
+## 4b. Blue primary (added during phase 2)
+
+Requested after the research: the primary changes from pink to **`#4263eb`** (kept exact), with a dark equivalent. The brand pink `#db8396` stays on the logo, icons and landing illustrations; every interface color that followed the pink now follows the blue.
+
+| Token | Light | Dark |
+| --- | --- | --- |
+| `--primary`, `--ring`, `--sidebar-primary`, `--sidebar-ring`, `--chart-1` | `#4263eb` | `#748ffc` |
+| `--primary-foreground` | `#ffffff` | `#0b1220` |
+| `--accent`, `--sidebar-accent` | `#f0f4ff` | `#1f2a4d` |
+| `--accent-foreground`, `--sidebar-accent-foreground` | `#3b5bdb` | `#bac8ff` |
+| `--chart-2` | `#748ffc` | `#91a7ff` |
+| `--control-border` | `#858b98` (neutral) | `#7b8190` |
+| `--inverse` | unchanged | `#2a2f38` |
+
+Contrast: white on the blue button 4.98; blue text 4.98 on cards but 4.48 on the planned `#f1f3f7` page and 4.45 on a `#edf2ff` tint, so the page is `#f2f4f8` (4.52) and the accent `#f0f4ff` (4.53). Dark: blue text 6.21 on the page, 5.63 on cards, 4.73 on the accent, button text 6.31. Dark values follow the same indigo scale (`#748ffc`, `#91a7ff`, `#bac8ff`).
 
 ## 5. Files
 

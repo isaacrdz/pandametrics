@@ -746,18 +746,21 @@ Dashboard filters live in the URL (`/dashboard?range=this-month&tz=America/Mexic
 
 ### Brand palette
 
-The brand comes from the logo (a panda in a hoodie on pink). Full measurements and the token table in `docs/landing.md` section 3; values live in `src/app/globals.css`.
+The logo is a panda in a hoodie; its pink stays as the brand color of the logo, icons and landing illustrations. The interface uses a blue primary on neutral cool-gray surfaces (white cards on a light gray page). Measurements in `docs/logo-and-surfaces.md`; values live in `src/app/globals.css`.
 
 | Role | Light | Dark | Notes |
 | ---- | ----- | ---- | ----- |
-| Brand (`--brand`) | `#db8396` | `#db8396` | The logo pink. Surfaces and illustrations only: white text on it is 2.73:1 |
-| Primary (`--primary`) | `#a85569` | `#db8396` | Same hue. Light: white text 5.04:1, pink text 4.79:1 on the page. Dark: text `#210a10` (6.9:1) |
-| Background / card | `#fdf8f9` / `#ffffff` | `#1d1418` / `#261b20` | Dark surfaces are the logo's dark brown tinted with the pink hue |
+| Brand (`--brand`) | `#db8396` | `#db8396` | The logo pink. Logo, icons and landing illustrations only: white text on it is 2.73:1 |
+| Primary (`--primary`, `--ring`, `--highlight`) | `#4263eb` | `#748ffc` | Buttons, links, focus rings, active states. Light: white text 4.98:1, blue text 4.52:1 on the page. Dark: text `#0b1220` (6.31:1) |
+| Accent (`--accent` / `--accent-foreground`) | `#f0f4ff` / `#3b5bdb` | `#1f2a4d` / `#bac8ff` | Active nav, number tiles, badges, row hover, poll option blocks |
+| Background / card | `#f2f4f8` / `#ffffff` | `#121418` / `#1b1e24` | Neutral cool grays; in dark the card is one step lighter than the page |
+| Muted / muted text | `#f3f4f7` / `#5b6170` | `#262a31` / `#a8aebb` | Input fills, pills, secondary text |
+| Borders (`--border`, `--input`, `--card-border`) | `#e4e7ed` | white 10% / 15%, card `#2e323a` | Neutral hairlines |
+| Control border (`--control-border`) | `#858b98` | `#7b8190` | Checkbox outlines, 3:1 on card and page |
 | Foreground | `#2b1e24` | `#f6edef` | |
-| Accent (`--accent`) | `#fff0f4` | `#3b2830` | Active nav, tiles, poll option blocks |
-| Inverse (`--inverse`) | `#2b1e24` | `#3b2830` | Dark CTA blocks |
+| Inverse (`--inverse`) | `#2b1e24` | `#2a2f38` | Dark CTA blocks |
 
-Follow the brand: primary buttons, links, focus rings, highlight card, active states, poll bars. Do **not** follow the brand: survey data colors (reactions, stars, poll fallbacks, below), the success green for status, the destructive red. `yarn lint` runs `scripts/check-contrast.mjs`, which fails when a token pair drops below AA (4.5:1 text, 3:1 focus rings) in either theme.
+Follow the primary: buttons, links, focus rings, highlight card, active states, poll bars. Do **not** follow it: the brand pink (logo, icons, landing illustrations), survey data colors (reactions, stars, poll fallbacks, below), the success green for status, the destructive red. `yarn lint` runs `scripts/check-contrast.mjs`, which fails when a token pair drops below AA (4.5:1 text, 3:1 UI) in either theme.
 
 ### Satisfaction (reaction) color palette
 

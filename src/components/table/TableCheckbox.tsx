@@ -4,8 +4,8 @@ import type { ComponentProps } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
-// Light table checkbox: a grey-pink outline at rest (--control-border, 3:1 on card and page),
-// pink only when checked or indeterminate, and a solid focus ring. The shared Checkbox keeps
+// Light table checkbox: a grey outline at rest (--control-border, 3:1 on card and page),
+// primary only when checked or indeterminate, and a solid focus ring. The shared Checkbox keeps
 // the shadcn defaults; only the table looks like this.
 const TABLE_CHECKBOX =
   "size-4.5 rounded-[5px] border-control-border bg-card shadow-none dark:bg-card " +

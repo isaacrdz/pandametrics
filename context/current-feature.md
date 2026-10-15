@@ -1,18 +1,28 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Logo and Surfaces Phase 2 — Surfaces
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Light tokens: `--background #f2f4f8` (planned `#f1f3f7`, lighter so the blue passes AA); `--card-border`, `--border`, `--input`, `--sidebar-border` `#e4e7ed`; `--muted`, `--secondary` `#f3f4f7`; `--muted-foreground #5b6170`; card, popover and sidebar stay `#ffffff`
+- Dark tokens: `--background #121418`; `--card`, `--popover` `#1b1e24`; `--sidebar #16191e`; `--muted`, `--secondary` `#262a31`; `--muted-foreground #a8aebb`; `--sidebar-foreground #c9ced8`; `--card-border #2e323a`; `--border`, `--sidebar-border` `rgb(255 255 255 / 10%)`; `--input` `rgb(255 255 255 / 15%)`; `--control-border #7b8190`
+- Blue primary (added on request): `#4263eb` light / `#748ffc` dark for primary, ring, sidebar primary / ring, chart 1; accent `#f0f4ff` / `#1f2a4d` with `#3b5bdb` / `#bac8ff` text; dark primary text `#0b1220`; chart 2 `#748ffc` / `#91a7ff`; neutral `--control-border #858b98`; dark `--inverse #2a2f38`
+- Unchanged: brand pink (logo, icons, landing illustrations), foreground, light inverse, charts 3–5, reactions, stars, success, destructive
+- `check-contrast.mjs` passes with its current pairs; a `destructive` on `background` pair is added only if destructive text sits on the page
+- Hardcoded pink surface colors outside the tokens replaced with tokens (survey data and brand pink stay)
+- Token changes only; no card shadow in this phase
+- Screenshots at 375 / 768 / 1280, light and dark: dashboard, surveys list, survey form with share panel, users list, new and edit user, profile, landing; white cards on the gray page, dark cards one step lighter than the page, no plum surfaces left, faces / stars / poll colors / landing illustration unchanged, buttons and active states blue, no overflow
+- `yarn lint`, `tsc --noEmit`, `yarn build` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/logo-and-surfaces-phase-2-surfaces-spec.md`; research: `docs/logo-and-surfaces.md` (sections 3 and 4)
+- Expected contrast: light muted text 5.63 on page / 6.20 on card, blue text 4.52 on page / 4.98 on card, white on blue 4.98; dark muted text 8.29 / 7.50, blue text 6.21 / 5.63, control border 4.28 on card
+- Light destructive on the new page would be about 4.4 (below 4.5); today destructive text only sits on cards (4.83)
+- Accent tints (active sidebar item, number tiles, badges, row hover / selection, share panel QR box) follow the blue; pink only on the logo, icons and landing illustrations
+- Card shadow is decided after seeing the result (out of scope)
 
 ## History
 

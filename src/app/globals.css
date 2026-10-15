@@ -67,52 +67,53 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Brand: the logo pink is #db8396 (--brand). White text on it is only 2.73:1, so filled buttons
-   and pink text use --primary #a85569, the same hue darkened to pass AA. Dark mode surfaces are
-   plum-brown tinted with that hue. Contrast is checked by scripts/check-contrast.mjs in `yarn lint`
-   (values and measurements in docs/landing.md). */
+/* Brand: the logo pink #db8396 (--brand) stays on the logo, icons and illustrations. The interface
+   color is the blue --primary #4263eb (white text 4.98:1; in dark #748ffc with dark text), with
+   matching blue accent tints. Surfaces are neutral cool grays (white cards on a light gray page; in
+   dark, cards one step lighter than the page). Contrast is checked by scripts/check-contrast.mjs in
+   `yarn lint` (docs/logo-and-surfaces.md). */
 :root {
   --radius: 0.75rem;
-  --background: #fdf8f9;
+  --background: #f2f4f8;
   --foreground: #2b1e24;
   --card: #ffffff;
   --card-foreground: #2b1e24;
   --popover: #ffffff;
   --popover-foreground: #2b1e24;
-  --primary: #a85569;
+  --primary: #4263eb;
   --primary-foreground: #ffffff;
-  --secondary: #f7eef0;
+  --secondary: #f3f4f7;
   --secondary-foreground: #2b1e24;
-  --muted: #f7eef0;
-  --muted-foreground: #6e5d63;
-  --accent: #fff0f4;
-  --accent-foreground: #9c4b5f;
+  --muted: #f3f4f7;
+  --muted-foreground: #5b6170;
+  --accent: #f0f4ff;
+  --accent-foreground: #3b5bdb;
   --destructive: #dc2626;
-  --border: #efdfe4;
-  --input: #efdfe4;
-  --ring: #a85569;
-  --chart-1: #a85569;
-  --chart-2: #db8396;
+  --border: #e4e7ed;
+  --input: #e4e7ed;
+  --ring: #4263eb;
+  --chart-1: #4263eb;
+  --chart-2: #748ffc;
   --chart-3: #00acc1;
   --chart-4: #f59e0b;
   --chart-5: #22c55e;
   --sidebar: #ffffff;
   --sidebar-foreground: #5b4a50;
-  --sidebar-primary: #a85569;
+  --sidebar-primary: #4263eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fff0f4;
-  --sidebar-accent-foreground: #9c4b5f;
-  --sidebar-border: #efdfe4;
-  --sidebar-ring: #a85569;
+  --sidebar-accent: #f0f4ff;
+  --sidebar-accent-foreground: #3b5bdb;
+  --sidebar-border: #e4e7ed;
+  --sidebar-ring: #4263eb;
 
   --brand: #db8396;
   --inverse: #2b1e24;
   --inverse-foreground: #ffffff;
   --highlight: var(--primary);
   --highlight-foreground: var(--primary-foreground);
-  --card-border: #fcccd5;
+  --card-border: #e4e7ed;
   /* Border of controls whose outline is their only boundary (table checkboxes): 3:1 on card and page */
-  --control-border: #a08089;
+  --control-border: #858b98;
   --success: #5fa04e;
   --success-foreground: #3d7a32;
   --reaction-very-bad: #ef4444;
@@ -125,42 +126,42 @@
 }
 
 .dark {
-  --background: #1d1418;
+  --background: #121418;
   --foreground: #f6edef;
-  --card: #261b20;
+  --card: #1b1e24;
   --card-foreground: #f6edef;
-  --popover: #261b20;
+  --popover: #1b1e24;
   --popover-foreground: #f6edef;
-  --primary: #db8396;
-  --primary-foreground: #210a10;
-  --secondary: #33252b;
+  --primary: #748ffc;
+  --primary-foreground: #0b1220;
+  --secondary: #262a31;
   --secondary-foreground: #f6edef;
-  --muted: #33252b;
-  --muted-foreground: #c2adb4;
-  --accent: #3b2830;
-  --accent-foreground: #fcccd5;
+  --muted: #262a31;
+  --muted-foreground: #a8aebb;
+  --accent: #1f2a4d;
+  --accent-foreground: #bac8ff;
   --destructive: #f87171;
-  --border: rgb(255 228 236 / 10%);
-  --input: rgb(255 228 236 / 15%);
-  --ring: #db8396;
-  --chart-1: #db8396;
-  --chart-2: #fea3b6;
+  --border: rgb(255 255 255 / 10%);
+  --input: rgb(255 255 255 / 15%);
+  --ring: #748ffc;
+  --chart-1: #748ffc;
+  --chart-2: #91a7ff;
   --chart-3: #22d3ee;
   --chart-4: #fbbf24;
   --chart-5: #4ade80;
-  --sidebar: #211719;
-  --sidebar-foreground: #d9c6cc;
-  --sidebar-primary: #db8396;
-  --sidebar-primary-foreground: #210a10;
-  --sidebar-accent: #3b2830;
-  --sidebar-accent-foreground: #fcccd5;
-  --sidebar-border: rgb(255 228 236 / 10%);
-  --sidebar-ring: #db8396;
+  --sidebar: #16191e;
+  --sidebar-foreground: #c9ced8;
+  --sidebar-primary: #748ffc;
+  --sidebar-primary-foreground: #0b1220;
+  --sidebar-accent: #1f2a4d;
+  --sidebar-accent-foreground: #bac8ff;
+  --sidebar-border: rgb(255 255 255 / 10%);
+  --sidebar-ring: #748ffc;
 
-  --inverse: #3b2830;
+  --inverse: #2a2f38;
   --inverse-foreground: #f6edef;
-  --card-border: #4a323b;
-  --control-border: #8a6b75;
+  --card-border: #2e323a;
+  --control-border: #7b8190;
   --success: #6fbf5c;
   --success-foreground: #86d672;
   --star-empty: #4b5563;
