@@ -1,14 +1,16 @@
 import "server-only";
 
 import { randomBytes, randomInt } from "node:crypto";
-import { MOCK_SURVEYS, getAnsweredOptionIds } from "@/lib/mock-data";
+import { Prisma } from "@/generated/prisma/client";
 import { ACTIVE_SURVEY_LIMIT, RATING_COLOR, RATING_VALUES } from "@/lib/surveys/constants";
 import type { SurveyFormValues } from "@/lib/surveys/schema";
+import { prisma } from "@/server/prisma";
+import { containsPattern } from "@/server/search";
 import type { AnswerOption, AnswerType, Question, Survey, SurveyCategory } from "@/types/survey";
 
-// In-memory survey store with the same functions the Prisma services will have.
-// It lives on globalThis so it survives Fast Refresh; it resets when the server restarts
-// and is not shared between server processes (fine until Prisma).
+// Surveys service on Prisma (Neon). Questions and options are archived, never deleted, once they
+// may have answers; the active-survey limit is an atomic counter on the organization (backed by the
+// CHECK constraint of the init migration). See the overview, "Important schema notes".
 
 export type SurveyErrorCode = "NOT_FOUND" | "ACTIVE_LIMIT" | "CATEGORY_LOCKED";
 
@@ -23,69 +25,143 @@ export interface SurveyScope {
   userId: string;
 }
 
-const globalForStore = globalThis as unknown as { pandaSurveyStore?: Map<string, Survey> };
-
-function getStore(): Map<string, Survey> {
-  globalForStore.pandaSurveyStore ??= new Map(
-    MOCK_SURVEYS.map((survey) => [survey.id, structuredClone(survey)]),
-  );
-  return globalForStore.pandaSurveyStore;
-}
-
 const CODE_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const CODE_LENGTH = 6;
 const RESERVED_CODES = ["SURVEY", "PUBLIC", "PANDA"];
+// A new code collides with an existing one only by chance; retry a few times before giving up
+const CODE_ATTEMPTS = 5;
 
 function newObjectId(): string {
   return randomBytes(12).toString("hex");
 }
 
 function newCode(): string {
-  const used = new Set([...getStore().values()].map((survey) => survey.code));
   for (;;) {
     const code = Array.from({ length: CODE_LENGTH }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join("");
-    if (!used.has(code) && !RESERVED_CODES.some((token) => code.includes(token))) return code;
+    if (!RESERVED_CODES.some((token) => code.includes(token))) return code;
   }
 }
 
-function isVisible(survey: Survey, organizationId: string): boolean {
-  return survey.organizationId === organizationId && survey.deletedAt === null;
+function isUniqueViolation(error: unknown, field: string): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002" &&
+    JSON.stringify(error.meta ?? {}).includes(field)
+  );
 }
 
 // ---------------------------------------------------------------------------
-// Queries
+// Reads
 // ---------------------------------------------------------------------------
 
-export function getSurvey(organizationId: string, id: string): Survey | null {
-  const survey = getStore().get(id);
-  return survey && isVisible(survey, organizationId) ? survey : null;
+// Current questions first (by position), archived ones after them: the order the form and the
+// metrics expect
+const SURVEY_INCLUDE = {
+  questions: {
+    orderBy: [{ archivedAt: { sort: "asc", nulls: "first" } }, { position: "asc" }],
+    include: { options: { orderBy: [{ archivedAt: { sort: "asc", nulls: "first" } }, { position: "asc" }] } },
+  },
+} satisfies Prisma.SurveyInclude;
+
+type SurveyRow = Prisma.SurveyGetPayload<{ include: typeof SURVEY_INCLUDE }>;
+
+// The app's Survey type, without database-only columns (positions, foreign keys)
+function toSurvey(row: SurveyRow): Survey {
+  return {
+    id: row.id,
+    organizationId: row.organizationId,
+    createdById: row.createdById,
+    code: row.code,
+    name: row.name,
+    description: row.description,
+    category: row.category,
+    isActive: row.isActive,
+    deletedAt: row.deletedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    questions: row.questions.map((question) => ({
+      id: question.id,
+      text: question.text,
+      archivedAt: question.archivedAt,
+      options: question.options.map(({ id, type, value, label, color, archivedAt }) => ({
+        id,
+        type,
+        value,
+        label,
+        color,
+        archivedAt,
+      })),
+    })),
+  };
 }
 
-// Every visible survey, active and draft (the survey table sorts and filters them)
-export function listSurveys(organizationId: string): Survey[] {
-  return [...getStore().values()].filter((survey) => isVisible(survey, organizationId));
+function visibleIn(organizationId: string) {
+  return { organizationId, deletedAt: null } satisfies Prisma.SurveyWhereInput;
 }
 
-// Insertion order: seeded surveys first, new ones at the end (the Map keeps it)
-export function listActiveSurveys(organizationId: string): Survey[] {
-  return [...getStore().values()].filter((survey) => isVisible(survey, organizationId) && survey.isActive);
+export async function getSurvey(organizationId: string, id: string): Promise<Survey | null> {
+  const row = await prisma.survey.findFirst({ where: { id, ...visibleIn(organizationId) }, include: SURVEY_INCLUDE });
+  return row ? toSurvey(row) : null;
+}
+
+// Every visible survey, active and draft
+export async function listSurveys(organizationId: string): Promise<Survey[]> {
+  const rows = await prisma.survey.findMany({
+    where: visibleIn(organizationId),
+    include: SURVEY_INCLUDE,
+    orderBy: { createdAt: "asc" },
+  });
+  return rows.map(toSurvey);
+}
+
+// Active surveys, oldest first (the dashboard card order). The optional query searches name and
+// code ignoring accents and case, in SQL (f_unaccent, migration search_unaccent)
+export async function listActiveSurveys(organizationId: string, query = ""): Promise<Survey[]> {
+  let ids: string[] | undefined;
+  if (query.trim()) {
+    const pattern = containsPattern(query);
+    const matches = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "Survey"
+      WHERE "organizationId" = ${organizationId} AND "deletedAt" IS NULL AND "isActive"
+        AND (f_unaccent(lower(name)) LIKE f_unaccent(lower(${pattern})) ESCAPE '\\'
+             OR lower(code) LIKE lower(${pattern}) ESCAPE '\\')`;
+    ids = matches.map((row) => row.id);
+  }
+  const rows = await prisma.survey.findMany({
+    where: { ...visibleIn(organizationId), isActive: true, ...(ids ? { id: { in: ids } } : {}) },
+    include: SURVEY_INCLUDE,
+    orderBy: { createdAt: "asc" },
+  });
+  return rows.map(toSurvey);
 }
 
 // Public lookup for the kiosk: codes are unique across organizations. Deleted surveys are hidden
-export function getSurveyByCode(code: string): Survey | null {
-  const wanted = code.toUpperCase();
-  for (const survey of getStore().values()) {
-    if (survey.code === wanted && survey.deletedAt === null) return survey;
-  }
-  return null;
+export async function getSurveyByCode(code: string): Promise<Survey | null> {
+  const row = await prisma.survey.findUnique({ where: { code: code.toUpperCase() }, include: SURVEY_INCLUDE });
+  return row && row.deletedAt === null ? toSurvey(row) : null;
 }
 
-export function countActiveSurveys(organizationId: string): number {
-  return listActiveSurveys(organizationId).length;
+export async function countActiveSurveys(organizationId: string): Promise<number> {
+  const organization = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { activeSurveyCount: true },
+  });
+  return organization?.activeSurveyCount ?? 0;
 }
 
-export function hasResponses(surveyId: string): boolean {
-  return getAnsweredOptionIds(surveyId).size > 0;
+// DISTINCT in SQL: Prisma's `distinct` would fetch every answer and dedupe in memory
+async function getAnsweredOptionIds(tx: Prisma.TransactionClient, surveyId: string): Promise<Set<string>> {
+  const rows = await tx.$queryRaw<{ answerOptionId: string }[]>`
+    SELECT DISTINCT ri."answerOptionId"
+    FROM "ResponseItem" ri
+    JOIN "Question" q ON q.id = ri."questionId"
+    WHERE q."surveyId" = ${surveyId}`;
+  return new Set(rows.map((row) => row.answerOptionId));
+}
+
+export async function hasResponses(surveyId: string): Promise<boolean> {
+  const item = await prisma.responseItem.findFirst({ where: { question: { surveyId } }, select: { id: true } });
+  return item !== null;
 }
 
 // ---------------------------------------------------------------------------
@@ -187,114 +263,188 @@ function mergeQuestions(
 }
 
 // ---------------------------------------------------------------------------
+// Persistence and the active-survey counter
+// ---------------------------------------------------------------------------
+
+// Writes the merged questions and options: current ones get their position, archived ones keep
+// theirs and only gain archivedAt. Upserts by id, so nothing that may have answers is deleted.
+// One INSERT … ON CONFLICT per table: a survey has up to dozens of rows, and one round trip per
+// row to Neon would outlast the transaction timeout
+async function writeQuestions(tx: Prisma.TransactionClient, surveyId: string, questions: Question[], now: Date) {
+  let questionPosition = 0;
+  const questionRows = questions.map((question) => {
+    const position = question.archivedAt ? 0 : questionPosition++;
+    return Prisma.sql`(${question.id}, ${surveyId}, ${question.text}, ${position}, ${question.archivedAt}::timestamp(3), ${now}::timestamp(3))`;
+  });
+
+  const optionRows = questions.flatMap((question) => {
+    let optionPosition = 0;
+    return question.options.map((option) => {
+      const position = option.archivedAt ? 0 : optionPosition++;
+      return Prisma.sql`(${option.id}, ${question.id}, ${option.type}::"AnswerType", ${option.value}, ${option.label},
+        ${option.color}, ${position}, ${option.archivedAt}::timestamp(3), ${now}::timestamp(3))`;
+    });
+  });
+
+  // An archived row keeps its last position (EXCLUDED carries 0 for it)
+  if (questionRows.length > 0) {
+    await tx.$executeRaw`
+      INSERT INTO "Question" (id, "surveyId", text, position, "archivedAt", "createdAt")
+      VALUES ${Prisma.join(questionRows)}
+      ON CONFLICT (id) DO UPDATE SET
+        text = EXCLUDED.text,
+        "archivedAt" = EXCLUDED."archivedAt",
+        position = CASE WHEN EXCLUDED."archivedAt" IS NULL THEN EXCLUDED.position ELSE "Question".position END`;
+  }
+  if (optionRows.length > 0) {
+    await tx.$executeRaw`
+      INSERT INTO "AnswerOption" (id, "questionId", type, value, label, color, position, "archivedAt", "createdAt")
+      VALUES ${Prisma.join(optionRows)}
+      ON CONFLICT (id) DO UPDATE SET
+        value = EXCLUDED.value,
+        label = EXCLUDED.label,
+        color = EXCLUDED.color,
+        "archivedAt" = EXCLUDED."archivedAt",
+        position = CASE WHEN EXCLUDED."archivedAt" IS NULL THEN EXCLUDED.position ELSE "AnswerOption".position END`;
+  }
+}
+
+// Adds `delta` active surveys to the organization's counter. Growing it only succeeds while it
+// stays within the limit, in one guarded UPDATE, so concurrent activations cannot exceed it
+async function changeActiveCount(tx: Prisma.TransactionClient, organizationId: string, delta: number) {
+  if (delta === 0) return;
+  if (delta < 0) {
+    await tx.organization.update({ where: { id: organizationId }, data: { activeSurveyCount: { decrement: -delta } } });
+    return;
+  }
+  const { count } = await tx.organization.updateMany({
+    where: { id: organizationId, activeSurveyCount: { lte: ACTIVE_SURVEY_LIMIT - delta } },
+    data: { activeSurveyCount: { increment: delta } },
+  });
+  if (count === 0) throw new SurveyServiceError("ACTIVE_LIMIT");
+}
+
+// ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------
 
-function assertActiveLimit(organizationId: string, becomingActive: boolean) {
-  if (becomingActive && countActiveSurveys(organizationId) >= ACTIVE_SURVEY_LIMIT) {
-    throw new SurveyServiceError("ACTIVE_LIMIT");
+// Neon's latency varies, and a survey write is several round trips: Prisma's 5 s default is too tight
+const WRITE_TRANSACTION = { maxWait: 10_000, timeout: 15_000 };
+
+export async function createSurvey(scope: SurveyScope, input: SurveyFormValues): Promise<Survey> {
+  const now = new Date();
+  const questions = mergeQuestions(input.category, [], input.questions, new Set(), now);
+
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        if (input.isActive) await changeActiveCount(tx, scope.organizationId, 1);
+        const survey = await tx.survey.create({
+          data: {
+            id: newObjectId(),
+            organizationId: scope.organizationId,
+            createdById: scope.userId,
+            code: newCode(),
+            name: input.name,
+            description: input.description,
+            category: input.category,
+            isActive: input.isActive,
+          },
+        });
+        await writeQuestions(tx, survey.id, questions, now);
+        const created = await tx.survey.findUniqueOrThrow({ where: { id: survey.id }, include: SURVEY_INCLUDE });
+        return toSurvey(created);
+      }, WRITE_TRANSACTION);
+    } catch (error) {
+      // The code was taken by another survey: the whole transaction rolled back, try a new one
+      if (isUniqueViolation(error, "code") && attempt < CODE_ATTEMPTS) continue;
+      throw error;
+    }
   }
 }
 
-export function createSurvey(scope: SurveyScope, input: SurveyFormValues): Survey {
-  assertActiveLimit(scope.organizationId, input.isActive);
-  const now = new Date();
+export async function updateSurvey(scope: SurveyScope, id: string, input: SurveyFormValues): Promise<Survey> {
+  return prisma.$transaction(async (tx) => {
+    const row = await tx.survey.findFirst({ where: { id, ...visibleIn(scope.organizationId) }, include: SURVEY_INCLUDE });
+    if (!row) throw new SurveyServiceError("NOT_FOUND");
+    const stored = toSurvey(row);
 
-  const survey: Survey = {
-    id: newObjectId(),
-    organizationId: scope.organizationId,
-    createdById: scope.userId,
-    code: newCode(),
-    name: input.name,
-    description: input.description,
-    category: input.category,
-    isActive: input.isActive,
-    questions: mergeQuestions(input.category, [], input.questions, new Set(), now),
-    deletedAt: null,
-    createdAt: now,
-    updatedAt: now,
-  };
+    const answered = await getAnsweredOptionIds(tx, id);
+    const categoryChanged = stored.category !== input.category;
+    if (categoryChanged && answered.size > 0) throw new SurveyServiceError("CATEGORY_LOCKED");
 
-  getStore().set(survey.id, survey);
-  return survey;
-}
+    await changeActiveCount(tx, scope.organizationId, Number(input.isActive) - Number(stored.isActive));
+    const now = new Date();
 
-export function updateSurvey(scope: SurveyScope, id: string, input: SurveyFormValues): Survey {
-  const stored = getSurvey(scope.organizationId, id);
-  if (!stored) throw new SurveyServiceError("NOT_FOUND");
+    // Without responses a new category simply replaces the questions: the old ones have no answers,
+    // so they can go
+    if (categoryChanged) {
+      await tx.answerOption.deleteMany({ where: { question: { surveyId: id } } });
+      await tx.question.deleteMany({ where: { surveyId: id } });
+    }
+    const storedQuestions = categoryChanged ? [] : stored.questions;
+    const inputs = categoryChanged
+      ? input.questions.map((question) => ({
+          ...question,
+          id: undefined,
+          options: question.options.map((option) => ({ ...option, id: undefined })),
+        }))
+      : input.questions;
 
-  const answered = getAnsweredOptionIds(id);
-  const categoryChanged = stored.category !== input.category;
-  if (categoryChanged && answered.size > 0) throw new SurveyServiceError("CATEGORY_LOCKED");
+    await tx.survey.update({
+      where: { id },
+      data: { name: input.name, description: input.description, category: input.category, isActive: input.isActive },
+    });
+    await writeQuestions(tx, id, mergeQuestions(input.category, storedQuestions, inputs, answered, now), now);
 
-  assertActiveLimit(scope.organizationId, input.isActive && !stored.isActive);
-  const now = new Date();
-
-  // Without responses a new category simply replaces the questions
-  const storedQuestions = categoryChanged ? [] : stored.questions;
-  const inputs = categoryChanged
-    ? input.questions.map((question) => ({
-        ...question,
-        id: undefined,
-        options: question.options.map((option) => ({ ...option, id: undefined })),
-      }))
-    : input.questions;
-
-  const updated: Survey = {
-    ...stored,
-    name: input.name,
-    description: input.description,
-    category: input.category,
-    isActive: input.isActive,
-    questions: mergeQuestions(input.category, storedQuestions, inputs, answered, now),
-    updatedAt: now,
-  };
-
-  getStore().set(id, updated);
-  return updated;
+    const updated = await tx.survey.findUniqueOrThrow({ where: { id }, include: SURVEY_INCLUDE });
+    return toSurvey(updated);
+  }, WRITE_TRANSACTION);
 }
 
 // Only the status changes: no form values, so the questions are never re-merged
-export function setSurveyActive(scope: SurveyScope, id: string, isActive: boolean): void {
-  setSurveysActive(scope, [id], isActive);
+export async function setSurveyActive(scope: SurveyScope, id: string, isActive: boolean): Promise<void> {
+  await setSurveysActive(scope, [id], isActive);
 }
 
-// All or nothing: every id must be visible, and activating must keep the organization
-// within the limit counting every selected draft at once. Returns how many surveys changed.
-export function setSurveysActive(scope: SurveyScope, ids: string[], isActive: boolean): number {
-  const surveys = getVisibleSurveys(scope.organizationId, ids);
-  const changing = surveys.filter((survey) => survey.isActive !== isActive);
+// All or nothing: every id must be visible, and activating must keep the organization within the
+// limit counting every selected draft at once. Returns how many surveys changed.
+export async function setSurveysActive(scope: SurveyScope, ids: string[], isActive: boolean): Promise<number> {
+  return prisma.$transaction(async (tx) => {
+    const surveys = await getVisibleSurveys(tx, scope.organizationId, ids);
+    const changing = surveys.filter((survey) => survey.isActive !== isActive).map((survey) => survey.id);
+    if (changing.length === 0) return 0;
 
-  if (isActive && countActiveSurveys(scope.organizationId) + changing.length > ACTIVE_SURVEY_LIMIT) {
-    throw new SurveyServiceError("ACTIVE_LIMIT");
-  }
-
-  const now = new Date();
-  for (const survey of changing) {
-    getStore().set(survey.id, { ...survey, isActive, updatedAt: now });
-  }
-  return changing.length;
+    await changeActiveCount(tx, scope.organizationId, isActive ? changing.length : -changing.length);
+    await tx.survey.updateMany({ where: { id: { in: changing } }, data: { isActive } });
+    return changing.length;
+  }, WRITE_TRANSACTION);
 }
 
-export function softDeleteSurveys(scope: SurveyScope, ids: string[]): void {
-  const surveys = getVisibleSurveys(scope.organizationId, ids);
-  const now = new Date();
-  for (const survey of surveys) {
-    getStore().set(survey.id, { ...survey, isActive: false, deletedAt: now, updatedAt: now });
-  }
+// Soft delete: questions, options and responses stay. Deleting an active survey frees its slot
+export async function softDeleteSurveys(scope: SurveyScope, ids: string[]): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const surveys = await getVisibleSurveys(tx, scope.organizationId, ids);
+    const activeCount = surveys.filter((survey) => survey.isActive).length;
+    await tx.survey.updateMany({
+      where: { id: { in: surveys.map((survey) => survey.id) } },
+      data: { isActive: false, deletedAt: new Date() },
+    });
+    await changeActiveCount(tx, scope.organizationId, -activeCount);
+  }, WRITE_TRANSACTION);
+}
+
+export async function softDeleteSurvey(scope: SurveyScope, id: string): Promise<void> {
+  await softDeleteSurveys(scope, [id]);
 }
 
 // Unknown, deleted or another organization's id: NOT_FOUND before anything changes
-function getVisibleSurveys(organizationId: string, ids: string[]): Survey[] {
-  const surveys = [...new Set(ids)].map((id) => getSurvey(organizationId, id));
-  if (surveys.length === 0 || surveys.some((survey) => !survey)) throw new SurveyServiceError("NOT_FOUND");
-  return surveys as Survey[];
-}
-
-export function softDeleteSurvey(scope: SurveyScope, id: string): void {
-  const stored = getSurvey(scope.organizationId, id);
-  if (!stored) throw new SurveyServiceError("NOT_FOUND");
-
-  const now = new Date();
-  getStore().set(id, { ...stored, isActive: false, deletedAt: now, updatedAt: now });
+async function getVisibleSurveys(tx: Prisma.TransactionClient, organizationId: string, ids: string[]) {
+  const unique = [...new Set(ids)];
+  const surveys = await tx.survey.findMany({
+    where: { id: { in: unique }, ...visibleIn(organizationId) },
+    select: { id: true, isActive: true },
+  });
+  if (unique.length === 0 || surveys.length !== unique.length) throw new SurveyServiceError("NOT_FOUND");
+  return surveys;
 }

@@ -16,7 +16,7 @@ async function DashboardContent({ searchParams }: Pick<PageProps<"/dashboard">, 
   const range = parseRange(params.range);
   const query = typeof params.q === "string" ? params.q : "";
   const { organization } = await getAppContext();
-  const data = getDashboardData(organization.id, range, query);
+  const data = await getDashboardData(organization.id, range, query);
 
   return (
     <DashboardSection

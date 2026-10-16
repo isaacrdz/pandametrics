@@ -56,8 +56,8 @@ function kioskOrder(category: SurveyCategory, options: AnswerOption[]): AnswerOp
   return options;
 }
 
-export function getPublicSurvey(code: string): PublicSurveyResult {
-  const survey = getSurveyByCode(code);
+export async function getPublicSurvey(code: string): Promise<PublicSurveyResult> {
+  const survey = await getSurveyByCode(code);
   if (!survey) return { status: "notFound" };
   if (!survey.isActive) return { status: "closed" };
 
@@ -98,12 +98,13 @@ export interface PublicSubmission {
 const MAX_DURATION_MS = 24 * 60 * 60_000;
 
 // Validates a kiosk submission against the stored survey and saves it with a snapshot of each
-// answer, so later edits to the survey never change what was answered
-export function submitPublicResponse(
+// answer, so later edits to the survey never change what was answered. On success it returns the
+// survey and organization ids, so the caller can expire their cached reads
+export async function submitPublicResponse(
   input: PublicSubmission,
   meta: { ip: string | null; now?: Date },
-): { ok: true } | { ok: false; error: SubmitErrorCode } {
-  const survey = getSurveyByCode(input.code);
+): Promise<{ ok: true; surveyId: string; organizationId: string } | { ok: false; error: SubmitErrorCode }> {
+  const survey = await getSurveyByCode(input.code);
   if (!survey) return { ok: false, error: "NOT_FOUND" };
   if (!survey.isActive) return { ok: false, error: "CLOSED" };
 
@@ -144,5 +145,5 @@ export function submitPublicResponse(
     durationMs: Math.min(Math.max(Math.round(input.durationMs), 0), MAX_DURATION_MS),
     createdAt: now,
   });
-  return { ok: true };
+  return { ok: true, surveyId: survey.id, organizationId: survey.organizationId };
 }

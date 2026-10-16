@@ -1,9 +1,10 @@
-// Dashboard data and the public survey link. The current user and organization come from
-// src/server/app-context.ts; the surveys and metrics are still in memory until phases 3 and 4.
+// Dashboard data and the public survey link. The surveys come from the database; the metrics are
+// still computed from the in-memory responses until phase 4.
 
+import { cacheLife, cacheTag } from "next/cache";
 import { getDateRange, type RangeKey } from "@/lib/date-range";
 import { MOCK_NOW, getMockSurveyMetrics } from "@/lib/mock-data";
-import { matchesQuery } from "@/lib/surveys/search";
+import { surveysTag } from "@/lib/surveys/list";
 import { listActiveSurveys } from "@/lib/surveys/service";
 import type { Survey, SurveyMetrics } from "@/types/survey";
 
@@ -23,24 +24,32 @@ export function getPublicSurveyUrl(code: string): string {
   return `${baseUrl.replace(/\/$/, "")}/s?code=${code}`;
 }
 
-export function getDashboardData(
+// Cached by organization, range key and query; survey actions and kiosk answers expire the tag.
+// The search runs in SQL (accents and case ignored), the active count is always unfiltered
+export async function getDashboardData(
   organizationId: string,
   rangeKey: RangeKey,
   query = "",
-): DashboardData {
-  const range = getDateRange(rangeKey, MOCK_NOW);
-  const surveys = listActiveSurveys(organizationId);
+): Promise<DashboardData> {
+  "use cache";
+  cacheTag(surveysTag(organizationId));
+  cacheLife("hours");
 
-  const cards = surveys
-    .filter((survey) => matchesQuery(survey, query))
-    .map((survey) => ({
-      survey,
-      metrics: getMockSurveyMetrics(survey, range),
-      publicUrl: getPublicSurveyUrl(survey.code),
-    }));
+  const range = getDateRange(rangeKey, MOCK_NOW);
+  const trimmed = query.trim();
+  const [active, matching] = await Promise.all([
+    listActiveSurveys(organizationId),
+    trimmed ? listActiveSurveys(organizationId, trimmed) : null,
+  ]);
+
+  const cards = (matching ?? active).map((survey) => ({
+    survey,
+    metrics: getMockSurveyMetrics(survey, range),
+    publicUrl: getPublicSurveyUrl(survey.code),
+  }));
 
   return {
-    activeSurveyCount: surveys.length,
+    activeSurveyCount: active.length,
     cards,
   };
 }

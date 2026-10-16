@@ -63,9 +63,9 @@ function searchCondition(query: string): Prisma.Sql {
   const pattern = containsPattern(query);
   const digits = digitsPattern(query);
   return Prisma.sql`AND (
-    f_unaccent(lower(coalesce(name, ''))) LIKE f_unaccent(lower(${pattern})) ESCAPE '\'
-    OR lower(coalesce(email, '')) LIKE lower(${pattern}) ESCAPE '\'
-    ${digits ? Prisma.sql`OR regexp_replace(coalesce(phone, ''), '\D', '', 'g') LIKE ${digits}` : Prisma.empty}
+    f_unaccent(lower(coalesce(name, ''))) LIKE f_unaccent(lower(${pattern})) ESCAPE '\\'
+    OR lower(coalesce(email, '')) LIKE lower(${pattern}) ESCAPE '\\'
+    ${digits ? Prisma.sql`OR regexp_replace(coalesce(phone, ''), '\\D', '', 'g') LIKE ${digits}` : Prisma.empty}
   )`;
 }
 

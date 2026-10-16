@@ -2,9 +2,10 @@
 
 import * as z from "zod";
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 import { LOCALES } from "@/i18n/config";
 import { SURVEY_CODE_LENGTH } from "@/lib/surveys/code";
+import { surveysTag, surveyTag } from "@/lib/surveys/list";
 import { submitPublicResponse, type SubmitErrorCode } from "@/lib/surveys/public";
 
 // Public action (no session): the kiosk sends one response. Errors are codes the client translates
@@ -35,13 +36,12 @@ export async function submitSurveyResponse(raw: unknown): Promise<SubmitSurveyRe
   if (!parsed.success) return { ok: false, error: "INVALID" };
 
   try {
-    const result = submitPublicResponse(parsed.data, { ip: await getClientIp() });
-    if (result.ok) {
-      // The dashboard cards and the survey table count responses
-      revalidatePath("/dashboard");
-      revalidatePath("/surveys");
-    }
-    return result;
+    const result = await submitPublicResponse(parsed.data, { ip: await getClientIp() });
+    if (!result.ok) return result;
+    // The dashboard cards, the survey table and the edit form (category lock) count responses
+    updateTag(surveysTag(result.organizationId));
+    updateTag(surveyTag(result.surveyId));
+    return { ok: true };
   } catch {
     return { ok: false, error: "INVALID" };
   }

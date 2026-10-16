@@ -30,7 +30,7 @@ async function KioskEntry({ searchParams }: Pick<PageProps<"/s">, "searchParams"
     );
   }
 
-  const result = getPublicSurvey(code);
+  const result = await getPublicSurvey(code);
   if (result.status !== "ok") {
     return (
       <KioskFrame>

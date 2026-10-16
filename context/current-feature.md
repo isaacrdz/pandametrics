@@ -1,18 +1,29 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Prisma Services Phase 3 — Surveys
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `src/lib/surveys/service.ts` on Prisma (`server-only`, every function `async`, same names and return types) with a `toSurvey` mapper (questions and options ordered by `position`); in-memory survey map and `MOCK_SURVEYS` import removed
+- Reads: `getSurvey` / `listSurveys` / `listActiveSurveys` by organization and `deletedAt: null`; `getSurveyByCode` (unique code, not deleted); `countActiveSurveys` from `organization.activeSurveyCount`; `hasResponses` from `responseItem.findFirst`
+- `createSurvey` in one transaction: code generation (A–Z0–9, reserved tokens rejected) with up to 5 retries on `P2002`; nested create of questions and options with `position`; when created active, the guarded counter `updateMany(activeSurveyCount < 5, increment)` or `ACTIVE_LIMIT`
+- `updateSurvey` in one transaction: `CATEGORY_LOCKED` when the category changes with responses; questions / options with an id updated, without an id created, omitted ones archived (`archivedAt`); an option with answers whose type / value changes is archived and replaced; active changes through the guarded counter
+- `setSurveyActive` / `setSurveysActive`: all or nothing (missing → `NOT_FOUND`), delta on the guarded counter (`ACTIVE_LIMIT`), then flip `isActive`; `softDeleteSurvey(s)`: `deletedAt` and counter decrement for the active ones; the `CHECK` constraint as backstop
+- `src/lib/surveys/list.ts`: one `$queryRaw` (search name / code with `f_unaccent` and escaped patterns, category and status filters, responses in range from `SurveyResponse` via a grouped join, `updatedAt DESC, name COLLATE "und-x-icu"` order, `LIMIT` / `OFFSET` + `COUNT(*) OVER()`, page clamp); `totalAll` / `activeCount` via `groupBy`; real range and now
+- `form-data.ts` (`getSurveyEditData`) async with `createdBy` (public select) and `hasResponses`; `dashboard.ts` (`getDashboardData`) async, filtering active surveys with the same search, metrics still from the response store until phase 4; `public.ts` awaits `getSurveyByCode`
+- Caching: `"use cache"` + `cacheTag("org:<id>:surveys")` for list / counts / dashboard and `cacheTag("survey:<id>")` for form data; range-dependent reads keyed by `rangeKey` with `cacheLife("hours")`; `/surveys` top-bar count in the static shell
+- `actions/surveys.ts` awaits the service and calls `updateTag("org:<id>:surveys")` / `updateTag("survey:<id>")` instead of `revalidatePath`; the kiosk submit expires the same tags (responses still in memory)
+- Pages await: `/dashboard`, `/surveys`, `/surveys/new`, `/surveys/[id]`, `/s`
+- `yarn lint`, `tsc --noEmit`, `yarn build`; as Jordan: seeded counts in the table (STORE7 1,842 …), search / filters / sizes / clamp, dashboard cards; create draft and active (counter), 6th active → limit, concurrent activations (one wins), edit with archive, category lock, bulk all-or-nothing, delete frees a slot; as Miguel: create and edit in Leyinork, isolated from Acme; persistence after restart; seed restores the demo
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/prisma-services-phase-3-surveys-spec.md`; research: `docs/prisma-services.md` (sections 3.1, 3.2, 3.5, 3.7)
+- Phase 3 of 4: responses, metrics and kiosk submit stay in memory until phase 4. The seeded responses in the in-memory store use the same survey ids, so the cards keep their metrics; responses for surveys created in the database start empty
+- Reuses `f_unaccent` (migration `search_unaccent`) and `src/server/search.ts` from phase 2
+- Overview rules: "Preserving ids on update", "Active-survey limit", "Code generation", "Soft delete" (section 5)
 
 ## History
 

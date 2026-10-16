@@ -4,9 +4,8 @@ import { SurveysTableSection } from "@/components/surveys/table/SurveysTableSect
 import { SurveysTableSkeleton } from "@/components/surveys/table/SurveysTableSkeleton";
 import { SurveysTopBar } from "@/components/surveys/table/SurveysTopBar";
 import { getAppContext } from "@/server/app-context";
-import { listSurveys } from "@/lib/surveys/list";
+import { countListedSurveys, listSurveys } from "@/lib/surveys/list";
 import { parseSurveyListParams } from "@/lib/surveys/list-params";
-import { listSurveys as listStoredSurveys } from "@/lib/surveys/service";
 
 export const metadata: Metadata = {
   title: "Surveys · Panda Metrics",
@@ -16,7 +15,7 @@ export const metadata: Metadata = {
 async function SurveysContent({ searchParams }: Pick<PageProps<"/surveys">, "searchParams">) {
   const params = parseSurveyListParams(await searchParams);
   const { organization } = await getAppContext();
-  const data = listSurveys(organization.id, params);
+  const data = await listSurveys(organization.id, params);
 
   return <SurveysTableSection data={data} params={params} />;
 }
@@ -24,7 +23,7 @@ async function SurveysContent({ searchParams }: Pick<PageProps<"/surveys">, "sea
 export default async function SurveysPage({ searchParams }: PageProps<"/surveys">) {
   // The total does not depend on the URL, so the bar (title + count) is part of the static shell
   const { organization } = await getAppContext();
-  const total = listStoredSurveys(organization.id).length;
+  const total = await countListedSurveys(organization.id);
 
   return (
     <>
