@@ -566,8 +566,7 @@
       "continue": "Continuar",
       "invalid": "Ese código no parece correcto",
       "scanQr": "Escanear QR",
-      "uploadQr": "Subir imagen QR",
-      "comingSoon": "Próximamente"
+      "uploadQr": "Subir imagen QR"
     },
     "message": {
       "notFound": {
@@ -606,6 +605,22 @@
       "INVALID": "Faltan respuestas o alguna ya no es válida. Revísalas e inténtalo de nuevo.",
       "RATE_LIMITED": "Demasiados envíos seguidos. Espera un momento e inténtalo de nuevo.",
       "network": "No se pudieron enviar tus respuestas. Inténtalo de nuevo."
+    },
+    "qr": {
+      "title": "Escanear el código QR",
+      "hint": "Apunta la cámara al código QR de la encuesta.",
+      "uploadInstead": "Subir imagen QR en su lugar",
+      "starting": "Iniciando la cámara",
+      "notSurvey": "Este QR no es de una encuesta de Panda Metrics.",
+      "errors": {
+        "denied": "Permite el acceso a la cámara para escanear.",
+        "noCamera": "No se encontró una cámara.",
+        "insecure": "La cámara necesita una conexión segura (HTTPS).",
+        "failed": "No se pudo iniciar el escáner. Sube una imagen del QR en su lugar.",
+        "noQr": "No se encontró un código QR en esa imagen.",
+        "notSurvey": "Este QR no es de una encuesta de Panda Metrics."
+      },
+      "close": "Cerrar"
     }
   }
 }

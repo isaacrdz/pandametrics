@@ -3,12 +3,13 @@
 import { ArrowRightIcon, ImageUpIcon, Loader2Icon, ScanQrCodeIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { type FormEvent, type ReactNode, useId, useState, useTransition } from "react";
+import { type ChangeEvent, type FormEvent, useId, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { QrScannerDialog } from "@/components/kiosk/QrScannerDialog";
 import { markKioskEntry } from "@/lib/kiosk/client-meta";
 import { enterFullscreen } from "@/lib/kiosk/fullscreen";
+import { detectCode } from "@/lib/kiosk/qr";
 import { SURVEY_CODE_LENGTH, parseSurveyCode } from "@/lib/surveys/code";
 import { cn } from "@/lib/utils";
 
@@ -33,16 +34,55 @@ export function CodeEntry({ invalidValue }: CodeEntryProps) {
   const [code, setCode] = useState(() => (invalidValue ? toCodeInput(invalidValue) : ""));
   const [showError, setShowError] = useState(invalidValue !== undefined);
   const [pending, startTransition] = useTransition();
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [reading, setReading] = useState(false);
+  const [qrError, setQrError] = useState<"noQr" | "notSurvey" | "failed" | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const scanButtonRef = useRef<HTMLButtonElement>(null);
   const complete = code.length === SURVEY_CODE_LENGTH;
+  const tQr = useTranslations("kiosk.qr");
+
+  // Typed, scanned or uploaded: the same way into the survey
+  function openSurvey(surveyCode: string) {
+    // Fullscreen is only allowed from a user gesture: it works for Continue and the upload,
+    // and is refused quietly after a camera scan (the runner's toggle is still there)
+    enterFullscreen();
+    // Answers opened from here count as KIOSK; a shared link opened directly counts as LINK
+    markKioskEntry(surveyCode);
+    startTransition(() => router.push(`/s?code=${surveyCode}`));
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!complete || pending) return;
-    // The submit is a user gesture, the only moment a browser lets the kiosk go fullscreen
-    enterFullscreen();
-    // Answers opened from here count as KIOSK; a shared link opened directly counts as LINK
-    markKioskEntry(code);
-    startTransition(() => router.push(`/s?code=${code}`));
+    openSurvey(code);
+  }
+
+  async function handleFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Cleared so picking the same image again still fires a change
+    event.target.value = "";
+    if (!file) return;
+
+    setReading(true);
+    setQrError(null);
+    let bitmap: ImageBitmap | null = null;
+    try {
+      bitmap = await createImageBitmap(file);
+      const result = await detectCode(bitmap);
+      if (result.status === "code") {
+        setCode(result.code);
+        openSurvey(result.code);
+      } else {
+        setQrError(result.status === "notSurvey" ? "notSurvey" : "noQr");
+      }
+    } catch {
+      setQrError("failed");
+    } finally {
+      // Decoded images can be large; free them even when detection fails
+      bitmap?.close();
+      setReading(false);
+    }
   }
 
   return (
@@ -84,34 +124,51 @@ export function CodeEntry({ invalidValue }: CodeEntryProps) {
         {pending ? <Loader2Icon aria-hidden className="animate-spin" /> : <ArrowRightIcon aria-hidden />}
       </Button>
 
-      <div className="flex flex-wrap gap-3">
-        <ComingSoonButton icon={<ScanQrCodeIcon aria-hidden />} label={t("scanQr")} />
-        <ComingSoonButton icon={<ImageUpIcon aria-hidden />} label={t("uploadQr")} />
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-3">
+          <Button
+            ref={scanButtonRef}
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setQrError(null);
+              setScannerOpen(true);
+            }}
+            className={QR_BUTTON_CLASS}
+          >
+            <ScanQrCodeIcon aria-hidden />
+            {t("scanQr")}
+          </Button>
+          <Button type="button" variant="outline" disabled={reading} onClick={() => fileInputRef.current?.click()} className={QR_BUTTON_CLASS}>
+            {reading ? <Loader2Icon aria-hidden className="animate-spin" /> : <ImageUpIcon aria-hidden />}
+            {t("uploadQr")}
+          </Button>
+          <input ref={fileInputRef} type="file" accept="image/*" tabIndex={-1} aria-hidden className="sr-only" onChange={(event) => void handleFile(event)} />
+        </div>
+        {qrError && (
+          <p role="alert" className="text-sm font-medium text-destructive">
+            {tQr(`errors.${qrError}`)}
+          </p>
+        )}
       </div>
+
+      <QrScannerDialog
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        returnFocusRef={scanButtonRef}
+        onCode={(scanned) => {
+          setScannerOpen(false);
+          setCode(scanned);
+          openSurvey(scanned);
+        }}
+        onUploadInstead={() => {
+          setScannerOpen(false);
+          // Still inside the click, so the browser opens the file picker
+          fileInputRef.current?.click();
+        }}
+      />
     </form>
   );
 }
 
-// Scan / upload arrive with the QR phase. aria-disabled instead of disabled keeps the button
-// focusable, so the "Coming soon" tooltip shows on hover and on focus
-function ComingSoonButton({ icon, label }: { icon: ReactNode; label: string }) {
-  const t = useTranslations("kiosk.codeEntry");
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          aria-disabled
-          onClick={(event) => event.preventDefault()}
-          className="h-10 cursor-not-allowed gap-2 rounded-xl bg-card font-semibold text-primary opacity-60 hover:bg-card hover:text-primary"
-        >
-          {icon}
-          {label}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{t("comingSoon")}</TooltipContent>
-    </Tooltip>
-  );
-}
+const QR_BUTTON_CLASS = "h-10 gap-2 rounded-xl bg-card font-semibold text-primary hover:text-primary";

@@ -42,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Copied from node_modules on postinstall (scripts/copy-zxing-wasm.mjs)
+/public/vendor/zxing/

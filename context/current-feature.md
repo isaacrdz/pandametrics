@@ -1,18 +1,28 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Survey Kiosk Phase 4 — QR Scanning
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `src/lib/kiosk/qr.ts` (client only): `getQrDetector()` uses the native `BarcodeDetector` when it supports `qr_code`, otherwise dynamically imports the `barcode-detector` polyfill (3.2.2) configured to load its wasm from `/vendor/zxing/…`; cached instance
+- zxing wasm self-hosted in `public/vendor/zxing/`, copied from `node_modules` by `scripts/copy-zxing-wasm.mjs` (wired to `postinstall`, copy gitignored, documented in the script header); exact file name and option checked in the package README
+- `detectCode(source)` → `{ status: "code", code }` for the first QR whose `rawValue` passes `parseSurveyCode`, `notSurvey` when a QR holds no survey code, `none` when there is no QR (so the UI can tell the two errors apart)
+- shadcn `dialog` added; `QrScannerDialog` opened by "Scan QR" (enabled, tooltip removed): title, square `<video>` (`playsInline muted autoPlay`) with a corner frame, hint, outline "Upload QR image instead"
+- Camera: `getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })`, detect every 250 ms without overlapping detections; on a code → stop, close and navigate like Continue (fullscreen request + `KIOSK` entry flag)
+- Cleanup: every track stopped and the interval cleared on close, unmount and success (camera light off)
+- Error states in the dialog with the upload fallback: permission denied, no camera, insecure context; a QR without a valid code shows an inline message and keeps scanning
+- "Upload QR image" (enabled): hidden `<input type="file" accept="image/*">` cleared after each pick → `createImageBitmap` → `detectCode` → navigate, or inline `role="alert"` "No QR code found in that image"; also from the dialog's fallback
+- `kiosk.qr` messages in en / es; phase 1 "Coming soon" tooltip on Scan / Upload removed
+- `yarn lint`, `tsc --noEmit`, `yarn build`; camera scan (Chrome, Safari, Firefox), upload of the share panel PNG, camera off after close / success, denied permission, no third-party requests, polyfill chunk loaded only on use, dialog at 375 / 1280 light / dark / en / es with focus trapped and returned
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/survey-kiosk-phase-4-qr-spec.md`; research: `docs/survey-kiosk.md` (section 8)
+- Reference: `context/screenshots/survey-landing-1.png`
+- Scanned and uploaded values go through `parseSurveyCode` (phase 1); navigation reuses the code entry's Continue path
+- Real camera tests need a device and HTTPS (or localhost); headless checks cover upload, errors and cleanup
 
 ## History
 

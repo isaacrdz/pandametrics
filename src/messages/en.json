@@ -566,8 +566,7 @@
       "continue": "Continue",
       "invalid": "That code doesn't look right",
       "scanQr": "Scan QR",
-      "uploadQr": "Upload QR image",
-      "comingSoon": "Coming soon"
+      "uploadQr": "Upload QR image"
     },
     "message": {
       "notFound": {
@@ -606,6 +605,22 @@
       "INVALID": "Some answers are missing or no longer valid. Check them and try again.",
       "RATE_LIMITED": "Too many submissions in a row. Wait a moment and try again.",
       "network": "Couldn't send your answers. Try again."
+    },
+    "qr": {
+      "title": "Scan the QR code",
+      "hint": "Point the camera at the survey's QR code.",
+      "uploadInstead": "Upload QR image instead",
+      "starting": "Starting the camera",
+      "notSurvey": "This QR is not a Panda Metrics survey.",
+      "errors": {
+        "denied": "Allow camera access to scan.",
+        "noCamera": "No camera found.",
+        "insecure": "The camera needs a secure (HTTPS) connection.",
+        "failed": "The scanner could not start. Upload an image of the QR instead.",
+        "noQr": "No QR code found in that image.",
+        "notSurvey": "This QR is not a Panda Metrics survey."
+      },
+      "close": "Close"
     }
   }
 }
