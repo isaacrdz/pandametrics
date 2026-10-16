@@ -4,9 +4,8 @@ import { UsersTableSection } from "@/components/users/table/UsersTableSection";
 import { UsersTableSkeleton } from "@/components/users/table/UsersTableSkeleton";
 import { UsersTopBar } from "@/components/users/table/UsersTopBar";
 import { getAppContext } from "@/server/app-context";
-import { listUsers } from "@/lib/users/list";
+import { countListedUsers, listUsers } from "@/lib/users/list";
 import { parseUserListParams } from "@/lib/users/list-params";
-import { listUsers as listStoredUsers } from "@/lib/users/service";
 
 export const metadata: Metadata = {
   title: "Users · Panda Metrics",
@@ -16,7 +15,7 @@ export const metadata: Metadata = {
 async function UsersContent({ searchParams }: Pick<PageProps<"/users">, "searchParams">) {
   const params = parseUserListParams(await searchParams);
   const { user, organization } = await getAppContext();
-  const data = listUsers(organization.id, user.id, params);
+  const data = await listUsers(organization.id, user.id, params);
 
   return <UsersTableSection data={data} params={params} />;
 }
@@ -24,7 +23,8 @@ async function UsersContent({ searchParams }: Pick<PageProps<"/users">, "searchP
 export default async function UsersPage({ searchParams }: PageProps<"/users">) {
   // The total does not depend on the URL, so the bar (title + count) is part of the static shell
   const { organization } = await getAppContext();
-  const total = listStoredUsers(organization.id).length;
+  // Cached and tagged, so it stays in the static shell and refreshes after user actions
+  const total = await countListedUsers(organization.id);
 
   return (
     <>

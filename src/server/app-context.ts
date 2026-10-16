@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cacheTag } from "next/cache";
-import { getUserById } from "@/lib/users/service";
+import { USER_PUBLIC_SELECT } from "@/lib/users/service";
 import { prisma } from "@/server/prisma";
 import type { Organization, User } from "@/types/survey";
 
@@ -17,21 +17,6 @@ export interface AppContext {
   // A user belongs to one organization, so the switcher lists only it
   organizations: Organization[];
 }
-
-// Every user column except passwordHash, which never leaves the users service
-const USER_PUBLIC_SELECT = {
-  id: true,
-  name: true,
-  email: true,
-  image: true,
-  phone: true,
-  role: true,
-  isActive: true,
-  organizationId: true,
-  deletedAt: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
 
 // Cached across requests, so the admin layout keeps a static shell. The tags expire it when the
 // user's own record changes (profile edits) or the session context must reload
@@ -50,10 +35,7 @@ async function loadAppContext(email: string): Promise<AppContext> {
   if (!row.isActive) throw new Error(`The user "${email}" (PANDA_DEV_USER_EMAIL) is inactive.`);
   if (!row.organization) throw new Error(`The user "${email}" (PANDA_DEV_USER_EMAIL) has no organization.`);
 
-  const { organization, ...dbUser } = row;
-  // Until phase 2 moves the users service to Prisma, profile edits live in the in-memory user store:
-  // prefer its copy so renames still show in the sidebar right away
-  const user: User = getUserById(dbUser.id) ?? dbUser;
+  const { organization, ...user } = row;
 
   return { user, organization, organizations: [organization] };
 }

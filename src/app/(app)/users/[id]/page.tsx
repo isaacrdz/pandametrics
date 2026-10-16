@@ -18,7 +18,7 @@ async function EditUserContent({ params }: Pick<PageProps<"/users/[id]">, "param
   // Your own user is edited from the profile, which has no permissions or status
   if (id === currentUser.id) redirect("/profile");
   // Plain user without the password hash; unknown, deleted or another organization's id is a 404
-  const user = getUser(organization.id, id);
+  const user = await getUser(organization.id, id);
   if (!user) notFound();
 
   return (

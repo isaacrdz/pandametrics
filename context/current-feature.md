@@ -1,18 +1,30 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Prisma Services Phase 2 — Users
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Migration `search_unaccent` (`migrate dev --create-only` on the developer branch): `CREATE EXTENSION IF NOT EXISTS unaccent` and an `IMMUTABLE` `f_unaccent(text)` wrapper; applied, `migrate status` up to date, committed
+- `src/lib/users/service.ts` on Prisma (`server-only`, every function `async`, same names, arguments and return types): `USER_PUBLIC_SELECT` (no `passwordHash`) + `toUser`; `listUsers` / `getUser` / `getUserById` with `deletedAt: null` (and the organization where it applies)
+- `createUser`: hashed password, `MEMBER`, active, in the scope's organization; `P2002` on email → `EMAIL_TAKEN`; lowercased email
+- `updateUser` / `updateProfile`: own account requires the current password (`passwordHash` selected only to verify, else `WRONG_PASSWORD`); new hash only when a password is sent; `P2002` → `EMAIL_TAKEN`
+- `setUsersActive` / `setUserActive` / `softDeleteUsers` in one transaction, all or nothing: targets in the organization (`NOT_FOUND`), no self (`SELF_DEACTIVATE`), at least one active `OWNER` left (`LAST_OWNER`); soft delete keeps the email taken and the user's surveys
+- `globalThis` user map and the `MOCK_USERS` import removed; the in-memory survey store awaits `getUserById` for "created by"
+- `src/lib/users/list.ts`: one `$queryRaw` (`Prisma.sql`, bound parameters): `f_unaccent(lower(name))`, `lower(email)` and phone digits search with escaped `LIKE` patterns, status filter, `name COLLATE "und-x-icu", email` order, `LIMIT` / `OFFSET` + `COUNT(*) OVER()`, page clamp; public columns only; `totalAll` with `count`; real `now`
+- Shared `escapeLike` / search pattern helper in `src/server/search.ts`
+- Page reads cached with `"use cache"` + `cacheTag("org:<orgId>:users")` (top-bar count in the static shell, table inside its Suspense); `/users`, `/users/[id]`, `/users/new`, `/profile` await the service
+- `actions/users.ts` awaits the service and calls `updateTag("org:<orgId>:users")` (+ `updateTag("app-context")` when the acting user's record changes) instead of `revalidatePath`
+- App context no longer prefers the in-memory user (phase 1 bridge removed)
+- `yarn lint`, `tsc --noEmit`, `yarn build`; as Jordan: 8 users in name order, searches ("lucia", "ACME", "5512", "%", inactive filter), page sizes and clamp, create (duplicate email), edit, password reset, profile with wrong / right current password, bulk all-or-nothing, sidebar rename; as Miguel: only Miguel, no self-deactivate; no `passwordHash` in payloads; seed restores the demo
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/prisma-services-phase-2-users-spec.md`; research: `docs/prisma-services.md` (sections 3.1, 3.3, 3.5, 3.7)
+- Phase 2 of 4: surveys (phase 3) and responses / metrics / kiosk (phase 4) stay in memory; the survey store's "created by" now reads users from Neon
+- Development password of the seeded demo users: `panda-dev-1`
+- The migration only adds the extension and function (no table changes); phase 3 reuses `f_unaccent` and the search helper
 
 ## History
 

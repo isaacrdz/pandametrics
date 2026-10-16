@@ -9,7 +9,7 @@ import { getSurveyEditData } from "@/lib/surveys/form-data";
 async function EditSurveyContent({ params }: Pick<PageProps<"/surveys/[id]">, "params">) {
   const { id } = await params;
   const { organization } = await getAppContext();
-  const data = getSurveyEditData(organization.id, id);
+  const data = await getSurveyEditData(organization.id, id);
 
   // Unknown, deleted or another organization's survey: 404, never 403
   if (!data) notFound();

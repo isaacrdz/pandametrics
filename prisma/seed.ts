@@ -137,7 +137,16 @@ async function main() {
 
       for (const batch of chunk(responses, BATCH_SIZE)) {
         await tx.surveyResponse.createMany({
-          data: batch.map(({ items: _items, ...response }) => response),
+          data: batch.map(({ id, surveyId, organizationId, source, deviceId, locale, durationMs, createdAt }) => ({
+            id,
+            surveyId,
+            organizationId,
+            source,
+            deviceId,
+            locale,
+            durationMs,
+            createdAt,
+          })),
         });
         await tx.responseItem.createMany({
           data: batch.flatMap((response) => response.items.map((item) => ({ ...item, responseId: response.id }))),

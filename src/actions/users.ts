@@ -1,10 +1,11 @@
 "use server";
 
 import * as z from "zod";
-import { refresh, revalidatePath, updateTag } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { getAppContext } from "@/server/app-context";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
 import { toUserFormValues, userFormSchema, type UserFormInput, type UserFormSchemaMode, type UserFormValues } from "@/lib/users/schema";
+import { usersTag } from "@/lib/users/list";
 import * as userService from "@/lib/users/service";
 import { UserServiceError, type UserErrorCode } from "@/lib/users/service";
 
@@ -33,10 +34,12 @@ function toErrorResult(error: unknown): UserActionResult<never> {
   return { success: false, error: { code: "UNKNOWN" } };
 }
 
-// The list re-renders with its filters (refresh); /surveys/[id] keeps showing "created by"
-// because the service never removes a user, it only marks them
-function afterChange() {
-  revalidatePath("/users");
+// Expires the organization's cached user reads (list and count), and the cached app context when
+// the acting user's own record changed (sidebar name and greeting). The list re-renders with its
+// filters (refresh); /surveys/[id] keeps showing "created by" because users are never removed
+function afterChange(scope: userService.UserScope, { ownRecord = false } = {}) {
+  updateTag(usersTag(scope.organizationId));
+  if (ownRecord) updateTag("app-context");
   refresh();
 }
 
@@ -49,8 +52,9 @@ const VALIDATION_ERROR: UserActionResult<never> = { success: false, error: { cod
 export async function setUserActive(id: string, isActive: boolean): Promise<UserActionResult<null>> {
   if (!idSchema.safeParse(id).success || typeof isActive !== "boolean") return VALIDATION_ERROR;
   try {
-    userService.setUserActive(await getScope(), id, isActive);
-    afterChange();
+    const scope = await getScope();
+    await userService.setUserActive(scope, id, isActive);
+    afterChange(scope);
     return { success: true, data: null };
   } catch (error) {
     return toErrorResult(error);
@@ -61,8 +65,9 @@ export async function setUsersActive(ids: string[], isActive: boolean): Promise<
   if (!idsSchema.safeParse(ids).success || typeof isActive !== "boolean") return VALIDATION_ERROR;
   try {
     // Users that already had this status are left alone and not counted
-    const count = userService.setUsersActive(await getScope(), ids, isActive);
-    afterChange();
+    const scope = await getScope();
+    const count = await userService.setUsersActive(scope, ids, isActive);
+    afterChange(scope);
     return { success: true, data: { count } };
   } catch (error) {
     return toErrorResult(error);
@@ -72,8 +77,9 @@ export async function setUsersActive(ids: string[], isActive: boolean): Promise<
 export async function deleteUsers(ids: string[]): Promise<UserActionResult<{ count: number }>> {
   if (!idsSchema.safeParse(ids).success) return VALIDATION_ERROR;
   try {
-    const count = userService.softDeleteUsers(await getScope(), ids);
-    afterChange();
+    const scope = await getScope();
+    const count = await userService.softDeleteUsers(scope, ids);
+    afterChange(scope);
     return { success: true, data: { count } };
   } catch (error) {
     return toErrorResult(error);
@@ -101,8 +107,9 @@ export async function createUser(values: UserFormInput): Promise<UserActionResul
   const validation = validate(values, "create");
   if (!validation.ok) return validation.result;
   try {
-    const user = userService.createUser(await getScope(), validation.data);
-    revalidatePath("/users");
+    const scope = await getScope();
+    const user = await userService.createUser(scope, validation.data);
+    afterChange(scope);
     return { success: true, data: { id: user.id } };
   } catch (error) {
     return toErrorResult(error);
@@ -115,11 +122,8 @@ export async function updateUser(id: string, values: UserFormInput): Promise<Use
   if (!validation.ok) return validation.result;
   try {
     const scope = await getScope();
-    const user = userService.updateUser(scope, id, validation.data);
-    // Editing your own record changes the cached app context (sidebar name and greeting)
-    if (id === scope.userId) updateTag("app-context");
-    // Names show up in the sidebar, the greeting and "created by"
-    revalidatePath("/", "layout");
+    const user = await userService.updateUser(scope, id, validation.data);
+    afterChange(scope, { ownRecord: id === scope.userId });
     // Normalized values with empty password fields: the form resets to them
     return { success: true, data: { values: toUserFormValues(user) } };
   } catch (error) {
@@ -132,11 +136,10 @@ export async function updateProfile(values: UserFormInput): Promise<UserActionRe
   const validation = validate(values, "profile");
   if (!validation.ok) return validation.result;
   try {
-    const user = userService.updateProfile(await getScope(), validation.data);
-    // The name shows up in the sidebar, the greeting, the user list and "created by". The cached app
-    // context is expired by its shared tag (not "user:<email>": the edit may change the email)
-    updateTag("app-context");
-    revalidatePath("/", "layout");
+    const scope = await getScope();
+    const user = await userService.updateProfile(scope, validation.data);
+    // The shared "app-context" tag, not "user:<email>": the edit may change the email
+    afterChange(scope, { ownRecord: true });
     return { success: true, data: { values: toUserFormValues(user) } };
   } catch (error) {
     return toErrorResult(error);

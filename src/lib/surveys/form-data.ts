@@ -12,12 +12,12 @@ export interface SurveyEditData {
 }
 
 // null for unknown, deleted or other organizations' surveys (the page shows a 404)
-export function getSurveyEditData(organizationId: string, id: string): SurveyEditData | null {
+export async function getSurveyEditData(organizationId: string, id: string): Promise<SurveyEditData | null> {
   const survey = getSurvey(organizationId, id);
   if (!survey) return null;
 
-  // The user store, so a renamed or deleted creator still shows up
-  const creator = getUserById(survey.createdById);
+  // From the database, deleted users included, so a renamed or deleted creator still shows up
+  const creator = await getUserById(survey.createdById);
 
   return {
     values: toFormValues(survey),
