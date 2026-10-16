@@ -2,8 +2,8 @@ import "server-only";
 
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
-// scrypt from node:crypto until Auth.js; stored as "salt:hash" (hex). Swapping to argon2 or
-// bcrypt later only changes this file.
+// scrypt from node:crypto, stored as "salt:hash" (hex). Used by the user forms, registration and the
+// Auth.js Credentials sign-in; swapping to argon2 or bcrypt later only changes this file.
 
 const KEY_LENGTH = 64;
 

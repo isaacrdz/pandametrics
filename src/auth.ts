@@ -1,12 +1,16 @@
 import "server-only";
 
 import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import type { Adapter, AdapterUser } from "next-auth/adapters";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { revalidateTag } from "next/cache";
-import authConfig from "@/auth.config";
+import authConfig, { CREDENTIAL_FIELDS } from "@/auth.config";
+import { signInSchema } from "@/lib/auth/schema";
 import { userTag } from "@/lib/users/tags";
-import { canSignIn, createUserWithOrganization, onGoogleAccountLinked } from "@/server/auth-users";
+import { canSignIn, createUserWithOrganization, onGoogleAccountLinked, verifyCredentials } from "@/server/auth-users";
+import { clientIpFrom } from "@/server/client-ip";
+import { createRateLimiter } from "@/server/rate-limit";
 import { prisma } from "@/server/prisma";
 
 // The app's Auth.js instance: shared options (auth.config.ts) plus the database. Sign-up is open:
@@ -22,8 +26,30 @@ const adapter: Adapter = {
   },
 };
 
+// Failed email / password attempts per IP + email: 10 per 15 minutes. Past it every attempt fails
+// like a wrong password until the window frees up
+const signInLimiter = createRateLimiter("sign-in", { windowMs: 15 * 60_000, max: 10 });
+
+const credentials = Credentials({
+  credentials: CREDENTIAL_FIELDS,
+  async authorize(raw, request) {
+    const parsed = signInSchema.safeParse(raw);
+    if (!parsed.success) return null;
+
+    const { email, password } = parsed.data;
+    const keys = [`${clientIpFrom(request.headers) ?? "unknown"}:${email}`];
+    if (signInLimiter.isLimited(keys)) return null;
+
+    const user = await verifyCredentials(email, password);
+    if (!user) signInLimiter.record(keys);
+    return user;
+  },
+});
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  // The real Credentials provider instead of the placeholder from auth.config.ts
+  providers: authConfig.providers.map((provider) => ("id" in provider && provider.id === "credentials" ? credentials : provider)),
   adapter,
   callbacks: {
     ...authConfig.callbacks,

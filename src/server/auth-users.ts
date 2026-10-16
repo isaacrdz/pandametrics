@@ -1,10 +1,14 @@
 import "server-only";
 
+import { Prisma } from "@/generated/prisma/client";
+import type { RegisterValues } from "@/lib/auth/schema";
+import { hashPassword, verifyPassword } from "@/lib/users/password";
 import { prisma } from "@/server/prisma";
 
-// The database side of sign-in (src/auth.ts): who may sign in, creating a user with their own
-// organization (open sign-up) and what changes when a Google account is linked. Kept apart from the
-// Auth.js wiring so the rules can be checked directly (docs/auth.md, section 4).
+// The database side of sign-in (src/auth.ts) and registration: who may sign in, checking a password,
+// creating a user with their own organization (open sign-up) and what changes when a Google account
+// is linked. Kept apart from the Auth.js wiring so the rules can be checked directly
+// (docs/auth.md, section 4).
 
 export interface NewUserData {
   name?: string | null;
@@ -59,4 +63,62 @@ export async function onGoogleAccountLinked(userId: string, image: string | null
     data: { emailVerified: new Date(), passwordHash: null },
   });
   if (image) await prisma.user.updateMany({ where: { id: userId, image: null }, data: { image } });
+}
+
+// ---------------------------------------------------------------------------
+// Email and password
+// ---------------------------------------------------------------------------
+
+export interface SignedInUser {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+}
+
+// A valid scrypt hash of a random password nobody knows, only to spend the same time
+const DUMMY_HASH = hashPassword(crypto.randomUUID());
+
+// null for every failure alike (unknown email, wrong password, Google-only account, inactive,
+// deleted or organization-less user), so the answer never tells which emails exist
+export async function verifyCredentials(email: string, password: string): Promise<SignedInUser | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, name: true, email: true, image: true, passwordHash: true, isActive: true, deletedAt: true, organizationId: true },
+  });
+  // Hash anyway when there is no user, so a missing email takes as long as a wrong password
+  const valid = verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
+  if (!user || !valid || !user.passwordHash || !user.isActive || user.deletedAt || !user.organizationId) return null;
+  return { id: user.id, name: user.name, email: user.email, image: user.image };
+}
+
+export class EmailTakenError extends Error {
+  constructor() {
+    super("EMAIL_TAKEN");
+  }
+}
+
+// Open registration: the organization and its OWNER in one transaction. The email stays unverified
+// (emailVerified null) until its owner signs in with Google, which then takes the account over
+export async function registerOwner(input: RegisterValues): Promise<{ id: string }> {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const organization = await tx.organization.create({ data: { name: input.organizationName } });
+      return tx.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          passwordHash: hashPassword(input.password),
+          emailVerified: null,
+          role: "OWNER",
+          isActive: true,
+          organizationId: organization.id,
+        },
+        select: { id: true },
+      });
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new EmailTakenError();
+    throw error;
+  }
 }

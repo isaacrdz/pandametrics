@@ -7,6 +7,7 @@ import { LOCALES } from "@/i18n/config";
 import { SURVEY_CODE_LENGTH } from "@/lib/surveys/code";
 import { surveysTag, surveyTag } from "@/lib/surveys/list";
 import { submitPublicResponse, type SubmitErrorCode } from "@/lib/surveys/public";
+import { clientIpFrom } from "@/server/client-ip";
 
 // Public action (no session): the kiosk sends one response. Errors are codes the client translates
 
@@ -24,19 +25,12 @@ const submissionSchema = z.object({
 
 export type SubmitSurveyResult = { ok: true } | { ok: false; error: SubmitErrorCode };
 
-// First address of x-forwarded-for (the client as seen by the proxy), then x-real-ip
-async function getClientIp(): Promise<string | null> {
-  const list = await headers();
-  const forwarded = list.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded || list.get("x-real-ip")?.trim() || null;
-}
-
 export async function submitSurveyResponse(raw: unknown): Promise<SubmitSurveyResult> {
   const parsed = submissionSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: "INVALID" };
 
   try {
-    const result = await submitPublicResponse(parsed.data, { ip: await getClientIp() });
+    const result = await submitPublicResponse(parsed.data, { ip: clientIpFrom(await headers()) });
     if (!result.ok) return result;
     // The dashboard cards, the survey table and the edit form (category lock) count responses
     updateTag(surveysTag(result.organizationId));

@@ -1,18 +1,25 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Auth Phase 2 — Credentials (Email / Password) and Registration
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `src/auth.config.ts`: `Credentials({ authorize: () => null })` placeholder (no Prisma); `src/auth.ts` overrides it with the real `authorize`
+- `authorize`: Zod `{ email, password }` (trimmed, lowercased email); user by email with `passwordHash` (server only); missing, inactive, soft-deleted or organization-less → rejected; `verifyPassword` (scrypt, `src/lib/users/password.ts`; Google-only users with `passwordHash = null` always fail); returns `{ id, name, email, image }`, never the hash; no difference between unknown email and wrong password
+- Sign-in rate limit per IP + email (kiosk limiter pattern, in memory); too many attempts fail like a wrong password
+- `POST /api/v1/auth/register`: `name`, `email`, `password`, `confirmPassword`, `organizationName` validated with Zod (user form rules, matching passwords, organization name 1–80); one transaction creates the organization and the user (`OWNER`, active, scrypt hash, `emailVerified: null`); `EMAIL_TAKEN` (`P2002`) and `VALIDATION` with field errors; `{ success, data }` / `{ success: false, error: { code, fieldErrors? } }` codes only; rate limit per IP
+- No bcryptjs; existing hashes (demo users, owner) keep working
+- `yarn lint`, `tsc --noEmit`, `yarn build`; register via curl → organization + `OWNER` in Neon with a `salt:hash`; same email → `EMAIL_TAKEN`; bad input → `VALIDATION`; `/api/auth/signin` with the new account → its empty dashboard; Jordan / `panda-dev-1` → Acme; wrong password and deactivated user → error; repeated attempts limited; Google still works; Google on an unverified registered email → linked and the old password stops working
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/auth-phase-2-spec.md`; research: `docs/auth.md` (sections 4.1–4.5); master: `context/features/next-auth-master-spec.md`
+- Phase 2 of 3: the custom `/sign-in` and `/register` pages come in phase 3; until then the default Auth.js page shows the email / password form next to Google
+- From phase 1: JWT strategy, `src/server/auth-users.ts` (sign-in rules), `getAppContext` rejects inactive / deleted / organization-less users, `src/proxy.ts` matcher (the `/api/v1/auth/register` route is public)
+- `/api/auth/*` belongs to Auth.js's catch-all, so registration lives under `/api/v1` (overview section 8)
+- The unverified-email takeover (phase 1 `linkAccount`) is what makes open registration safe enough without email verification; email verification is later hardening
 
 ## History
 

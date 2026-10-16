@@ -9,7 +9,7 @@ export const USER_LIMITS = {
   phoneMinDigits: 7,
   phoneMaxDigits: 15,
   passwordMin: 8,
-  // bcrypt only reads 72 bytes; kept for when hashing moves to Auth.js
+  // A sane upper bound (scrypt has none); also keeps bcrypt's 72-byte limit if hashing ever moves
   passwordMax: 72,
 } as const;
 
@@ -38,7 +38,7 @@ const phoneSchema = z
   )
   .transform((value) => (value === "" ? null : normalizePhone(value)));
 
-function isValidPassword(value: string): boolean {
+export function isValidPassword(value: string): boolean {
   return (
     value.length >= USER_LIMITS.passwordMin &&
     value.length <= USER_LIMITS.passwordMax &&
@@ -47,7 +47,7 @@ function isValidPassword(value: string): boolean {
   );
 }
 
-const baseSchema = z.object({
+export const baseSchema = z.object({
   name: z.string().trim().min(1, { error: "required" }).max(USER_LIMITS.name, { error: "tooLong" }),
   email: z
     .string()

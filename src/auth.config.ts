@@ -1,8 +1,15 @@
 import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
 // Auth.js options shared by the app (src/auth.ts) and the proxy (src/proxy.ts). No Prisma or
 // other server-only imports: the proxy runs on every request and only reads the session cookie.
+
+// The email / password fields (the default sign-in page renders them)
+export const CREDENTIAL_FIELDS = {
+  email: { label: "Email", type: "email" },
+  password: { label: "Password", type: "password" },
+};
 
 export default {
   providers: [
@@ -21,6 +28,8 @@ export default {
         };
       },
     }),
+    // Placeholder: src/auth.ts replaces it with the real check against the database
+    Credentials({ credentials: CREDENTIAL_FIELDS, authorize: () => null }),
   ],
   // Credentials (phase 2) needs JWT sessions; the token only carries the user id, and the user
   // and organization are always read from the database (src/server/app-context.ts)
