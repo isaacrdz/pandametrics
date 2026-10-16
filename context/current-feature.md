@@ -1,28 +1,18 @@
-# Prisma + Neon PostgreSQL Setup
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Prisma ORM 7 with Neon PostgreSQL (serverless): `prisma` (dev), `@prisma/client`, `@prisma/adapter-pg`, `dotenv` and `tsx` (dev); Prisma 7 upgrade guide read before starting
-- `prisma.config.ts`: schema `prisma/schema.prisma`, migrations in `prisma/migrations`, `datasource.url` from `DIRECT_URL` (CLI), `dotenv/config`
-- `prisma/schema.prisma` from the data models in `project-overview.md` (sections 4 and 5): generator `prisma-client` into `src/generated/prisma`, datasource without `url`; enums `Role`, `SurveyCategory`, `AnswerType`, `ResponseSource`; models `Organization`, `User` (phone, passwordHash, role, isActive, deletedAt), `Survey`, `Question`, `AnswerOption`, `SurveyResponse` (`Timestamptz` createdAt), `ResponseItem` (answer snapshot)
-- NextAuth / Auth.js models: `Account`, `Session`, `VerificationToken`, cascading from `User`
-- Indexes and delete rules as in the overview: cascade where data belongs to its parent (Auth.js rows, response items), `Restrict` where history must survive (surveys, questions, options, responses), `SetNull` for a user's organization; unique `Survey.code`, `User.email`, `[responseId, questionId]`
-- `.env` with `DATABASE_URL` (pooled, development branch) and `DIRECT_URL` (direct); `.env.example` committed; `.env` and `src/generated/prisma` git-ignored
-- First migration created with `prisma migrate dev --name init` on the development branch (never `db push`), with the `activeSurveyCount BETWEEN 0 AND 5` CHECK added to its SQL; schema and migrations committed
-- Server-only Prisma client (`PrismaPg` adapter, `globalThis` singleton) not yet used by the app
-- `yarn lint`, `tsc --noEmit`, `yarn build` still pass; the app keeps the in-memory stores
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/database-spec.md`; data models: `context/project-overview.md` (sections 4 and 5); standards: `context/coding-standars.md`
-- A development branch (in `DATABASE_URL`) and a production branch: always migrations, never push directly unless specified
-- Prisma 7 breaking changes: https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7 ; setup guide: https://www.prisma.io/docs/getting-started/prisma-orm/quickstart/prisma-postgres
-- Needs the Neon connection strings from the user before migrating
-- Seed is a separate feature (`context/features/seed-spec.md`)
+<!-- Any extra notes -->
 
 ## History
 
@@ -56,3 +46,4 @@ In Progress
 - **Survey Kiosk Phase 2 — Question Runner** (2026-10-15): phase 2 of 4 of the public kiosk. `SurveyRunner` replaces the placeholder: one question at a time with the survey name, `FullscreenToggle` (follows `fullscreenchange`, hidden without support), `ExitSurveyButton` (confirmation only with answers, leaves fullscreen, back to `/s`) and `ProgressCard` (live percent, primary progress bar, ↑ / ↓; full-width bottom bar on phones). `QuestionView`: large h1 focused on each question, Enter hint, primary "OK →" / "Send →" disabled without an answer. Options as a radio group labelled by the question (← / → inside, roving tab index): faces with `ReactionFace size="lg"` and a `selected` glow + check badge, stars with hover / focus preview, poll text cards with the key number and a primary selected state; `getPublicSurvey` orders faces Very bad → Excellent and stars 1 → 5 so keys 1–5 always match. Keys 1–5, Enter, ↑ / ↓ on `window` (Enter left to focused buttons, ignored in fields and the exit dialog). 350 + 350 ms slide transition (150 ms fade with reduced motion) with a fallback timer. Continue on the code entry enters fullscreen. Send shows a "next phase" toast until phase 3. Checked by keyboard, mouse and screen reader names at 375 / 768 / 1280 and 1024×500, light and dark
 - **Survey Kiosk Phase 3 — Submit and Restart** (2026-10-15): phase 3 of 4 of the public kiosk. In-memory response store (`src/lib/surveys/responses.ts`, seeded with the mock responses) read by the metrics, survey counts and category lock; answers newer than the fixed mock clock count as its today, so a kiosk answer adds exactly one (1,842 → 1,843). `submitPublicResponse`: active survey by code, every current question answered once with one of its current options (`NOT_FOUND` / `CLOSED` / `INVALID`), answer snapshots, source / device / locale / duration; in-memory rate limit per device and per IP (1 per 3 s, 30 per 10 min, `RATE_LIMITED`). Public `submitSurveyResponse` action (Zod, IP from `x-forwarded-for` / `x-real-ip`, revalidates `/dashboard` and `/surveys`, codes only). Runner: one guarded submit (spinner, Enter + clicks store once), toasts keep the answers, closed / not found screens; `KIOSK` vs `LINK` from a session flag set by Continue (cached per code so remounts keep it), persistent device id, app locale (`useAppLocale`, not next-intl's `en-US`). `ThanksScreen` (5 s countdown, restart with empty answers) and `TapToStart` when fullscreen was lost. Service rules checked directly; tap to start still to be tried on a real browser
 - **Survey Kiosk Phase 4 — QR Scanning** (2026-10-15): phase 4 of 4 of the public kiosk. `src/lib/kiosk/qr.ts`: native `BarcodeDetector` when it reads `qr_code`, otherwise the `barcode-detector` ponyfill (3.2.2) imported on demand and pointed at a self-hosted ZXing `.wasm` (`/vendor/zxing/<version>/`, copied by `scripts/copy-zxing-wasm.mjs` on `postinstall`, gitignored); `detectCode` returns code / not a survey / no QR. `QrScannerDialog` (shadcn `dialog`): square camera preview with a primary corner frame, 250 ms scans without overlap, opens the survey like Continue, camera released on close / unmount / success; denied, no camera, insecure and failed states with "Upload QR image instead"; translated close button, focus returned to Scan QR. "Upload QR image" reads a picture (native and ponyfill, share panel PNG checked) with inline "no QR" / "not a survey" errors; decoded images always freed. "Coming soon" removed. Checked headless with a fake camera: no third-party requests, wasm only on use, track ended after close, denied message; real-device scans (Chrome, Safari, Firefox) still to be tried
+- **Prisma + Neon PostgreSQL Setup** (2026-10-16): Prisma ORM 7.10.1 (`prisma`, `@prisma/client`, `@prisma/adapter-pg`; `dotenv`, `tsx`) on the Neon `panda-metrics` project. `prisma.config.ts` uses `DIRECT_URL` for the CLI; `prisma/schema.prisma` copied from the overview (section 5): enums `Role`, `SurveyCategory`, `AnswerType`, `ResponseSource`; `Organization`, `User` (phone, passwordHash, isActive, deletedAt), Auth.js `Account` / `Session` / `VerificationToken`, `Survey`, `Question`, `AnswerOption`, `SurveyResponse` (`Timestamptz`), `ResponseItem` (answer snapshot) with cascade / restrict / set null rules and the overview's indexes. `init` migration created with `--create-only`, a hand-added `CHECK (activeSurveyCount BETWEEN 0 AND 5)`, then applied on the `developer` branch (endpoint confirmed through the Neon MCP; production untouched). Server-only `src/server/prisma.ts` (`PrismaPg` over the pooled `DATABASE_URL`, singleton) not used by the app yet. `scripts/test-db.ts` (`yarn db:test`), `db:migrate` / `db:deploy` / `db:studio`, `prisma generate` on `postinstall`, `.env.example`; `.env` and `src/generated/prisma` git-ignored. Database and seed specs adapted to Panda Metrics; the seed is next
