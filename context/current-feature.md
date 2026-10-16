@@ -1,30 +1,18 @@
-# Seed Data
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `src/lib/seed-data.ts` (no `server-only`, no store imports): `ID_KIND`, `objectId`, `createRandom`, `shuffle`, `REACTION_OPTIONS`, `RATING_COLORS`, `POLL_FALLBACK_COLORS`, organization and user seeds, `SURVEY_SEEDS` with the `reaction` / `rating` / `poll` helpers, and `buildSurvey` / `buildAnswerColumns` / `buildResponses` taking a `now: Date`
-- `mock-data.ts` keeps `MOCK_NOW` and every export by calling the shared builders with `MOCK_NOW`; the app is unchanged (same dashboard and table counts)
-- `prisma/seed.ts` registered as `migrations.seed: "tsx prisma/seed.ts"` in `prisma.config.ts`, run with `npx prisma db seed`; own `PrismaClient` with `PrismaPg` (`DATABASE_URL`) after loading `.env`
-- Organizations: Acme Inc. (`activeSurveyCount` computed from its active surveys = 4) and Panda Labs (0), with the mock ids and dates
-- 8 users in Acme with the mock ids, names, emails, roles, phones, images, active state and dates; `passwordHash` of `panda-dev-1` in the `salt:hash` scrypt format of `password.ts`; `emailVerified` = `createdAt`; no `Account` / `Session` rows
-- 5 surveys (STORE7, EVENT2, PROD91, HELP44, 5XS1NK) with the mock ids, creators, descriptions, questions and options (0-based `position`), dates anchored at the run
-- 3,071 responses / 6,142 items with exactly the mock's per-option counts (same seeded pairing), source / deviceId / locale / durationMs, answer snapshots; `createMany` in batches of ~500
-- Idempotent: deletes the seeded rows of the two organizations in foreign-key order (responses → options → questions → surveys → users → organizations), then recreates them in a transaction
-- Development only: prints the host; refuses with `NODE_ENV=production` or when `DATABASE_URL` lacks `NEON_DEV_ENDPOINT`
-- Logs "2 organizations, 8 users, 5 surveys, 10 questions, 47 options, 3071 responses, 6142 items"; no schema change and no new migration
-- Verification: seed twice with the same counts; SQL per-option counts match the dashboard (STORE7 1,842; Excelente 762 / 602 / 296 / 118 / 64); `verifyPassword("panda-dev-1", hash)` is true; refusal against a non-development URL; `yarn lint`, `tsc --noEmit`, `yarn build`
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/seed-spec.md`; depends on the Prisma + Neon setup (schema and `init` migration on the `developer` branch)
-- Same ids as the mock so URLs and the current user keep working; the `cuid()` default is for rows the app creates later
-- Dates relative to the run (the mock stays on the fixed `MOCK_NOW`), so "last 30 days" has data in the database
-- `NEON_DEV_ENDPOINT` goes in `.env` (`ep-long-shape-b4kfmkwo` for the developer branch) and in `.env.example` as a placeholder
-- The app keeps reading the in-memory stores; switching the services to Prisma is a later feature
+<!-- Any extra notes -->
 
 ## History
 
@@ -59,3 +47,4 @@ In Progress
 - **Survey Kiosk Phase 3 — Submit and Restart** (2026-10-15): phase 3 of 4 of the public kiosk. In-memory response store (`src/lib/surveys/responses.ts`, seeded with the mock responses) read by the metrics, survey counts and category lock; answers newer than the fixed mock clock count as its today, so a kiosk answer adds exactly one (1,842 → 1,843). `submitPublicResponse`: active survey by code, every current question answered once with one of its current options (`NOT_FOUND` / `CLOSED` / `INVALID`), answer snapshots, source / device / locale / duration; in-memory rate limit per device and per IP (1 per 3 s, 30 per 10 min, `RATE_LIMITED`). Public `submitSurveyResponse` action (Zod, IP from `x-forwarded-for` / `x-real-ip`, revalidates `/dashboard` and `/surveys`, codes only). Runner: one guarded submit (spinner, Enter + clicks store once), toasts keep the answers, closed / not found screens; `KIOSK` vs `LINK` from a session flag set by Continue (cached per code so remounts keep it), persistent device id, app locale (`useAppLocale`, not next-intl's `en-US`). `ThanksScreen` (5 s countdown, restart with empty answers) and `TapToStart` when fullscreen was lost. Service rules checked directly; tap to start still to be tried on a real browser
 - **Survey Kiosk Phase 4 — QR Scanning** (2026-10-15): phase 4 of 4 of the public kiosk. `src/lib/kiosk/qr.ts`: native `BarcodeDetector` when it reads `qr_code`, otherwise the `barcode-detector` ponyfill (3.2.2) imported on demand and pointed at a self-hosted ZXing `.wasm` (`/vendor/zxing/<version>/`, copied by `scripts/copy-zxing-wasm.mjs` on `postinstall`, gitignored); `detectCode` returns code / not a survey / no QR. `QrScannerDialog` (shadcn `dialog`): square camera preview with a primary corner frame, 250 ms scans without overlap, opens the survey like Continue, camera released on close / unmount / success; denied, no camera, insecure and failed states with "Upload QR image instead"; translated close button, focus returned to Scan QR. "Upload QR image" reads a picture (native and ponyfill, share panel PNG checked) with inline "no QR" / "not a survey" errors; decoded images always freed. "Coming soon" removed. Checked headless with a fake camera: no third-party requests, wasm only on use, track ended after close, denied message; real-device scans (Chrome, Safari, Firefox) still to be tried
 - **Prisma + Neon PostgreSQL Setup** (2026-10-16): Prisma ORM 7.10.1 (`prisma`, `@prisma/client`, `@prisma/adapter-pg`; `dotenv`, `tsx`) on the Neon `panda-metrics` project. `prisma.config.ts` uses `DIRECT_URL` for the CLI; `prisma/schema.prisma` copied from the overview (section 5): enums `Role`, `SurveyCategory`, `AnswerType`, `ResponseSource`; `Organization`, `User` (phone, passwordHash, isActive, deletedAt), Auth.js `Account` / `Session` / `VerificationToken`, `Survey`, `Question`, `AnswerOption`, `SurveyResponse` (`Timestamptz`), `ResponseItem` (answer snapshot) with cascade / restrict / set null rules and the overview's indexes. `init` migration created with `--create-only`, a hand-added `CHECK (activeSurveyCount BETWEEN 0 AND 5)`, then applied on the `developer` branch (endpoint confirmed through the Neon MCP; production untouched). Server-only `src/server/prisma.ts` (`PrismaPg` over the pooled `DATABASE_URL`, singleton) not used by the app yet. `scripts/test-db.ts` (`yarn db:test`), `db:migrate` / `db:deploy` / `db:studio`, `prisma generate` on `postinstall`, `.env.example`; `.env` and `src/generated/prisma` git-ignored. Database and seed specs adapted to Panda Metrics; the seed is next
+- **Seed Data** (2026-10-16): the mock's demo data moved into `src/lib/seed-data.ts` (ids, seeded random, colors, organizations, users, `SURVEY_SEEDS`, survey / response builders taking `now`; no `server-only`), shared by `mock-data.ts` (fixed `MOCK_NOW`, data fingerprint identical before and after) and `prisma/seed.ts` (`npx prisma db seed`, registered in `prisma.config.ts`). The seed fills the Neon `developer` branch with the mock's ids: Acme Inc. (`activeSurveyCount` computed = 4) and Panda Labs, 8 users (`panda-dev-1` in the `password.ts` scrypt format, `emailVerified` = `createdAt`), 5 surveys with 10 questions and 47 options (0-based positions), 3,071 responses / 6,142 items in batches of 500 with the mock's per-option counts (SQL check: STORE7 1,842; Excelente 762 / 602 / 296 / 118 / 64); dates relative to the run. Idempotent (deletes the two organizations' rows in foreign-key order, recreates in one 120 s transaction; run twice with the same counts) and development only (`NEON_DEV_ENDPOINT` in `.env`, refuses other endpoints and `NODE_ENV=production`). The app still reads the in-memory stores
