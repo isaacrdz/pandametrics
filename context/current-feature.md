@@ -1,18 +1,30 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Seed Data
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `src/lib/seed-data.ts` (no `server-only`, no store imports): `ID_KIND`, `objectId`, `createRandom`, `shuffle`, `REACTION_OPTIONS`, `RATING_COLORS`, `POLL_FALLBACK_COLORS`, organization and user seeds, `SURVEY_SEEDS` with the `reaction` / `rating` / `poll` helpers, and `buildSurvey` / `buildAnswerColumns` / `buildResponses` taking a `now: Date`
+- `mock-data.ts` keeps `MOCK_NOW` and every export by calling the shared builders with `MOCK_NOW`; the app is unchanged (same dashboard and table counts)
+- `prisma/seed.ts` registered as `migrations.seed: "tsx prisma/seed.ts"` in `prisma.config.ts`, run with `npx prisma db seed`; own `PrismaClient` with `PrismaPg` (`DATABASE_URL`) after loading `.env`
+- Organizations: Acme Inc. (`activeSurveyCount` computed from its active surveys = 4) and Panda Labs (0), with the mock ids and dates
+- 8 users in Acme with the mock ids, names, emails, roles, phones, images, active state and dates; `passwordHash` of `panda-dev-1` in the `salt:hash` scrypt format of `password.ts`; `emailVerified` = `createdAt`; no `Account` / `Session` rows
+- 5 surveys (STORE7, EVENT2, PROD91, HELP44, 5XS1NK) with the mock ids, creators, descriptions, questions and options (0-based `position`), dates anchored at the run
+- 3,071 responses / 6,142 items with exactly the mock's per-option counts (same seeded pairing), source / deviceId / locale / durationMs, answer snapshots; `createMany` in batches of ~500
+- Idempotent: deletes the seeded rows of the two organizations in foreign-key order (responses → options → questions → surveys → users → organizations), then recreates them in a transaction
+- Development only: prints the host; refuses with `NODE_ENV=production` or when `DATABASE_URL` lacks `NEON_DEV_ENDPOINT`
+- Logs "2 organizations, 8 users, 5 surveys, 10 questions, 47 options, 3071 responses, 6142 items"; no schema change and no new migration
+- Verification: seed twice with the same counts; SQL per-option counts match the dashboard (STORE7 1,842; Excelente 762 / 602 / 296 / 118 / 64); `verifyPassword("panda-dev-1", hash)` is true; refusal against a non-development URL; `yarn lint`, `tsc --noEmit`, `yarn build`
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/seed-spec.md`; depends on the Prisma + Neon setup (schema and `init` migration on the `developer` branch)
+- Same ids as the mock so URLs and the current user keep working; the `cuid()` default is for rows the app creates later
+- Dates relative to the run (the mock stays on the fixed `MOCK_NOW`), so "last 30 days" has data in the database
+- `NEON_DEV_ENDPOINT` goes in `.env` (`ep-long-shape-b4kfmkwo` for the developer branch) and in `.env.example` as a placeholder
+- The app keeps reading the in-memory stores; switching the services to Prisma is a later feature
 
 ## History
 
