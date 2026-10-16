@@ -4,8 +4,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
 // One Prisma client per server process. The app connects through Neon's pooled URL
-// (DATABASE_URL); the CLI uses the direct one from prisma.config.ts. Users and surveys read it;
-// responses and metrics still use the in-memory store until phase 4.
+// (DATABASE_URL); the CLI uses the direct one from prisma.config.ts. Every service reads and
+// writes through it.
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 

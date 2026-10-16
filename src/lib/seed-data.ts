@@ -1,7 +1,6 @@
-// Demo data shared by the in-memory mock (src/lib/mock-data.ts) and the database seed
-// (prisma/seed.ts), so both always hold the same organizations, users, surveys and response counts.
-// Plain module: no server-only and no store imports, so tsx can load it outside Next.
-// Every builder takes `now`: the mock passes its fixed clock, the seed the moment it runs.
+// Demo data for the database seed (prisma/seed.ts): organizations, users, surveys and responses
+// with fixed ids and seeded random counts. Plain module: no server-only, so tsx can load it outside
+// Next. Every builder takes `now`, the moment the seed runs, so response dates stay recent.
 
 import type {
   AnswerType,
@@ -49,7 +48,7 @@ export const ID_KIND = {
   response: 6,
 } as const;
 
-// 24 hex characters: 4 for the kind, 20 for the number. Stable across the mock and the seed
+// 24 hex characters: 4 for the kind, 20 for the number. Stable across seed runs
 export function objectId(kind: number, n: number): string {
   return kind.toString(16).padStart(4, "0") + n.toString(16).padStart(20, "0");
 }

@@ -1,5 +1,5 @@
-// Fills the Neon development branch with the demo data the app shows today (src/lib/seed-data.ts):
-// 2 organizations, 8 users, 5 surveys and their responses, with the mock's ids and counts. Then the
+// Fills the Neon development branch with the demo data (src/lib/seed-data.ts): 2 organizations,
+// 8 users, 5 surveys and their responses, with fixed ids and seeded counts. Then the
 // owner account: Miguel Rayon, owner and only member of Leyinork.
 //
 //   npx prisma db seed

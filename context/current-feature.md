@@ -1,18 +1,34 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Prisma Services Phase 4 — Responses, Metrics and Kiosk
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `src/server/metrics.ts` (server-only): `getSurveyMetrics(survey, rangeKey)` → `SurveyMetrics` (same type as today) from SQL: per-option counts (`ResponseItem` joined to `SurveyResponse`, filtered by survey and range, grouped by option, `COUNT(*)::int`) and `totalResponses`; `buildQuestionMetrics` moved here from `mock-data.ts` (archived options with answers kept, rating average, shares)
+- `getOrganizationMetrics(orgId, surveyIds, rangeKey)`: every dashboard card in one grouped query (`"surveyId" = ANY(...)`), no query per survey
+- Range from `getDateRange(rangeKey, new Date())` inside the cached function (key = `rangeKey`), day boundaries in `TIME_ZONE`; `"use cache"` + `cacheLife("hours")` + `cacheTag("survey:<id>")` / `cacheTag("org:<orgId>:surveys")`
+- `dashboard.ts` (`getDashboardData`) reads metrics from Postgres with the real now (no `MOCK_NOW`)
+- `getPublicSurvey(code)` from Prisma with the reduced shape and kiosk order (faces Very bad → Excellent, stars 1 → 5)
+- `submitPublicResponse(input, meta)` async: load by code (current questions / options), validate as today (`NOT_FOUND`, `CLOSED`, `INVALID` for missing / duplicate question or another question's option), rate limit (stays in memory), then one `surveyResponse.create` with nested `items` copying the snapshot (`answerType`, `answerValue`, `answerLabel`); `P2002` → `INVALID`; returns survey and organization ids
+- `actions/kiosk.ts` expires `survey:<id>` and `org:<orgId>:surveys` with `updateTag` (already in place since phase 3)
+- Cleanup: delete `src/lib/surveys/responses.ts` and `src/lib/mock-data.ts` (`MOCK_*`, `MOCK_NOW`, `LAST_30_DAYS`, `getMockSurveyMetrics`, `countMockResponses`, `getAnsweredOptionIds`) and any leftover `globalThis` store; keep `src/lib/seed-data.ts`, with `REACTION_OPTIONS` / `POLL_FALLBACK_COLORS` imports pointing there; `grep` for `MOCK_`, `mock-data`, `listResponses`, `pandaSurveyStore` / `pandaUserStore` / `pandaResponseStore` in `src/` is clean
+- `context/project-overview.md` section 8: short note that the services run on Prisma, with `PANDA_DEV_USER_EMAIL` as the acting user until Auth.js
+- `yarn lint`, `tsc --noEmit`, `yarn build` without uncached-data errors (admin routes stay `◐`)
+- As Jordan after `npx prisma db seed`: STORE7 card Excelente 762 / Muy bueno 602 / Bueno 296 / Malo 118 / Muy malo 64, "1,842 responses" for the last 30 days; other cards match the seed; 7 / 90 days and month change the numbers
+- Kiosk: an answer on `/s?code=STORE7` raises the card and the table by one right away and is stored in Neon with items and snapshot; Enter + click stores one; draft → `CLOSED`, unknown → `NOT_FOUND`; two submits within 3 s → `RATE_LIMITED`; still counted after a restart
+- A survey's first kiosk answer locks its category in the form; removing an answered option keeps its count visible (archived) in the card
+- As Miguel: a Leyinork survey answered on the kiosk shows its metrics; Jordan's dashboard is unaffected
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/prisma-services-phase-4-responses-kiosk-spec.md`; research: `docs/prisma-services.md` (sections 3.4, 3.7, 3.8); metrics query in `context/project-overview.md` section 6
+- Phase 4 of 4: after it the app reads and writes only the database; `src/lib/seed-data.ts` stays for the seed
+- From phase 3: the table counts, `hasResponses` and the category lock already read Neon; `surveysTag` / `surveyTag` live in `src/lib/surveys/list.ts`; the kiosk action already calls `updateTag` with the ids returned by `submitPublicResponse`
+- Seeded response dates are relative to the seed run, so the expected counts hold with the real now right after `npx prisma db seed`
+- Rate limit stays in memory (one server process); a shared limiter is later hardening
+- Bind every value as a parameter in raw SQL and double the backslashes in tagged templates (`'\\'`), as fixed in phase 3
 
 ## History
 

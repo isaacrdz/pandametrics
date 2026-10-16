@@ -1,7 +1,7 @@
 import "server-only";
 
 // In-memory rate limit for public submissions (per device and per IP). Enough for one server
-// process until Prisma / a shared store exists; it resets with the server.
+// process; it resets with the server. A shared store (Redis, Postgres) is later hardening.
 
 const MIN_INTERVAL_MS = 3_000;
 const WINDOW_MS = 10 * 60_000;

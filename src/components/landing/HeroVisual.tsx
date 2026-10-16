@@ -6,7 +6,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import pandaHero from "@/assets/brand/panda-hero.webp";
 import { cn } from "@/lib/utils";
 
-// Illustrative numbers, not the mock data: the landing does not depend on the survey store
+// Illustrative numbers, not real data: the landing does not depend on the database
 const STAT_COUNT = 2486;
 const STAT_GROWTH = 0.184;
 const BAR_HEIGHTS = [22, 34, 28, 46, 38, 52, 44, 62, 58, 74];

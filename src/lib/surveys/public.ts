@@ -1,10 +1,10 @@
 import "server-only";
 
-import { randomBytes } from "node:crypto";
+import { Prisma } from "@/generated/prisma/client";
 import { takeSubmissionSlot } from "@/lib/kiosk/rate-limit";
 import { REACTION_VALUES } from "@/lib/surveys/constants";
-import { addResponse } from "@/lib/surveys/responses";
 import { getSurveyByCode } from "@/lib/surveys/service";
+import { prisma } from "@/server/prisma";
 import type {
   AnswerOption,
   AnswerType,
@@ -134,16 +134,25 @@ export async function submitPublicResponse(
   );
   if (!takeSubmissionSlot(limitKeys, now.getTime())) return { ok: false, error: "RATE_LIMITED" };
 
-  addResponse({
-    id: randomBytes(12).toString("hex"),
-    surveyId: survey.id,
-    organizationId: survey.organizationId,
-    items,
-    source: input.source,
-    deviceId: input.deviceId,
-    locale: input.locale,
-    durationMs: Math.min(Math.max(Math.round(input.durationMs), 0), MAX_DURATION_MS),
-    createdAt: now,
-  });
+  try {
+    // One insert with its items; the unique (response, question) index backs the check above
+    await prisma.surveyResponse.create({
+      data: {
+        surveyId: survey.id,
+        organizationId: survey.organizationId,
+        source: input.source,
+        deviceId: input.deviceId,
+        locale: input.locale,
+        durationMs: Math.min(Math.max(Math.round(input.durationMs), 0), MAX_DURATION_MS),
+        createdAt: now,
+        items: { create: items },
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { ok: false, error: "INVALID" };
+    }
+    throw error;
+  }
   return { ok: true, surveyId: survey.id, organizationId: survey.organizationId };
 }

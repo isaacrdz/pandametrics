@@ -615,6 +615,8 @@ Rules:
 
 Use Next.js Route Handlers under `/api/v1`, with shared service functions for the business logic. All responses use `{ success, data }` or `{ success: false, error }`.
 
+> **Current state:** the services (`src/lib/users`, `src/lib/surveys`, `src/server/metrics.ts`) run on Prisma against Neon; there is no in-memory data left. The pages and Server Actions call them directly, and the Route Handlers below are still to be built on top of them. Until Auth.js, the acting user is `PANDA_DEV_USER_EMAIL` (default `jordan@acme.co`), read by `src/server/app-context.ts`. The kiosk rate limit is still in memory (one server process).
+
 | Endpoint                                     | Method | Auth | Purpose                                              |
 | -------------------------------------------- | ------ | ---- | ---------------------------------------------------- |
 | `/api/v1/surveys`                            | GET    | Yes  | List surveys (`?active=true`, `?category=`, search, pagination) |
