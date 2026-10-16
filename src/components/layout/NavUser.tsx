@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronsUpDownIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
+import { useTransition } from "react";
+import { ChevronsUpDownIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { signOutAction } from "@/actions/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,13 +26,15 @@ import { getInitials } from "@/lib/format";
 interface NavUserProps {
   name: string | null;
   email: string | null;
+  image: string | null;
 }
 
-export function NavUser({ name, email }: NavUserProps) {
+export function NavUser({ name, email, image }: NavUserProps) {
   const t = useTranslations("userMenu");
   const { isMobile } = useSidebar();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const [signingOut, startSignOut] = useTransition();
 
   return (
     <SidebarMenu>
@@ -42,6 +46,7 @@ export function NavUser({ name, email }: NavUserProps) {
               className="h-auto gap-3 rounded-2xl bg-muted/70 p-3 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:bg-transparent"
             >
               <Avatar className="size-10">
+                {image && <AvatarImage src={image} alt="" />}
                 <AvatarFallback className="bg-accent font-semibold text-accent-foreground">
                   {getInitials(name)}
                 </AvatarFallback>
@@ -69,6 +74,11 @@ export function NavUser({ name, email }: NavUserProps) {
             <DropdownMenuItem onSelect={() => setTheme(isDark ? "light" : "dark")}>
               {isDark ? <SunIcon aria-hidden /> : <MoonIcon aria-hidden />}
               {isDark ? t("lightMode") : t("darkMode")}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem disabled={signingOut} onSelect={() => startSignOut(() => signOutAction())}>
+              <LogOutIcon aria-hidden />
+              {t("signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

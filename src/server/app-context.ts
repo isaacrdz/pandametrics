@@ -1,15 +1,17 @@
 import "server-only";
 
+import { cache } from "react";
 import { cacheTag } from "next/cache";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { SIGN_IN_PATH } from "@/lib/auth/paths";
+import { userTag } from "@/lib/users/tags";
 import { USER_PUBLIC_SELECT } from "@/lib/users/service";
 import { prisma } from "@/server/prisma";
 import type { Organization, User } from "@/types/survey";
 
-// Who the app acts as. There is no sign-in yet: the user comes from PANDA_DEV_USER_EMAIL (Jordan, the
-// demo owner, by default) and is read from the database with their organization. Auth.js replaces
-// only this module; every service already receives its scope from here.
-
-const DEFAULT_DEV_USER_EMAIL = "jordan@acme.co";
+// Who the app acts as: the signed-in user (Auth.js session) and their organization. The data
+// access layer for every page and action; the proxy only checks that a session cookie exists.
 
 export interface AppContext {
   user: User;
@@ -18,29 +20,27 @@ export interface AppContext {
   organizations: Organization[];
 }
 
-// Cached across requests, so the admin layout keeps a static shell. The tags expire it when the
-// user's own record changes (profile edits) or the session context must reload
-async function loadAppContext(email: string): Promise<AppContext> {
+// Cached across requests by user id (the email can change). null when the user can no longer use
+// the app: deleted, inactive or without an organization
+async function loadAppContext(userId: string): Promise<AppContext | null> {
   "use cache";
-  cacheTag("app-context", `user:${email}`);
+  cacheTag("app-context", userTag(userId));
 
   const row = await prisma.user.findFirst({
-    where: { email, deletedAt: null },
+    where: { id: userId, deletedAt: null, isActive: true },
     select: { ...USER_PUBLIC_SELECT, organization: true },
   });
-
-  if (!row) {
-    throw new Error(`No user with the email "${email}" (PANDA_DEV_USER_EMAIL). Run "npx prisma db seed" or fix the variable.`);
-  }
-  if (!row.isActive) throw new Error(`The user "${email}" (PANDA_DEV_USER_EMAIL) is inactive.`);
-  if (!row.organization) throw new Error(`The user "${email}" (PANDA_DEV_USER_EMAIL) has no organization.`);
+  if (!row?.organization) return null;
 
   const { organization, ...user } = row;
-
   return { user, organization, organizations: [organization] };
 }
 
-export async function getAppContext(): Promise<AppContext> {
-  const email = (process.env.PANDA_DEV_USER_EMAIL ?? DEFAULT_DEV_USER_EMAIL).trim().toLowerCase();
-  return loadAppContext(email);
-}
+// The session cookie is request data: callers render inside Suspense (the admin layout wraps the
+// sidebar user and the pages). Deduplicated per request, since the layout and the page both ask
+export const getAppContext = cache(async (): Promise<AppContext> => {
+  const session = await auth();
+  const context = session?.user?.id ? await loadAppContext(session.user.id) : null;
+  if (!context) redirect(SIGN_IN_PATH);
+  return context;
+});

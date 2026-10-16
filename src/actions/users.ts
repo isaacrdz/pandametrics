@@ -6,6 +6,7 @@ import { getAppContext } from "@/server/app-context";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
 import { toUserFormValues, userFormSchema, type UserFormInput, type UserFormSchemaMode, type UserFormValues } from "@/lib/users/schema";
 import { usersTag } from "@/lib/users/list";
+import { userTag } from "@/lib/users/tags";
 import * as userService from "@/lib/users/service";
 import { UserServiceError, type UserErrorCode } from "@/lib/users/service";
 
@@ -23,7 +24,7 @@ export type UserActionResult<T> =
   | { success: false; error: { code: UserActionErrorCode; fieldErrors?: UserFieldError[] } };
 
 async function getScope(): Promise<userService.UserScope> {
-  // Mock session until Auth.js: the organization and user never come from the client
+  // From the session: the organization and user never come from the client
   const { user, organization } = await getAppContext();
   return { organizationId: organization.id, userId: user.id };
 }
@@ -34,12 +35,13 @@ function toErrorResult(error: unknown): UserActionResult<never> {
   return { success: false, error: { code: "UNKNOWN" } };
 }
 
-// Expires the organization's cached user reads (list and count), and the cached app context when
-// the acting user's own record changed (sidebar name and greeting). The list re-renders with its
-// filters (refresh); /surveys/[id] keeps showing "created by" because users are never removed
-function afterChange(scope: userService.UserScope, { ownRecord = false } = {}) {
+// Expires the organization's cached user reads (list and count) and the cached app context of every
+// changed user: a renamed user sees it in the sidebar, a deactivated or deleted one is signed out on
+// their next request. The list re-renders with its filters (refresh); /surveys/[id] keeps showing
+// "created by" because users are never removed
+function afterChange(scope: userService.UserScope, ids: string[]) {
   updateTag(usersTag(scope.organizationId));
-  if (ownRecord) updateTag("app-context");
+  for (const id of new Set(ids)) updateTag(userTag(id));
   refresh();
 }
 
@@ -54,7 +56,7 @@ export async function setUserActive(id: string, isActive: boolean): Promise<User
   try {
     const scope = await getScope();
     await userService.setUserActive(scope, id, isActive);
-    afterChange(scope);
+    afterChange(scope, [id]);
     return { success: true, data: null };
   } catch (error) {
     return toErrorResult(error);
@@ -67,7 +69,7 @@ export async function setUsersActive(ids: string[], isActive: boolean): Promise<
     // Users that already had this status are left alone and not counted
     const scope = await getScope();
     const count = await userService.setUsersActive(scope, ids, isActive);
-    afterChange(scope);
+    afterChange(scope, ids);
     return { success: true, data: { count } };
   } catch (error) {
     return toErrorResult(error);
@@ -79,7 +81,7 @@ export async function deleteUsers(ids: string[]): Promise<UserActionResult<{ cou
   try {
     const scope = await getScope();
     const count = await userService.softDeleteUsers(scope, ids);
-    afterChange(scope);
+    afterChange(scope, ids);
     return { success: true, data: { count } };
   } catch (error) {
     return toErrorResult(error);
@@ -109,7 +111,7 @@ export async function createUser(values: UserFormInput): Promise<UserActionResul
   try {
     const scope = await getScope();
     const user = await userService.createUser(scope, validation.data);
-    afterChange(scope);
+    afterChange(scope, [user.id]);
     return { success: true, data: { id: user.id } };
   } catch (error) {
     return toErrorResult(error);
@@ -123,7 +125,7 @@ export async function updateUser(id: string, values: UserFormInput): Promise<Use
   try {
     const scope = await getScope();
     const user = await userService.updateUser(scope, id, validation.data);
-    afterChange(scope, { ownRecord: id === scope.userId });
+    afterChange(scope, [id]);
     // Normalized values with empty password fields: the form resets to them
     return { success: true, data: { values: toUserFormValues(user) } };
   } catch (error) {
@@ -138,8 +140,7 @@ export async function updateProfile(values: UserFormInput): Promise<UserActionRe
   try {
     const scope = await getScope();
     const user = await userService.updateProfile(scope, validation.data);
-    // The shared "app-context" tag, not "user:<email>": the edit may change the email
-    afterChange(scope, { ownRecord: true });
+    afterChange(scope, [scope.userId]);
     return { success: true, data: { values: toUserFormValues(user) } };
   } catch (error) {
     return toErrorResult(error);

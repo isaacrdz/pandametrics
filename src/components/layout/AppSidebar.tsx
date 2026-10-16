@@ -1,6 +1,6 @@
+import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { NavMain } from "@/components/layout/NavMain";
-import { NavUser } from "@/components/layout/NavUser";
 import { SidebarToggle } from "@/components/layout/SidebarToggle";
 import {
   Sidebar,
@@ -9,10 +9,10 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import type { User } from "@/types/survey";
 
 interface AppSidebarProps {
-  user: User;
+  // The signed-in user (NavUser), streamed by the layout inside Suspense
+  user: ReactNode;
 }
 
 export function AppSidebar({ user }: AppSidebarProps) {
@@ -34,7 +34,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         <NavMain />
       </SidebarContent>
       <SidebarFooter className="p-3">
-        <NavUser name={user.name} email={user.email} />
+        {user}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

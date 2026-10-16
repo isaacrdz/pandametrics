@@ -1,18 +1,29 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Auth Phase 1 — Auth.js Core + Google Provider
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `next-auth@beta` (5.0.0-beta.x) and `@auth/prisma-adapter` installed; no migration (auth models already in `init`); `.env.example` gains `AUTH_SECRET` / `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` and loses `PANDA_DEV_USER_EMAIL`
+- Split config: `src/auth.config.ts` (no Prisma: `Google({ allowDangerousEmailAccountLinking: true })`, JWT strategy, `authorized` / `jwt` / `session` callbacks with the user id), `src/auth.ts` (`NextAuth` + Prisma adapter with the app client, exports `handlers` / `auth` / `signIn` / `signOut`), `src/app/api/auth/[...nextauth]/route.ts`, `src/types/next-auth.d.ts` (`session.user.id`, `JWT.id`)
+- Sign-in rules: Google requires `email_verified`; inactive or soft-deleted users rejected (`AccessDenied`); an existing active user gets a linked `Account` (`google`); linking to an unverified user (`emailVerified` null) sets `emailVerified` and clears `passwordHash`; a new email creates, in one transaction, an organization named after the user and the user as `OWNER` (wrapped adapter `createUser`); Google photo fills `image` only when empty
+- `src/proxy.ts`: `export const proxy = auth(...)` from `auth.config` only, cookie checks without database; matcher `/dashboard/:path*`, `/surveys/:path*`, `/users/:path*`, `/profile`; signed-out → sign-in with `callbackUrl`; `/`, `/s` (and its submit), `/api/auth/*`, static files and `/vendor/*` stay public
+- `getAppContext()` from `auth()` (no session → sign-in) and `loadAppContext(userId)` `"use cache"` with `app-context` / `user:<id>`; inactive, deleted or organization-less users → sign-in; user activate / deactivate / delete and own-profile edits expire `user:<id>`; every `PANDA_DEV_USER_EMAIL` reference removed (code, `.env.example`, overview section 8)
+- Admin layout: static frame with the user-dependent parts (sidebar user, `AppShellProvider` data, children) behind `<Suspense>` with skeletons; `yarn build` without uncached-data errors and admin routes still `◐`
+- Sign out: one Server Action (`signOut`, redirect to sign-in) in the `NavUser` menu after the theme toggle (the avatar keeps opening the menu) and as a button in `ProfilePictureCard` on `/profile`; copy in en / es
+- Default Auth.js sign-in page (no custom `pages.signIn` yet)
+- `yarn lint`, `tsc --noEmit`, `yarn build`; signed out → protected routes redirect, landing and kiosk (including submit) work; Google as `miguel@ellyonsoft.com` → Leyinork with a linked `Account`; a new Google email → its own organization as `OWNER`, isolated; a deactivated user's session ends on the next request; sign out from the menu and the profile
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/auth-phase-1-spec.md`; research: `docs/auth.md` (Google Cloud setup in section 3, decisions in section 4); master: `context/features/next-auth-master-spec.md`
+- Phase 1 of 3: Credentials + registration in phase 2; custom `/sign-in`, `/register`, "Set a password" and "Invite user" (coming soon) in phase 3
+- `.env` already has `AUTH_SECRET`, `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` (set by the user; never read, print or commit the values)
+- Google OAuth client redirect URIs must include `http://localhost:3000/api/auth/callback/google` and `http://localhost:3001/api/auth/callback/google` (dev server on 3001); the Google sign-in itself needs a real browser session with a test user, so the interactive check is done by the user
+- Next 16 proxy runs on Node.js; the split config keeps Prisma out of it. Real authorization stays in `getAppContext` (data access layer)
+- The Prisma adapter types expect `@prisma/client`; the app client is generated in `src/generated/prisma` (cast if needed)
 
 ## History
 

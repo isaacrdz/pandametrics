@@ -21,7 +21,8 @@
     "account": "My account",
     "profile": "My profile",
     "darkMode": "Dark mode",
-    "lightMode": "Light mode"
+    "lightMode": "Light mode",
+    "signOut": "Sign out"
   },
   "topBar": {
     "newSurvey": "New survey",

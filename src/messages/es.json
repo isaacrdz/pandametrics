@@ -21,7 +21,8 @@
     "account": "Mi cuenta",
     "profile": "Mi perfil",
     "darkMode": "Modo oscuro",
-    "lightMode": "Modo claro"
+    "lightMode": "Modo claro",
+    "signOut": "Cerrar sesión"
   },
   "topBar": {
     "newSurvey": "Nueva encuesta",

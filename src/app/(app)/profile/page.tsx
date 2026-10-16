@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "My profile · Panda Metrics",
 };
 
-// The signed-in user only (mock session until Auth.js); plain values, never the password hash
+// The signed-in user only (from the session); plain values, never the password hash
 export default async function ProfilePage() {
   const { user } = await getAppContext();
 

@@ -1,7 +1,9 @@
 "use client";
 
-import { ImageUpIcon } from "lucide-react";
+import { useTransition } from "react";
+import { ImageUpIcon, LogOutIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { signOutAction } from "@/actions/auth";
 import { UserAvatar } from "@/components/users/UserAvatar";
 import { UserRoleBadge } from "@/components/users/table/UserRowParts";
 import { Button } from "@/components/ui/button";
@@ -16,11 +18,13 @@ interface ProfilePictureCardProps {
   initials: string;
 }
 
-// Coming soon: shows the avatar (or the initials) with a disabled "Change photo" button.
-// Not part of the form: nothing here is submitted.
+// Coming soon: shows the avatar (or the initials) with a disabled "Change photo" button. Then
+// "Sign out". Rendered inside the profile <form>, but nothing here submits it: plain buttons.
 export function ProfilePictureCard({ name, email, role, image, initials }: ProfilePictureCardProps) {
   const t = useTranslations("profile.picture");
   const tForm = useTranslations("form");
+  const tMenu = useTranslations("userMenu");
+  const [signingOut, startSignOut] = useTransition();
 
   return (
     <section
@@ -70,6 +74,17 @@ export function ProfilePictureCard({ name, email, role, image, initials }: Profi
         </TooltipTrigger>
         <TooltipContent>{tForm("comingSoon")}</TooltipContent>
       </Tooltip>
+
+      <Button
+        type="button"
+        variant="ghost"
+        disabled={signingOut}
+        onClick={() => startSignOut(() => signOutAction())}
+        className="h-11 w-full gap-2 rounded-xl font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive @4xl/profile:w-auto @4xl/profile:self-center"
+      >
+        <LogOutIcon aria-hidden />
+        {tMenu("signOut")}
+      </Button>
     </section>
   );
 }

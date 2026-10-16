@@ -24,7 +24,7 @@ export type ActionResult<T> =
   | { success: false; error: { code: SurveyActionErrorCode; fieldErrors?: FieldErrorItem[] } };
 
 async function getScope(): Promise<surveyService.SurveyScope> {
-  // Mock session until Auth.js: the organization and user never come from the client
+  // From the session: the organization and user never come from the client
   const { user, organization } = await getAppContext();
   return { organizationId: organization.id, userId: user.id };
 }
