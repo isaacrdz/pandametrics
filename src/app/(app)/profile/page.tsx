@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProfilePictureCard } from "@/components/users/ProfilePictureCard";
 import { UserForm } from "@/components/users/form/UserForm";
-import { getAppContext } from "@/lib/dashboard";
+import { getAppContext } from "@/server/app-context";
 import { getInitials } from "@/lib/format";
 import { toUserFormValues } from "@/lib/users/schema";
 
@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 };
 
 // The signed-in user only (mock session until Auth.js); plain values, never the password hash
-export default function ProfilePage() {
-  const { user } = getAppContext();
+export default async function ProfilePage() {
+  const { user } = await getAppContext();
 
   // The form renders its own top bar inside the <form>, then the 4 / 8 grid with this card
   return (

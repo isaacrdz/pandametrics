@@ -1,18 +1,29 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Prisma Services Phase 1 — Owner Account and App Context
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Seed "owner account" step after the demo data (outside `seed-data.ts`): organization **Leyinork** (`objectId(organization, 3)`, `activeSurveyCount: 0`) and user **Miguel Rayon** (`objectId(user, 9)`, miguel@ellyonsoft.com, +528135574189, `OWNER`, active, only member, `emailVerified` = `createdAt`)
+- `passwordHash` = `OWNER_PASSWORD_HASH`, a precomputed scrypt `salt:hash` (format of `password.ts`); the plain password never in any file, commit or command argument
+- `scripts/hash-password.ts`: hidden prompt (`node:readline`, muted output) → prints the hash; used once to fill `OWNER_PASSWORD_HASH`; local verification with `verifyPassword` through the same hidden prompt
+- Seed stays idempotent: the owner step **upserts** Leyinork and Miguel by their fixed ids (instead of delete + recreate, so a re-seed keeps what the owner creates in later phases; a different row holding the email is removed first); two runs give the same rows; the log adds "1 owner organization (Leyinork, 1 member), 1 owner"
+- `src/server/app-context.ts` (server-only): async `getAppContext()` with the same `{ user, organization, organizations }` shape, user read by `PANDA_DEV_USER_EMAIL ?? "jordan@acme.co"` (`deletedAt: null`, active, public select without `passwordHash`), organization = the user's, `organizations = [organization]`
+- Clear development errors for an unknown email, a user without organization, or an inactive / deleted user (no fallback to the mock)
+- Read cached with `"use cache"` keyed by email and `cacheTag("app-context", "user:<email>")`; the layout keeps a static shell
+- Callers `await getAppContext()`: `(app)/layout.tsx`, every admin page, `actions/surveys.ts`, `actions/users.ts`; `dashboard.ts` keeps `getPublicSurveyUrl` / `getDashboardData`
+- Profile action (and `updateUser` on your own id) calls `updateTag("app-context")` (the shared tag rather than `user:<email>`, since the edit may change the email); profile edits are still in memory until phase 2 and the context prefers the store's copy of the user so renames show
+- `.env.example` documents `PANDA_DEV_USER_EMAIL="jordan@acme.co"` (acting user until Auth.js)
+- `yarn lint`, `tsc --noEmit`, `yarn build` (no uncached-data errors, admin routes `◐`); seed twice; Jordan by default (sidebar Jordan, switcher only Acme); Miguel via `PANDA_DEV_USER_EMAIL` (sidebar Miguel, switcher only Leyinork, empty lists); unknown email error; no `passwordHash` in any payload; `git grep` / `git log -S` find no plain password
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/prisma-services-phase-1-owner-context-spec.md`; research: `docs/prisma-services.md` (sections 2, 3.6, 3.7, 6)
+- Phase 1 of 4: users (phase 2), surveys (phase 3) and responses / metrics / kiosk (phase 4) keep their in-memory stores until then, so Miguel sees an empty Leyinork in this phase
+- The owner password is given by the user and only typed into the hidden prompt; only its hash is committed
+- Next 16 Cache Components: database reads outside `<Suspense>` must be cached (`"use cache"`) or they fail the prerender
 
 ## History
 

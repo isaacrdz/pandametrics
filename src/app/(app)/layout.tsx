@@ -2,13 +2,13 @@ import type { CSSProperties } from "react";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppShellProvider } from "@/components/layout/AppShellProvider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { getAppContext } from "@/lib/dashboard";
+import { getAppContext } from "@/server/app-context";
 
 // Collapsed rail wide enough for the 40px logo, nav buttons and avatar used when expanded
 const SIDEBAR_STYLE = { "--sidebar-width-icon": "4rem" } as CSSProperties;
 
-export default function AppLayout({ children }: LayoutProps<"/">) {
-  const { user, organization, organizations } = getAppContext();
+export default async function AppLayout({ children }: LayoutProps<"/">) {
+  const { user, organization, organizations } = await getAppContext();
 
   return (
     <SidebarProvider style={SIDEBAR_STYLE}>

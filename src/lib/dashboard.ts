@@ -1,28 +1,11 @@
-// Single data access point for the dashboard. Backed by the mock until Prisma exists.
+// Dashboard data and the public survey link. The current user and organization come from
+// src/server/app-context.ts; the surveys and metrics are still in memory until phases 3 and 4.
 
 import { getDateRange, type RangeKey } from "@/lib/date-range";
-import {
-  MOCK_CURRENT_ORGANIZATION,
-  MOCK_CURRENT_USER,
-  MOCK_NOW,
-  MOCK_ORGANIZATIONS,
-  getMockSurveyMetrics,
-} from "@/lib/mock-data";
+import { MOCK_NOW, getMockSurveyMetrics } from "@/lib/mock-data";
 import { matchesQuery } from "@/lib/surveys/search";
 import { listActiveSurveys } from "@/lib/surveys/service";
-import { getUserById } from "@/lib/users/service";
-import type {
-  Organization,
-  Survey,
-  SurveyMetrics,
-  User,
-} from "@/types/survey";
-
-export interface AppContext {
-  user: User;
-  organization: Organization;
-  organizations: Organization[];
-}
+import type { Survey, SurveyMetrics } from "@/types/survey";
 
 export interface SurveyCardData {
   survey: Survey;
@@ -33,16 +16,6 @@ export interface SurveyCardData {
 export interface DashboardData {
   activeSurveyCount: number;
   cards: SurveyCardData[];
-}
-
-export function getAppContext(): AppContext {
-  return {
-    // Mock session: the signed-in user comes from the user store, so profile edits show up
-    // in the sidebar and the greeting
-    user: getUserById(MOCK_CURRENT_USER.id) ?? MOCK_CURRENT_USER,
-    organization: MOCK_CURRENT_ORGANIZATION,
-    organizations: MOCK_ORGANIZATIONS,
-  };
 }
 
 export function getPublicSurveyUrl(code: string): string {

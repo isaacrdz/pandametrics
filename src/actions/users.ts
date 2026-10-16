@@ -1,8 +1,8 @@
 "use server";
 
 import * as z from "zod";
-import { refresh, revalidatePath } from "next/cache";
-import { getAppContext } from "@/lib/dashboard";
+import { refresh, revalidatePath, updateTag } from "next/cache";
+import { getAppContext } from "@/server/app-context";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
 import { toUserFormValues, userFormSchema, type UserFormInput, type UserFormSchemaMode, type UserFormValues } from "@/lib/users/schema";
 import * as userService from "@/lib/users/service";
@@ -21,9 +21,9 @@ export type UserActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: { code: UserActionErrorCode; fieldErrors?: UserFieldError[] } };
 
-function getScope(): userService.UserScope {
+async function getScope(): Promise<userService.UserScope> {
   // Mock session until Auth.js: the organization and user never come from the client
-  const { user, organization } = getAppContext();
+  const { user, organization } = await getAppContext();
   return { organizationId: organization.id, userId: user.id };
 }
 
@@ -49,7 +49,7 @@ const VALIDATION_ERROR: UserActionResult<never> = { success: false, error: { cod
 export async function setUserActive(id: string, isActive: boolean): Promise<UserActionResult<null>> {
   if (!idSchema.safeParse(id).success || typeof isActive !== "boolean") return VALIDATION_ERROR;
   try {
-    userService.setUserActive(getScope(), id, isActive);
+    userService.setUserActive(await getScope(), id, isActive);
     afterChange();
     return { success: true, data: null };
   } catch (error) {
@@ -61,7 +61,7 @@ export async function setUsersActive(ids: string[], isActive: boolean): Promise<
   if (!idsSchema.safeParse(ids).success || typeof isActive !== "boolean") return VALIDATION_ERROR;
   try {
     // Users that already had this status are left alone and not counted
-    const count = userService.setUsersActive(getScope(), ids, isActive);
+    const count = userService.setUsersActive(await getScope(), ids, isActive);
     afterChange();
     return { success: true, data: { count } };
   } catch (error) {
@@ -72,7 +72,7 @@ export async function setUsersActive(ids: string[], isActive: boolean): Promise<
 export async function deleteUsers(ids: string[]): Promise<UserActionResult<{ count: number }>> {
   if (!idsSchema.safeParse(ids).success) return VALIDATION_ERROR;
   try {
-    const count = userService.softDeleteUsers(getScope(), ids);
+    const count = userService.softDeleteUsers(await getScope(), ids);
     afterChange();
     return { success: true, data: { count } };
   } catch (error) {
@@ -101,7 +101,7 @@ export async function createUser(values: UserFormInput): Promise<UserActionResul
   const validation = validate(values, "create");
   if (!validation.ok) return validation.result;
   try {
-    const user = userService.createUser(getScope(), validation.data);
+    const user = userService.createUser(await getScope(), validation.data);
     revalidatePath("/users");
     return { success: true, data: { id: user.id } };
   } catch (error) {
@@ -114,7 +114,10 @@ export async function updateUser(id: string, values: UserFormInput): Promise<Use
   const validation = validate(values, "edit");
   if (!validation.ok) return validation.result;
   try {
-    const user = userService.updateUser(getScope(), id, validation.data);
+    const scope = await getScope();
+    const user = userService.updateUser(scope, id, validation.data);
+    // Editing your own record changes the cached app context (sidebar name and greeting)
+    if (id === scope.userId) updateTag("app-context");
     // Names show up in the sidebar, the greeting and "created by"
     revalidatePath("/", "layout");
     // Normalized values with empty password fields: the form resets to them
@@ -129,8 +132,10 @@ export async function updateProfile(values: UserFormInput): Promise<UserActionRe
   const validation = validate(values, "profile");
   if (!validation.ok) return validation.result;
   try {
-    const user = userService.updateProfile(getScope(), validation.data);
-    // The name shows up in the sidebar, the greeting, the user list and "created by"
+    const user = userService.updateProfile(await getScope(), validation.data);
+    // The name shows up in the sidebar, the greeting, the user list and "created by". The cached app
+    // context is expired by its shared tag (not "user:<email>": the edit may change the email)
+    updateTag("app-context");
     revalidatePath("/", "layout");
     return { success: true, data: { values: toUserFormValues(user) } };
   } catch (error) {

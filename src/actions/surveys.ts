@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { refresh, revalidatePath } from "next/cache";
-import { getAppContext } from "@/lib/dashboard";
+import { getAppContext } from "@/server/app-context";
 import { toFormValues } from "@/lib/surveys/form-values";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
 import { surveyFormSchema, type SurveyFormInput, type SurveyFormValues } from "@/lib/surveys/schema";
@@ -22,9 +22,9 @@ export type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: { code: SurveyActionErrorCode; fieldErrors?: FieldErrorItem[] } };
 
-function getScope(): surveyService.SurveyScope {
+async function getScope(): Promise<surveyService.SurveyScope> {
   // Mock session until Auth.js: the organization and user never come from the client
-  const { user, organization } = getAppContext();
+  const { user, organization } = await getAppContext();
   return { organizationId: organization.id, userId: user.id };
 }
 
@@ -61,7 +61,7 @@ export async function createSurvey(values: SurveyFormInput): Promise<ActionResul
   if (!validation.ok) return validation.result;
 
   try {
-    const survey = surveyService.createSurvey(getScope(), validation.data);
+    const survey = surveyService.createSurvey(await getScope(), validation.data);
     revalidateSurveys();
     return { success: true, data: { id: survey.id } };
   } catch (error) {
@@ -73,7 +73,7 @@ export async function createSurvey(values: SurveyFormInput): Promise<ActionResul
 // re-renders (refresh)
 export async function deleteSurvey(id: string): Promise<ActionResult<null>> {
   try {
-    surveyService.softDeleteSurvey(getScope(), id);
+    surveyService.softDeleteSurvey(await getScope(), id);
     revalidateSurveys();
     refresh();
     return { success: true, data: null };
@@ -90,7 +90,7 @@ export async function updateSurvey(
   if (!validation.ok) return validation.result;
 
   try {
-    const survey = surveyService.updateSurvey(getScope(), id, validation.data);
+    const survey = surveyService.updateSurvey(await getScope(), id, validation.data);
     revalidateSurveys();
     refresh();
     // New questions and options now have ids: the form resets to these values
@@ -111,7 +111,7 @@ const VALIDATION_ERROR: ActionResult<never> = { success: false, error: { code: "
 export async function setSurveyActive(id: string, isActive: boolean): Promise<ActionResult<null>> {
   if (!idSchema.safeParse(id).success || typeof isActive !== "boolean") return VALIDATION_ERROR;
   try {
-    surveyService.setSurveyActive(getScope(), id, isActive);
+    surveyService.setSurveyActive(await getScope(), id, isActive);
     revalidateSurveys();
     refresh();
     return { success: true, data: null };
@@ -124,7 +124,7 @@ export async function setSurveysActive(ids: string[], isActive: boolean): Promis
   if (!idsSchema.safeParse(ids).success || typeof isActive !== "boolean") return VALIDATION_ERROR;
   try {
     // Surveys that already had this status are left alone and not counted
-    const count = surveyService.setSurveysActive(getScope(), ids, isActive);
+    const count = surveyService.setSurveysActive(await getScope(), ids, isActive);
     revalidateSurveys();
     refresh();
     return { success: true, data: { count } };
@@ -136,7 +136,7 @@ export async function setSurveysActive(ids: string[], isActive: boolean): Promis
 export async function deleteSurveys(ids: string[]): Promise<ActionResult<{ count: number }>> {
   if (!idsSchema.safeParse(ids).success) return VALIDATION_ERROR;
   try {
-    surveyService.softDeleteSurveys(getScope(), ids);
+    surveyService.softDeleteSurveys(await getScope(), ids);
     revalidateSurveys();
     refresh();
     return { success: true, data: { count: new Set(ids).size } };
