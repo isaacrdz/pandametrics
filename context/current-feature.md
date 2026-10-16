@@ -1,29 +1,18 @@
-# Prisma Services Phase 1 — Owner Account and App Context
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Seed "owner account" step after the demo data (outside `seed-data.ts`): organization **Leyinork** (`objectId(organization, 3)`, `activeSurveyCount: 0`) and user **Miguel Rayon** (`objectId(user, 9)`, miguel@ellyonsoft.com, +528135574189, `OWNER`, active, only member, `emailVerified` = `createdAt`)
-- `passwordHash` = `OWNER_PASSWORD_HASH`, a precomputed scrypt `salt:hash` (format of `password.ts`); the plain password never in any file, commit or command argument
-- `scripts/hash-password.ts`: hidden prompt (`node:readline`, muted output) → prints the hash; used once to fill `OWNER_PASSWORD_HASH`; local verification with `verifyPassword` through the same hidden prompt
-- Seed stays idempotent: the owner step **upserts** Leyinork and Miguel by their fixed ids (instead of delete + recreate, so a re-seed keeps what the owner creates in later phases; a different row holding the email is removed first); two runs give the same rows; the log adds "1 owner organization (Leyinork, 1 member), 1 owner"
-- `src/server/app-context.ts` (server-only): async `getAppContext()` with the same `{ user, organization, organizations }` shape, user read by `PANDA_DEV_USER_EMAIL ?? "jordan@acme.co"` (`deletedAt: null`, active, public select without `passwordHash`), organization = the user's, `organizations = [organization]`
-- Clear development errors for an unknown email, a user without organization, or an inactive / deleted user (no fallback to the mock)
-- Read cached with `"use cache"` keyed by email and `cacheTag("app-context", "user:<email>")`; the layout keeps a static shell
-- Callers `await getAppContext()`: `(app)/layout.tsx`, every admin page, `actions/surveys.ts`, `actions/users.ts`; `dashboard.ts` keeps `getPublicSurveyUrl` / `getDashboardData`
-- Profile action (and `updateUser` on your own id) calls `updateTag("app-context")` (the shared tag rather than `user:<email>`, since the edit may change the email); profile edits are still in memory until phase 2 and the context prefers the store's copy of the user so renames show
-- `.env.example` documents `PANDA_DEV_USER_EMAIL="jordan@acme.co"` (acting user until Auth.js)
-- `yarn lint`, `tsc --noEmit`, `yarn build` (no uncached-data errors, admin routes `◐`); seed twice; Jordan by default (sidebar Jordan, switcher only Acme); Miguel via `PANDA_DEV_USER_EMAIL` (sidebar Miguel, switcher only Leyinork, empty lists); unknown email error; no `passwordHash` in any payload; `git grep` / `git log -S` find no plain password
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/prisma-services-phase-1-owner-context-spec.md`; research: `docs/prisma-services.md` (sections 2, 3.6, 3.7, 6)
-- Phase 1 of 4: users (phase 2), surveys (phase 3) and responses / metrics / kiosk (phase 4) keep their in-memory stores until then, so Miguel sees an empty Leyinork in this phase
-- The owner password is given by the user and only typed into the hidden prompt; only its hash is committed
-- Next 16 Cache Components: database reads outside `<Suspense>` must be cached (`"use cache"`) or they fail the prerender
+<!-- Any extra notes -->
 
 ## History
 
@@ -59,3 +48,4 @@ In Progress
 - **Survey Kiosk Phase 4 — QR Scanning** (2026-10-15): phase 4 of 4 of the public kiosk. `src/lib/kiosk/qr.ts`: native `BarcodeDetector` when it reads `qr_code`, otherwise the `barcode-detector` ponyfill (3.2.2) imported on demand and pointed at a self-hosted ZXing `.wasm` (`/vendor/zxing/<version>/`, copied by `scripts/copy-zxing-wasm.mjs` on `postinstall`, gitignored); `detectCode` returns code / not a survey / no QR. `QrScannerDialog` (shadcn `dialog`): square camera preview with a primary corner frame, 250 ms scans without overlap, opens the survey like Continue, camera released on close / unmount / success; denied, no camera, insecure and failed states with "Upload QR image instead"; translated close button, focus returned to Scan QR. "Upload QR image" reads a picture (native and ponyfill, share panel PNG checked) with inline "no QR" / "not a survey" errors; decoded images always freed. "Coming soon" removed. Checked headless with a fake camera: no third-party requests, wasm only on use, track ended after close, denied message; real-device scans (Chrome, Safari, Firefox) still to be tried
 - **Prisma + Neon PostgreSQL Setup** (2026-10-16): Prisma ORM 7.10.1 (`prisma`, `@prisma/client`, `@prisma/adapter-pg`; `dotenv`, `tsx`) on the Neon `panda-metrics` project. `prisma.config.ts` uses `DIRECT_URL` for the CLI; `prisma/schema.prisma` copied from the overview (section 5): enums `Role`, `SurveyCategory`, `AnswerType`, `ResponseSource`; `Organization`, `User` (phone, passwordHash, isActive, deletedAt), Auth.js `Account` / `Session` / `VerificationToken`, `Survey`, `Question`, `AnswerOption`, `SurveyResponse` (`Timestamptz`), `ResponseItem` (answer snapshot) with cascade / restrict / set null rules and the overview's indexes. `init` migration created with `--create-only`, a hand-added `CHECK (activeSurveyCount BETWEEN 0 AND 5)`, then applied on the `developer` branch (endpoint confirmed through the Neon MCP; production untouched). Server-only `src/server/prisma.ts` (`PrismaPg` over the pooled `DATABASE_URL`, singleton) not used by the app yet. `scripts/test-db.ts` (`yarn db:test`), `db:migrate` / `db:deploy` / `db:studio`, `prisma generate` on `postinstall`, `.env.example`; `.env` and `src/generated/prisma` git-ignored. Database and seed specs adapted to Panda Metrics; the seed is next
 - **Seed Data** (2026-10-16): the mock's demo data moved into `src/lib/seed-data.ts` (ids, seeded random, colors, organizations, users, `SURVEY_SEEDS`, survey / response builders taking `now`; no `server-only`), shared by `mock-data.ts` (fixed `MOCK_NOW`, data fingerprint identical before and after) and `prisma/seed.ts` (`npx prisma db seed`, registered in `prisma.config.ts`). The seed fills the Neon `developer` branch with the mock's ids: Acme Inc. (`activeSurveyCount` computed = 4) and Panda Labs, 8 users (`panda-dev-1` in the `password.ts` scrypt format, `emailVerified` = `createdAt`), 5 surveys with 10 questions and 47 options (0-based positions), 3,071 responses / 6,142 items in batches of 500 with the mock's per-option counts (SQL check: STORE7 1,842; Excelente 762 / 602 / 296 / 118 / 64); dates relative to the run. Idempotent (deletes the two organizations' rows in foreign-key order, recreates in one 120 s transaction; run twice with the same counts) and development only (`NEON_DEV_ENDPOINT` in `.env`, refuses other endpoints and `NODE_ENV=production`). The app still reads the in-memory stores
+- **Prisma Services Phase 1 — Owner Account and App Context** (2026-10-16): phase 1 of 4 of moving the services to Prisma. The seed adds the owner account after the demo data: organization Leyinork (`objectId(organization, 3)`) with Miguel Rayon (`objectId(user, 9)`, miguel@ellyonsoft.com, +528135574189, `OWNER`, active, only member), upserted by fixed ids so a re-seed keeps the account's data (run twice: same rows); the password is stored only as a precomputed scrypt hash (`OWNER_PASSWORD_HASH`), never as plain text (none in files or history). `scripts/hash-password.ts` generates / verifies hashes through a hidden prompt (queued input, no echo). `src/server/app-context.ts`: async `getAppContext` reads the acting user (`PANDA_DEV_USER_EMAIL`, default `jordan@acme.co`) and their organization from Neon without `passwordHash`, `"use cache"` with `app-context` / `user:<email>` tags (admin routes still `◐`); clear errors for an unknown, inactive or organization-less user; the switcher lists only the user's organization. Layout, admin pages and actions await it; profile and own-user edits call `updateTag("app-context")`, and until phase 2 the context prefers the in-memory user so renames show. Checked as Jordan (Acme only), as Miguel (Leyinork, empty lists) and with an unknown email (build error with the fix). Services on Prisma research and 4 phase specs
