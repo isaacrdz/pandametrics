@@ -1,28 +1,18 @@
-# Survey Kiosk Phase 4 — QR Scanning
+# Current Feature
+
+<!-- Feature Name -->
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- `src/lib/kiosk/qr.ts` (client only): `getQrDetector()` uses the native `BarcodeDetector` when it supports `qr_code`, otherwise dynamically imports the `barcode-detector` polyfill (3.2.2) configured to load its wasm from `/vendor/zxing/…`; cached instance
-- zxing wasm self-hosted in `public/vendor/zxing/`, copied from `node_modules` by `scripts/copy-zxing-wasm.mjs` (wired to `postinstall`, copy gitignored, documented in the script header); exact file name and option checked in the package README
-- `detectCode(source)` → `{ status: "code", code }` for the first QR whose `rawValue` passes `parseSurveyCode`, `notSurvey` when a QR holds no survey code, `none` when there is no QR (so the UI can tell the two errors apart)
-- shadcn `dialog` added; `QrScannerDialog` opened by "Scan QR" (enabled, tooltip removed): title, square `<video>` (`playsInline muted autoPlay`) with a corner frame, hint, outline "Upload QR image instead"
-- Camera: `getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })`, detect every 250 ms without overlapping detections; on a code → stop, close and navigate like Continue (fullscreen request + `KIOSK` entry flag)
-- Cleanup: every track stopped and the interval cleared on close, unmount and success (camera light off)
-- Error states in the dialog with the upload fallback: permission denied, no camera, insecure context; a QR without a valid code shows an inline message and keeps scanning
-- "Upload QR image" (enabled): hidden `<input type="file" accept="image/*">` cleared after each pick → `createImageBitmap` → `detectCode` → navigate, or inline `role="alert"` "No QR code found in that image"; also from the dialog's fallback
-- `kiosk.qr` messages in en / es; phase 1 "Coming soon" tooltip on Scan / Upload removed
-- `yarn lint`, `tsc --noEmit`, `yarn build`; camera scan (Chrome, Safari, Firefox), upload of the share panel PNG, camera off after close / success, denied permission, no third-party requests, polyfill chunk loaded only on use, dialog at 375 / 1280 light / dark / en / es with focus trapped and returned
+<!-- Goals & requirements -->
 
 ## Notes
 
-- Spec: `context/features/survey-kiosk-phase-4-qr-spec.md`; research: `docs/survey-kiosk.md` (section 8)
-- Reference: `context/screenshots/survey-landing-1.png`
-- Scanned and uploaded values go through `parseSurveyCode` (phase 1); navigation reuses the code entry's Continue path
-- Real camera tests need a device and HTTPS (or localhost); headless checks cover upload, errors and cleanup
+<!-- Any extra notes -->
 
 ## History
 
@@ -55,3 +45,4 @@ In Progress
 - **Survey Kiosk Phase 1 — Route and Code Entry** (2026-10-15): phase 1 of 4 of the public kiosk. `(kiosk)` route group with `/s` (noindex / nofollow, "Answer a survey" title); the screen is picked from `?code=` inside Suspense (spinner fallback). `parseSurveyCode` (bare code, link with `?code=` or any text with a 6-character code; never throws) and `getPublicSurvey` / `getSurveyByCode` (reduced survey without organization, user, dates or archived content; `notFound` for unknown or deleted, `closed` for drafts). Code entry as in the reference: logo and language switcher, uppercase 6-character input that pulls the code out of a pasted link, primary "Continue →" (disabled until complete, Enter submits, pending spinner), inline invalid-code alert, "Scan QR" / "Upload QR image" outline with primary text and a "Coming soon" tooltip (`aria-disabled`). Not found / closed screens with a primary "Try another code"; a placeholder runner (name, question count, exit) until phase 2. Share panel "Open survey" opens the public link in a new tab (`openSoon` removed). `kiosk` messages in en / es; flows and 375 / 768 / 1280 light / dark / en / es checked
 - **Survey Kiosk Phase 2 — Question Runner** (2026-10-15): phase 2 of 4 of the public kiosk. `SurveyRunner` replaces the placeholder: one question at a time with the survey name, `FullscreenToggle` (follows `fullscreenchange`, hidden without support), `ExitSurveyButton` (confirmation only with answers, leaves fullscreen, back to `/s`) and `ProgressCard` (live percent, primary progress bar, ↑ / ↓; full-width bottom bar on phones). `QuestionView`: large h1 focused on each question, Enter hint, primary "OK →" / "Send →" disabled without an answer. Options as a radio group labelled by the question (← / → inside, roving tab index): faces with `ReactionFace size="lg"` and a `selected` glow + check badge, stars with hover / focus preview, poll text cards with the key number and a primary selected state; `getPublicSurvey` orders faces Very bad → Excellent and stars 1 → 5 so keys 1–5 always match. Keys 1–5, Enter, ↑ / ↓ on `window` (Enter left to focused buttons, ignored in fields and the exit dialog). 350 + 350 ms slide transition (150 ms fade with reduced motion) with a fallback timer. Continue on the code entry enters fullscreen. Send shows a "next phase" toast until phase 3. Checked by keyboard, mouse and screen reader names at 375 / 768 / 1280 and 1024×500, light and dark
 - **Survey Kiosk Phase 3 — Submit and Restart** (2026-10-15): phase 3 of 4 of the public kiosk. In-memory response store (`src/lib/surveys/responses.ts`, seeded with the mock responses) read by the metrics, survey counts and category lock; answers newer than the fixed mock clock count as its today, so a kiosk answer adds exactly one (1,842 → 1,843). `submitPublicResponse`: active survey by code, every current question answered once with one of its current options (`NOT_FOUND` / `CLOSED` / `INVALID`), answer snapshots, source / device / locale / duration; in-memory rate limit per device and per IP (1 per 3 s, 30 per 10 min, `RATE_LIMITED`). Public `submitSurveyResponse` action (Zod, IP from `x-forwarded-for` / `x-real-ip`, revalidates `/dashboard` and `/surveys`, codes only). Runner: one guarded submit (spinner, Enter + clicks store once), toasts keep the answers, closed / not found screens; `KIOSK` vs `LINK` from a session flag set by Continue (cached per code so remounts keep it), persistent device id, app locale (`useAppLocale`, not next-intl's `en-US`). `ThanksScreen` (5 s countdown, restart with empty answers) and `TapToStart` when fullscreen was lost. Service rules checked directly; tap to start still to be tried on a real browser
+- **Survey Kiosk Phase 4 — QR Scanning** (2026-10-15): phase 4 of 4 of the public kiosk. `src/lib/kiosk/qr.ts`: native `BarcodeDetector` when it reads `qr_code`, otherwise the `barcode-detector` ponyfill (3.2.2) imported on demand and pointed at a self-hosted ZXing `.wasm` (`/vendor/zxing/<version>/`, copied by `scripts/copy-zxing-wasm.mjs` on `postinstall`, gitignored); `detectCode` returns code / not a survey / no QR. `QrScannerDialog` (shadcn `dialog`): square camera preview with a primary corner frame, 250 ms scans without overlap, opens the survey like Continue, camera released on close / unmount / success; denied, no camera, insecure and failed states with "Upload QR image instead"; translated close button, focus returned to Scan QR. "Upload QR image" reads a picture (native and ponyfill, share panel PNG checked) with inline "no QR" / "not a survey" errors; decoded images always freed. "Coming soon" removed. Checked headless with a fake camera: no third-party requests, wasm only on use, track ended after close, denied message; real-device scans (Chrome, Safari, Firefox) still to be tried
