@@ -63,7 +63,7 @@ export function UserActionsMenu({ row, onDeactivate }: UserActionsMenuProps) {
         {row.isActive ? (
           <DropdownMenuItem
             variant="destructive"
-            disabled={row.isCurrentUser}
+            disabled={row.isCurrentUser || row.isOwner}
             onSelect={() => onDeactivate(row)}
           >
             <UserXIcon aria-hidden />
@@ -75,9 +75,9 @@ export function UserActionsMenu({ row, onDeactivate }: UserActionsMenuProps) {
             {t("actions.activate")}
           </DropdownMenuItem>
         )}
-        {row.isCurrentUser && (
+        {(row.isCurrentUser || row.isOwner) && (
           <DropdownMenuLabel className="pt-0 pl-8 text-xs font-normal text-muted-foreground">
-            {t("actions.selfHint")}
+            {row.isCurrentUser ? t("actions.selfHint") : t("actions.ownerHint")}
           </DropdownMenuLabel>
         )}
       </DropdownMenuContent>

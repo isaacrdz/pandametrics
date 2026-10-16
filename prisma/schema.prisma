@@ -35,13 +35,18 @@ enum ResponseSource {
 model Organization {
   id                String   @id @default(cuid())
   name              String
+  // One owned organization per user, exactly one owner per organization
+  ownerId           String   @unique
   activeSurveyCount Int      @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  users     User[]
-  surveys   Survey[]
-  responses SurveyResponse[]
+  owner       User             @relation("OwnedOrganization", fields: [ownerId], references: [id], onDelete: Restrict)
+  memberships Membership[]
+  // Legacy link, unused since memberships (dropped in docs/subscriptions.md phase 6)
+  users       User[]
+  surveys     Survey[]
+  responses   SurveyResponse[]
 }
 
 model User {
@@ -52,20 +57,44 @@ model User {
   image          String?
   phone          String?
   passwordHash   String?
+  // Legacy: the role lives in Membership; nothing reads or writes it (dropped in phase 6)
   role           Role      @default(MEMBER)
+  // The account: an inactive or deleted user cannot sign in. Per organization: Membership.isActive
   isActive       Boolean   @default(true)
+  // Legacy: organizations come from Membership; nothing reads or writes it (dropped in phase 6)
   organizationId String?
   deletedAt      DateTime?
 
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  accounts     Account[]
-  sessions     Session[]
-  surveys      Survey[]
+  organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  ownedOrganization Organization? @relation("OwnedOrganization")
+  memberships       Membership[]
+  accounts          Account[]
+  sessions          Session[]
+  surveys           Survey[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([organizationId])
+  @@index([organizationId, isActive])
+}
+
+// A user in an organization. The owner has one too (role OWNER, the organization's ownerId), so
+// lists and limits treat everyone alike
+model Membership {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           Role     @default(MEMBER)
+  // Deactivated in this organization only
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
   @@index([organizationId, isActive])
 }
 

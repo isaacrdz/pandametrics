@@ -36,9 +36,9 @@ function toErrorResult(error: unknown): UserActionResult<never> {
 }
 
 // Expires the organization's cached user reads (list and count) and the cached app context of every
-// changed user: a renamed user sees it in the sidebar, a deactivated or deleted one is signed out on
-// their next request. The list re-renders with its filters (refresh); /surveys/[id] keeps showing
-// "created by" because users are never removed
+// changed user: a renamed user sees it in the sidebar, a deactivated or removed one loses this
+// organization on their next request. The list re-renders with its filters (refresh); /surveys/[id]
+// keeps showing "created by" because accounts are never deleted here
 function afterChange(scope: userService.UserScope, ids: string[]) {
   updateTag(usersTag(scope.organizationId));
   for (const id of new Set(ids)) updateTag(userTag(id));
@@ -76,11 +76,12 @@ export async function setUsersActive(ids: string[], isActive: boolean): Promise<
   }
 }
 
-export async function deleteUsers(ids: string[]): Promise<UserActionResult<{ count: number }>> {
+// From this organization only: the accounts stay
+export async function removeUsers(ids: string[]): Promise<UserActionResult<{ count: number }>> {
   if (!idsSchema.safeParse(ids).success) return VALIDATION_ERROR;
   try {
     const scope = await getScope();
-    const count = await userService.softDeleteUsers(scope, ids);
+    const count = await userService.removeUsers(scope, ids);
     afterChange(scope, ids);
     return { success: true, data: { count } };
   } catch (error) {

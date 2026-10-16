@@ -1,18 +1,29 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Subscriptions Phase 1 — Memberships and Organization Ownership
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `Membership` model (`userId`, `organizationId`, `role`, `isActive`, `@@unique([userId, organizationId])`) and `Organization.ownerId @unique` (`OwnedOrganization`, `onDelete: Restrict`) in `prisma/schema.prisma`
+- Migration `memberships` created with `--create-only` and edited: nullable `ownerId` backfilled with the oldest non-deleted `OWNER`; ownerless organizations deleted when empty (dev "Panda Labs"), otherwise `RAISE EXCEPTION`; then `NOT NULL` + unique; one membership per non-deleted user with an organization (`OWNER` for `ownerId`, extra owners → `ADMIN`, `isActive` copied)
+- `app-context`: cached user + active memberships (`user:{id}`, no `app-context` tag); active organization from the `httpOnly` `panda-org` cookie, validated against active memberships, falling back to owned then oldest; `AppContext` gains `role` and `memberships`; `organizations` = owned first, then by name
+- `switchOrganization` Server Action (`src/actions/organizations.ts`): checks membership (`NOT_FOUND`), sets the cookie, `refresh()`; `OrganizationSwitcher` calls it in a transition with a pending state
+- Sign-up (`createUserWithOrganization`, `registerOwner`) creates the organization with `ownerId` and the owner membership; no longer writes `User.role` / `organizationId`; `verifyCredentials` requires an active membership instead of `organizationId`
+- Users service and list scoped through `Membership` (list SQL, count, `getUser`, `updateUser`, select); role from the membership; activate / deactivate on `Membership.isActive`; `softDeleteUsers` → `removeUsers` (deletes memberships, all or nothing); `LAST_OWNER` → `OWNER_PROTECTED`; expire `org:{id}:users` and `user:{id}` per changed user
+- `/users` UI: "Remove from organization" in the row menu, bulk bar and dialog; owner's row checkbox disabled; `OWNER_PROTECTED` message in en / es
+- Seed: Panda Labs owner Valeria Cruz (`valeria@pandalabs.dev`), memberships for Acme (same roles / `isActive`) and Miguel in Leyinork, delete order memberships → responses / surveys → organizations → users, `buildOrganizations` returns `ownerId`, counts include memberships
+- No code reads or writes `User.organizationId` / `User.role` after this phase (dropped in phase 6); `yarn lint` and `tsc` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/subscriptions-phase-1-memberships-spec.md`; research: `docs/subscriptions.md` (sections 1, 3, 4.3, 4.4)
+- Before applying the migration, run the ownerless-organization query on the Neon `developer` branch (and check production) and review the SQL; never `db push`
+- Nothing visible changes except the working switcher and per-organization deactivation / removal
+- Expand / contract: `User.organizationId` and `User.role` stay in the database until phase 6
+- `User` type keeps `role` as "role in the current organization", filled from the membership
+- Testing: add a membership for Ana in Leyinork by hand to try the switcher, per-organization deactivation and a tampered `panda-org` cookie
 
 ## History
 

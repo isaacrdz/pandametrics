@@ -68,10 +68,10 @@ export function UsersTable({ rows, now, controls }: UsersTableProps) {
             <TableCell className="w-12 py-4 pr-0 pl-6">
               <TableCheckbox
                 checked={controls.isSelected(row.id)}
-                // The signed-in user can never deactivate or delete themselves
-                disabled={row.isCurrentUser}
+                // The signed-in user and the owner can never be deactivated or removed from here
+                disabled={row.isCurrentUser || row.isOwner}
                 onCheckedChange={(checked) => controls.onToggle(row.id, checked === true)}
-                aria-label={row.isCurrentUser ? t("select.self") : t("select.row", { name: row.name })}
+                aria-label={row.isCurrentUser ? t("select.self") : row.isOwner ? t("select.owner") : t("select.row", { name: row.name })}
               />
             </TableCell>
             <TableCell className="w-14 py-4 pr-0 pl-3">

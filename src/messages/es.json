@@ -29,7 +29,8 @@
     "organizations": "Organizaciones",
     "organizationLabel": "Organización: {name}",
     "language": "Idioma",
-    "languageLabel": "Idioma: {name}"
+    "languageLabel": "Idioma: {name}",
+    "organizationSwitchError": "No se pudo cambiar de organización. Inténtalo de nuevo."
   },
   "greeting": {
     "hello": "{period, select, morning {Buenos días} afternoon {Buenas tardes} evening {Buenas noches} other {Hola}}, {name}"
@@ -197,46 +198,48 @@
       "row": "Seleccionar a {name}",
       "all": "Seleccionar todos los usuarios de esta página",
       "self": "No puedes seleccionarte a ti mismo",
-      "count": "{count, plural, one {# seleccionado} other {# seleccionados}}"
+      "count": "{count, plural, one {# seleccionado} other {# seleccionados}}",
+      "owner": "No se puede seleccionar al propietario de la organización"
     },
     "actions": {
       "label": "Acciones para {name}",
       "edit": "Editar",
       "deactivate": "Desactivar…",
       "activate": "Activar",
-      "selfHint": "No puedes desactivarte a ti mismo"
+      "selfHint": "No puedes desactivarte a ti mismo",
+      "ownerHint": "El propietario no se puede desactivar"
     },
     "bulk": {
       "label": "Usuarios seleccionados",
       "activate": "Activar",
       "deactivate": "Desactivar",
-      "delete": "Eliminar",
+      "remove": "Quitar",
       "cancel": "Cancelar"
     },
     "deactivate": {
       "title": "¿Desactivar a {name}?",
       "titleMany": "¿Desactivar {count, plural, one {# usuario} other {# usuarios}}?",
-      "description": "{count, plural, one {Perderá el acceso a Panda Metrics. Sus encuestas y respuestas se conservan. Puedes volver a activarlo después.} other {Perderán el acceso a Panda Metrics. Sus encuestas y respuestas se conservan. Puedes volver a activarlos después.}}",
+      "description": "Perderán el acceso a esta organización. Sus encuestas y respuestas se conservan. Puedes activarlos de nuevo después.",
       "confirm": "Desactivar",
       "pending": "Desactivando…"
     },
-    "delete": {
-      "title": "¿Eliminar {count, plural, one {# usuario} other {# usuarios}}?",
-      "description": "{count, plural, one {Saldrá de esta lista y perderá el acceso a Panda Metrics. Sus encuestas y respuestas se conservan. Esto no se puede deshacer desde Panda Metrics.} other {Saldrán de esta lista y perderán el acceso a Panda Metrics. Sus encuestas y respuestas se conservan. Esto no se puede deshacer desde Panda Metrics.}}",
-      "confirm": "Eliminar",
-      "pending": "Eliminando…"
+    "remove": {
+      "title": "¿Quitar {count, plural, one {# usuario} other {# usuarios}} de esta organización?",
+      "description": "Perderán el acceso a las encuestas y métricas de esta organización. Sus cuentas no se eliminan, y sus encuestas y respuestas se quedan aquí.",
+      "confirm": "Quitar",
+      "pending": "Quitando…"
     },
     "toasts": {
       "activated": "Usuario activado",
       "deactivated": "Usuario desactivado",
       "bulkActivated": "{count, plural, one {# usuario activado} other {# usuarios activados}}",
       "bulkDeactivated": "{count, plural, one {# usuario desactivado} other {# usuarios desactivados}}",
-      "bulkDeleted": "{count, plural, one {# usuario eliminado} other {# usuarios eliminados}}"
+      "bulkRemoved": "{count, plural, one {# usuario quitado} other {# usuarios quitados}}"
     },
     "errors": {
       "NOT_FOUND": "Este usuario ya no existe. Actualiza la lista e inténtalo de nuevo.",
-      "SELF_DEACTIVATE": "No puedes desactivarte ni eliminarte a ti mismo.",
-      "LAST_OWNER": "La organización necesita al menos un propietario activo.",
+      "SELF_DEACTIVATE": "No puedes desactivarte ni quitarte a ti mismo.",
+      "OWNER_PROTECTED": "El propietario de la organización no se puede desactivar ni quitar.",
       "VALIDATION": "Revisa la selección e inténtalo de nuevo.",
       "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
       "EMAIL_TAKEN": "Este email ya lo usa otro usuario.",
@@ -299,8 +302,8 @@
     "errors": {
       "NOT_FOUND": "Este usuario ya no existe.",
       "EMAIL_TAKEN": "Este email ya lo usa otro usuario.",
-      "SELF_DEACTIVATE": "No puedes desactivarte ni eliminarte a ti mismo.",
-      "LAST_OWNER": "La organización necesita al menos un propietario activo.",
+      "SELF_DEACTIVATE": "No puedes desactivarte ni quitarte a ti mismo.",
+      "OWNER_PROTECTED": "El propietario de la organización no se puede desactivar ni quitar.",
       "VALIDATION": "Revisa los campos marcados.",
       "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
       "WRONG_PASSWORD": "Tu contraseña actual no es correcta."

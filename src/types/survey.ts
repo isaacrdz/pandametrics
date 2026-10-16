@@ -19,25 +19,37 @@ export type ReactionValue =
 export interface Organization {
   id: string;
   name: string;
+  // One owner per organization, and a user owns at most one
+  ownerId: string;
   activeSurveyCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
+// A user seen from one organization: the account plus their membership there
 export interface User {
   id: string;
   name: string | null;
   email: string | null;
   image: string | null;
   phone: string | null;
+  // Role in this organization (Membership.role)
   role: Role;
-  // Inactive users stay in the organization but cannot sign in
+  // Active in this organization (Membership.isActive); inactive members keep their place but lose access
   isActive: boolean;
-  organizationId: string | null;
-  // Soft delete: the user leaves every list, their surveys keep "created by"
+  // Soft delete of the account: it can no longer sign in, its surveys keep "created by"
   deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// The account alone, without an organization: who created a survey, who is signed in
+export type UserAccount = Omit<User, "role" | "isActive">;
+
+// An organization the user belongs to, with their role there
+export interface OrganizationMembership {
+  organization: Organization;
+  role: Role;
 }
 
 export interface AnswerOption {

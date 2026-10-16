@@ -29,7 +29,8 @@
     "organizations": "Organizations",
     "organizationLabel": "Organization: {name}",
     "language": "Language",
-    "languageLabel": "Language: {name}"
+    "languageLabel": "Language: {name}",
+    "organizationSwitchError": "Couldn't switch the organization. Try again."
   },
   "greeting": {
     "hello": "{period, select, morning {Good morning} afternoon {Good afternoon} evening {Good evening} other {Hello}}, {name}"
@@ -197,46 +198,48 @@
       "row": "Select {name}",
       "all": "Select all users on this page",
       "self": "You can't select yourself",
-      "count": "{count, plural, one {# selected} other {# selected}}"
+      "count": "{count, plural, one {# selected} other {# selected}}",
+      "owner": "The organization owner can't be selected"
     },
     "actions": {
       "label": "Actions for {name}",
       "edit": "Edit",
       "deactivate": "Deactivate…",
       "activate": "Activate",
-      "selfHint": "You can't deactivate yourself"
+      "selfHint": "You can't deactivate yourself",
+      "ownerHint": "The owner can't be deactivated"
     },
     "bulk": {
       "label": "Selected users",
       "activate": "Activate",
       "deactivate": "Deactivate",
-      "delete": "Delete",
+      "remove": "Remove",
       "cancel": "Cancel"
     },
     "deactivate": {
       "title": "Deactivate {name}?",
       "titleMany": "Deactivate {count, plural, one {# user} other {# users}}?",
-      "description": "They will lose access to Panda Metrics. Their surveys and responses are kept. You can activate them again later.",
+      "description": "They will lose access to this organization. Their surveys and responses are kept. You can activate them again later.",
       "confirm": "Deactivate",
       "pending": "Deactivating…"
     },
-    "delete": {
-      "title": "Delete {count, plural, one {# user} other {# users}}?",
-      "description": "They will be removed from this list and lose access to Panda Metrics. Their surveys and responses are kept. This can't be undone from Panda Metrics.",
-      "confirm": "Delete",
-      "pending": "Deleting…"
+    "remove": {
+      "title": "Remove {count, plural, one {# user} other {# users}} from this organization?",
+      "description": "They will lose access to this organization's surveys and metrics. Their accounts are not deleted, and their surveys and responses stay here.",
+      "confirm": "Remove",
+      "pending": "Removing…"
     },
     "toasts": {
       "activated": "User activated",
       "deactivated": "User deactivated",
       "bulkActivated": "{count, plural, one {# user activated} other {# users activated}}",
       "bulkDeactivated": "{count, plural, one {# user deactivated} other {# users deactivated}}",
-      "bulkDeleted": "{count, plural, one {# user deleted} other {# users deleted}}"
+      "bulkRemoved": "{count, plural, one {# user removed} other {# users removed}}"
     },
     "errors": {
       "NOT_FOUND": "This user no longer exists. Refresh the list and try again.",
-      "SELF_DEACTIVATE": "You can't deactivate or delete yourself.",
-      "LAST_OWNER": "The organization needs at least one active owner.",
+      "SELF_DEACTIVATE": "You can't deactivate or remove yourself.",
+      "OWNER_PROTECTED": "The organization owner can't be deactivated or removed.",
       "VALIDATION": "Check the selection and try again.",
       "UNKNOWN": "Something went wrong. Try again.",
       "EMAIL_TAKEN": "This email is already used by another user.",
@@ -299,8 +302,8 @@
     "errors": {
       "NOT_FOUND": "This user no longer exists.",
       "EMAIL_TAKEN": "This email is already used by another user.",
-      "SELF_DEACTIVATE": "You can't deactivate or delete yourself.",
-      "LAST_OWNER": "The organization needs at least one active owner.",
+      "SELF_DEACTIVATE": "You can't deactivate or remove yourself.",
+      "OWNER_PROTECTED": "The organization owner can't be deactivated or removed.",
       "VALIDATION": "Check the highlighted fields.",
       "UNKNOWN": "Something went wrong. Try again.",
       "WRONG_PASSWORD": "Your current password is not correct."

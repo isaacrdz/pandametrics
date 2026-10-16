@@ -29,9 +29,9 @@ export function UsersList({ rows, now, controls }: UsersListProps) {
           <div className="flex items-center gap-3">
             <TableCheckbox
               checked={controls.isSelected(row.id)}
-              disabled={row.isCurrentUser}
+              disabled={row.isCurrentUser || row.isOwner}
               onCheckedChange={(checked) => controls.onToggle(row.id, checked === true)}
-              aria-label={row.isCurrentUser ? t("select.self") : t("select.row", { name: row.name })}
+              aria-label={row.isCurrentUser ? t("select.self") : row.isOwner ? t("select.owner") : t("select.row", { name: row.name })}
             />
             <UserAvatar image={row.image} initials={row.initials} />
             <UserName row={row} className="flex-1" />

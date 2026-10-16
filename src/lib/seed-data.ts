@@ -82,21 +82,26 @@ export function shuffle<T>(items: T[], random: () => number): T[] {
 // ---------------------------------------------------------------------------
 
 export const ACME_ID = objectId(ID_KIND.organization, 1);
+export const PANDA_LABS_ID = objectId(ID_KIND.organization, 2);
 export const JORDAN_ID = objectId(ID_KIND.user, 1);
 export const ANA_ID = objectId(ID_KIND.user, 2);
+// Panda Labs' owner; user 9 is the real owner account (prisma/seed.ts)
+export const VALERIA_ID = objectId(ID_KIND.user, 10);
 
 export function buildOrganizations(now: Date): Organization[] {
   return [
     {
       id: ACME_ID,
       name: "Acme Inc.",
+      ownerId: JORDAN_ID,
       activeSurveyCount: 4,
       createdAt: daysAgo(now, 180),
       updatedAt: daysAgo(now, 2),
     },
     {
-      id: objectId(ID_KIND.organization, 2),
+      id: PANDA_LABS_ID,
       name: "Panda Labs",
+      ownerId: VALERIA_ID,
       activeSurveyCount: 0,
       createdAt: daysAgo(now, 40),
       updatedAt: daysAgo(now, 40),
@@ -108,6 +113,11 @@ interface UserSeed {
   fields: Pick<User, "name" | "email" | "role"> & Partial<Pick<User, "phone" | "image" | "isActive">>;
   createdDaysAgo: number;
   updatedDaysAgo: number;
+}
+
+// A seeded account and its membership: role and isActive belong to the membership in organizationId
+export interface SeedMember extends User {
+  organizationId: string;
 }
 
 // Acme's team with every state the user list has to show
@@ -122,8 +132,9 @@ const USER_SEEDS: UserSeed[] = [
   { fields: { name: "Tomás Ortega", email: "tomas@acme.co", role: "MEMBER", isActive: false }, createdDaysAgo: 20, updatedDaysAgo: 15 },
 ];
 
-export function buildUsers(now: Date): User[] {
-  return USER_SEEDS.map(({ fields, createdDaysAgo, updatedDaysAgo }, i) => ({
+// Acme's team, then Panda Labs' only member, its owner
+export function buildUsers(now: Date): SeedMember[] {
+  const acme = USER_SEEDS.map(({ fields, createdDaysAgo, updatedDaysAgo }, i) => ({
     id: objectId(ID_KIND.user, i + 1),
     image: null,
     phone: null,
@@ -134,6 +145,20 @@ export function buildUsers(now: Date): User[] {
     updatedAt: daysAgo(now, updatedDaysAgo),
     ...fields,
   }));
+  const valeria: SeedMember = {
+    id: VALERIA_ID,
+    name: "Valeria Cruz",
+    email: "valeria@pandalabs.dev",
+    image: null,
+    phone: null,
+    role: "OWNER",
+    isActive: true,
+    organizationId: PANDA_LABS_ID,
+    deletedAt: null,
+    createdAt: daysAgo(now, 40),
+    updatedAt: daysAgo(now, 40),
+  };
+  return [...acme, valeria];
 }
 
 // ---------------------------------------------------------------------------

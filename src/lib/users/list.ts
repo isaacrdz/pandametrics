@@ -22,6 +22,8 @@ export interface UserRow {
   role: Role;
   isActive: boolean;
   isCurrentUser: boolean;
+  // The organization's owner: never deactivated or removed
+  isOwner: boolean;
   updatedAt: string;
 }
 
@@ -63,35 +65,41 @@ function searchCondition(query: string): Prisma.Sql {
   const pattern = containsPattern(query);
   const digits = digitsPattern(query);
   return Prisma.sql`AND (
-    f_unaccent(lower(coalesce(name, ''))) LIKE f_unaccent(lower(${pattern})) ESCAPE '\\'
-    OR lower(coalesce(email, '')) LIKE lower(${pattern}) ESCAPE '\\'
-    ${digits ? Prisma.sql`OR regexp_replace(coalesce(phone, ''), '\\D', '', 'g') LIKE ${digits}` : Prisma.empty}
+    f_unaccent(lower(coalesce(u.name, ''))) LIKE f_unaccent(lower(${pattern})) ESCAPE '\\'
+    OR lower(coalesce(u.email, '')) LIKE lower(${pattern}) ESCAPE '\\'
+    ${digits ? Prisma.sql`OR regexp_replace(coalesce(u.phone, ''), '\\D', '', 'g') LIKE ${digits}` : Prisma.empty}
   )`;
 }
 
+// Active or inactive in this organization (the membership), not the account
 function statusCondition(status: UserListQuery["status"]): Prisma.Sql {
-  return status === "all" ? Prisma.empty : Prisma.sql`AND "isActive" = ${status === "active"}`;
+  return status === "all" ? Prisma.empty : Prisma.sql`AND m."isActive" = ${status === "active"}`;
 }
 
-// One page of the organization's users (public columns only, never passwordHash) with the
-// filtered total from COUNT(*) OVER()
+// One page of the organization's members (public account columns only, never passwordHash; role and
+// status from the membership) with the filtered total from COUNT(*) OVER()
 async function queryPage(organizationId: string, params: UserListQuery, page: number): Promise<UserListRow[]> {
   return prisma.$queryRaw<UserListRow[]>`
-    SELECT id, name, email, phone, image, role::text AS role, "isActive", "updatedAt",
+    SELECT u.id, u.name, u.email, u.phone, u.image, m.role::text AS role, m."isActive", u."updatedAt",
            COUNT(*) OVER()::int AS total
-    FROM "User"
-    WHERE "organizationId" = ${organizationId} AND "deletedAt" IS NULL
+    FROM "Membership" m
+    JOIN "User" u ON u.id = m."userId"
+    WHERE m."organizationId" = ${organizationId} AND u."deletedAt" IS NULL
       ${searchCondition(params.query)}
       ${statusCondition(params.status)}
-    ORDER BY name COLLATE "und-x-icu", email
+    ORDER BY u.name COLLATE "und-x-icu", u.email
     LIMIT ${params.pageSize} OFFSET ${(page - 1) * params.pageSize}`;
 }
 
-// Count of the organization's users, for the top bar (part of the static shell)
+function countMembers(organizationId: string): Promise<number> {
+  return prisma.membership.count({ where: { organizationId, user: { deletedAt: null } } });
+}
+
+// Count of the organization's members, for the top bar (part of the static shell)
 export async function countListedUsers(organizationId: string): Promise<number> {
   "use cache";
   cacheTag(usersTag(organizationId));
-  return prisma.user.count({ where: { organizationId, deletedAt: null } });
+  return countMembers(organizationId);
 }
 
 export async function listUsers(organizationId: string, currentUserId: string, params: UserListQuery): Promise<UserListResult> {
@@ -111,7 +119,7 @@ export async function listUsers(organizationId: string, currentUserId: string, p
     rows = await queryPage(organizationId, params, page);
   }
 
-  const totalAll = await prisma.user.count({ where: { organizationId, deletedAt: null } });
+  const totalAll = await countMembers(organizationId);
 
   return {
     rows: rows.map((user) => ({
@@ -124,6 +132,7 @@ export async function listUsers(organizationId: string, currentUserId: string, p
       role: user.role,
       isActive: user.isActive,
       isCurrentUser: user.id === currentUserId,
+      isOwner: user.role === "OWNER",
       updatedAt: user.updatedAt.toISOString(),
     })),
     total,

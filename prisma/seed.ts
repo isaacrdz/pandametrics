@@ -1,6 +1,7 @@
 // Fills the Neon development branch with the demo data (src/lib/seed-data.ts): 2 organizations,
-// 8 users, 5 surveys and their responses, with fixed ids and seeded counts. Then the
-// owner account: Miguel Rayon, owner and only member of Leyinork.
+// 9 users with their memberships (Acme's 8, Panda Labs' owner Valeria), 5 surveys and their
+// responses, with fixed ids and seeded counts. Then the owner account: Miguel Rayon, owner and only
+// member of Leyinork.
 //
 //   npx prisma db seed
 //
@@ -11,7 +12,6 @@ import { randomBytes, scryptSync } from "node:crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import {
-  ACME_ID,
   ID_KIND,
   buildAllResponses,
   buildOrganizations,
@@ -88,15 +88,37 @@ async function main() {
       await tx.answerOption.deleteMany({ where: { question: { survey: inSeededOrganizations } } });
       await tx.question.deleteMany({ where: { survey: inSeededOrganizations } });
       await tx.survey.deleteMany({ where: inSeededOrganizations });
-      await tx.user.deleteMany({
-        where: { OR: [inSeededOrganizations, { email: { in: users.map((user) => user.email ?? "") } }] },
-      });
+      // Organizations before their owners (ownerId is Restrict); their memberships cascade
       await tx.organization.deleteMany({ where: { id: { in: organizationIds } } });
+      await tx.user.deleteMany({ where: { email: { in: users.map((user) => user.email ?? "") } } });
+
+      // The account only: role and status live in the membership
+      await tx.user.createMany({
+        data: users.map((user) => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          phone: user.phone,
+          isActive: true,
+          deletedAt: user.deletedAt,
+          passwordHash,
+          emailVerified: user.createdAt,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        })),
+      });
 
       await tx.organization.createMany({ data: organizations });
 
-      await tx.user.createMany({
-        data: users.map((user) => ({ ...user, passwordHash, emailVerified: user.createdAt })),
+      await tx.membership.createMany({
+        data: users.map((user) => ({
+          userId: user.id,
+          organizationId: user.organizationId,
+          role: user.role,
+          isActive: user.isActive,
+          createdAt: user.createdAt,
+        })),
       });
 
       for (const survey of surveys) {
@@ -159,7 +181,7 @@ async function main() {
 
   const counts = {
     organizations: await prisma.organization.count({ where: { id: { in: organizationIds } } }),
-    users: await prisma.user.count({ where: { organizationId: ACME_ID } }),
+    memberships: await prisma.membership.count({ where: { organizationId: { in: organizationIds } } }),
     surveys: await prisma.survey.count({ where: { organizationId: { in: organizationIds } } }),
     questions: await prisma.question.count({ where: { survey: { organizationId: { in: organizationIds } } } }),
     options: await prisma.answerOption.count({ where: { question: { survey: { organizationId: { in: organizationIds } } } } }),
@@ -167,13 +189,16 @@ async function main() {
     items: await prisma.responseItem.count({ where: { response: { organizationId: { in: organizationIds } } } }),
   };
   await seedOwner(now);
-  const owner = await prisma.user.findUnique({ where: { email: OWNER.email }, select: { role: true, organization: { select: { name: true, users: { select: { id: true } } } } } });
+  const owned = await prisma.organization.findUnique({
+    where: { id: OWNER.organizationId },
+    select: { name: true, owner: { select: { email: true } }, _count: { select: { memberships: true } } },
+  });
   console.log(
-    `${counts.organizations} organizations, ${counts.users} users, ${counts.surveys} surveys, ${counts.questions} questions, ` +
+    `${counts.organizations} organizations, ${counts.memberships} memberships, ${counts.surveys} surveys, ${counts.questions} questions, ` +
       `${counts.options} options, ${counts.responses} responses, ${counts.items} items`,
   );
   console.log(
-    `1 owner organization (${owner?.organization?.name}, ${owner?.organization?.users.length} member), 1 owner (${OWNER.email}, ${owner?.role})`,
+    `1 owner organization (${owned?.name}, ${owned?._count.memberships} member), 1 owner (${owned?.owner.email})`,
   );
 }
 
@@ -185,29 +210,45 @@ async function seedOwner(now: Date) {
   }
 
   await prisma.$transaction(async (tx) => {
-    // The email is unique: a different row holding it would block the upsert
-    await tx.user.deleteMany({ where: { email: OWNER.email, id: { not: OWNER.userId } } });
+    // The email is unique: a different row holding it would block the upsert (its own organization
+    // goes first, since ownerId is Restrict)
+    const others = { email: OWNER.email, id: { not: OWNER.userId } };
+    await tx.organization.deleteMany({ where: { owner: others } });
+    await tx.user.deleteMany({ where: others });
 
-    await tx.organization.upsert({
-      where: { id: OWNER.organizationId },
-      create: { id: OWNER.organizationId, name: OWNER.organizationName, activeSurveyCount: 0, createdAt: now, updatedAt: now },
-      update: { name: OWNER.organizationName },
-    });
-
+    // The account first: the organization points at it (ownerId)
     const profile = {
       name: OWNER.name,
       email: OWNER.email,
       phone: OWNER.phone,
-      role: "OWNER" as const,
       isActive: true,
       deletedAt: null,
-      organizationId: OWNER.organizationId,
       passwordHash: OWNER_PASSWORD_HASH,
     };
     await tx.user.upsert({
       where: { id: OWNER.userId },
       create: { id: OWNER.userId, ...profile, emailVerified: now, createdAt: now, updatedAt: now },
       update: profile,
+    });
+
+    await tx.organization.upsert({
+      where: { id: OWNER.organizationId },
+      create: {
+        id: OWNER.organizationId,
+        name: OWNER.organizationName,
+        ownerId: OWNER.userId,
+        activeSurveyCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+      update: { name: OWNER.organizationName, ownerId: OWNER.userId },
+    });
+
+    const membership = { role: "OWNER" as const, isActive: true };
+    await tx.membership.upsert({
+      where: { userId_organizationId: { userId: OWNER.userId, organizationId: OWNER.organizationId } },
+      create: { userId: OWNER.userId, organizationId: OWNER.organizationId, ...membership, createdAt: now },
+      update: membership,
     });
   });
 }

@@ -1,26 +1,26 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Trash2Icon, UserCheckIcon, UserXIcon } from "lucide-react";
+import { UserCheckIcon, UserMinusIcon, UserXIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { deleteUsers, setUsersActive, type UserActionResult } from "@/actions/users";
+import { removeUsers, setUsersActive, type UserActionResult } from "@/actions/users";
 import { BAR_BUTTON_CLASS, SelectionBar } from "@/components/table/SelectionBar";
 import { UserConfirmDialog } from "@/components/users/table/UserConfirmDialog";
 import { Button } from "@/components/ui/button";
 
-type SuccessKey = "toasts.bulkActivated" | "toasts.bulkDeactivated" | "toasts.bulkDeleted";
+type SuccessKey = "toasts.bulkActivated" | "toasts.bulkDeactivated" | "toasts.bulkRemoved";
 
 interface UsersSelectionBarProps {
   ids: string[];
   onDone: () => void;
 }
 
-// Activate runs right away; Deactivate and Delete ask first. Every action is all or nothing.
+// Activate runs right away; Deactivate and Remove ask first. Every action is all or nothing.
 export function UsersSelectionBar({ ids, onDone }: UsersSelectionBarProps) {
   const t = useTranslations("users");
   const [isPending, startTransition] = useTransition();
-  const [confirm, setConfirm] = useState<"deactivate" | "delete" | null>(null);
+  const [confirm, setConfirm] = useState<"deactivate" | "remove" | null>(null);
   const count = ids.length;
 
   function run(action: () => Promise<UserActionResult<{ count: number }>>, successKey: SuccessKey) {
@@ -56,9 +56,9 @@ export function UsersSelectionBar({ ids, onDone }: UsersSelectionBarProps) {
         <UserXIcon aria-hidden />
         {t("bulk.deactivate")}
       </Button>
-      <Button variant="destructive" disabled={isPending} onClick={() => setConfirm("delete")} className={BAR_BUTTON_CLASS}>
-        <Trash2Icon aria-hidden />
-        {t("bulk.delete")}
+      <Button variant="destructive" disabled={isPending} onClick={() => setConfirm("remove")} className={BAR_BUTTON_CLASS}>
+        <UserMinusIcon aria-hidden />
+        {t("bulk.remove")}
       </Button>
 
       <UserConfirmDialog
@@ -72,14 +72,14 @@ export function UsersSelectionBar({ ids, onDone }: UsersSelectionBarProps) {
         onConfirm={() => run(() => setUsersActive(ids, false), "toasts.bulkDeactivated")}
       />
       <UserConfirmDialog
-        open={confirm === "delete"}
+        open={confirm === "remove"}
         onOpenChange={(open) => !open && setConfirm(null)}
-        title={t("delete.title", { count })}
-        description={t("delete.description", { count })}
-        confirmLabel={t("delete.confirm")}
-        pendingLabel={t("delete.pending")}
+        title={t("remove.title", { count })}
+        description={t("remove.description", { count })}
+        confirmLabel={t("remove.confirm")}
+        pendingLabel={t("remove.pending")}
         isPending={isPending}
-        onConfirm={() => run(() => deleteUsers(ids), "toasts.bulkDeleted")}
+        onConfirm={() => run(() => removeUsers(ids), "toasts.bulkRemoved")}
       />
     </SelectionBar>
   );

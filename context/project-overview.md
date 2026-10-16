@@ -47,6 +47,36 @@ The category is chosen when the survey is created and can only change while the 
 - History is immutable: editing a survey never rewrites or silently drops past answers.
 - Private by organization: users only see and change their organization's surveys and responses.
 
+### Plans and limits
+
+Panda Metrics has a **Free** plan and a paid **Pro** plan. Pro is bought as an **Individual** plan (one user) or a **Business** plan (the owner plus up to 3 more users, 4 Pro users in total), billed monthly or yearly. The user who pays is the plan owner; an organization gets the limits of its owner's plan. Payment provider and prices are still pending (see Open decisions). Full research in `docs/subscriptions.md` (prompt: `context/research/subscriptions-research.md`).
+
+| Rule | Free | Pro Individual | Pro Business |
+| ---- | ---- | -------------- | ------------ |
+| Pro users covered by the plan | — | 1 (the owner) | 4 (owner + up to 3 invited) |
+| Active surveys per organization | 1 | 5 | 5 |
+| Invite users into the organization | No | Yes, owner + up to 3 | Yes, owner + up to 3 |
+| Invite users into the plan | No | No | Yes, up to 3 (Settings → Plan) |
+| Organizations a user can own | 1 | 1 | 1 |
+| Organizations a user can belong to (including the one they own) | 10 | 10 | 10 |
+
+Subscription data per user: `isPro`, plan type (`INDIVIDUAL` / `BUSINESS`), billing interval (`MONTHLY` / `YEARLY`), last payment date, expiration date (end of the paid period) and status. `isPro` is true only while the subscription is active and not expired. A Business plan member gets Pro from the owner's subscription (same status and expiration), not from a subscription of their own.
+
+Validation rules:
+
+- **Active surveys:** activating a survey (on create or inactive → active) fails with `409` once the organization has 1 active survey on Free or 5 on Pro. The check is atomic, like the current counter.
+- **Organization invites:** only an organization whose owner is Pro (Individual or Business) can invite, and the owner and the organization's admins can send them; at most 3 invited members besides the owner (pending invites and deactivated members count). Invitations expire after 14 days. Any user can be invited into an organization, including users with their own Individual plan. Free organizations see the invite action as a Pro feature.
+- **Business plan invites:** the Business owner invites people to the plan from a section in Settings, up to 3 (pending invites count). Only users who already have an account can be invited for now. An invite to the plan also adds the person to the owner's organization, so plan members count toward the organization's 3 invited members. Members of another Business plan and owners of a Business plan (active or expired) cannot be invited. Users with an Individual plan (active or expired) can: before accepting they are warned that their Individual plan will be canceled (auto-renew off, status canceled), and accepting cancels it. While they hold a seat in a Business plan they cannot renew or buy an Individual plan. If they are removed from the Business plan (or leave) while their canceled Individual plan is still running, they see a notice to renew it if they want to keep the Pro features.
+- **Email invites (coming soon):** inviting someone without an account by email, with a registration link that gives them the Business subscription and the organization membership, is a separate later feature. Until then the UI shows it as coming soon.
+- **Registration creates no organization:** a new account starts with no organization and no plan. The user then creates their own organization (the only one they can ever own) or joins one through an invite. An account created from a plan invite gets the owner's organization and the Business subscription, but no organization of its own is created for it. Any user who does not own an organization can create one at any time, including Business plan members.
+- **Organization required for surveys:** creating a survey (Free or Pro) first checks that the user has an active organization; without one the action is rejected and the UI sends them to create their organization.
+- **One owned organization:** a user who already owns an organization can never become the owner of another (no second organization, no ownership transfer to them).
+- **Ten memberships:** a user can be a member of at most 10 organizations, counting the one they own. Accepting an invite that would make it 11 is rejected.
+- **Removed from a Business plan:** when the owner removes a member from the plan, the member also leaves the owner's organization (their surveys stay with the organization).
+- **Leaving an organization:** any member (not the owner) can leave an organization on their own; leaving the Business owner's organization also ends their seat in the plan. The owner is told by email (pending, part of the email feature).
+- **Renewing:** only the plan owner renews. A Business owner with members (or pending plan invites) can only renew Business; to switch to Individual they must remove every member first.
+- **Expiration / downgrade:** nothing is deleted and nobody is removed. Business members stay in the plan and in the owner's organization. The Pro features are blocked for everyone on the plan: no survey can be activated above the Free limit (surveys already active stay as they are), no new invites, no Plan section changes except removing members, until Pro is renewed. Business members see a notice that the plan has expired, with no payment action. The plan owner (Individual, or Business owner) sees the same notice with a "Renew plan" action that takes them to pay and unlocks the Pro features for the whole plan (until a payment provider exists, the action is shown as coming soon).
+
 ## 2. Recommended MVP scope
 
 Phase 1 — Public kiosk
@@ -55,7 +85,7 @@ Code entry, QR scanning on every browser, one-question-at-a-time runner with fac
 
 Phase 2 — Survey management
 
-Auth and organizations, survey CRUD with category picker (Satisfaction, Rating, Poll), poll image upload, QR and public link panel, 5-active limit, survey table (search, filters and pagination).
+Auth and organizations, survey CRUD with category picker (Satisfaction, Rating, Poll), poll image upload, QR and public link panel, plan limits (1 active on Free, 5 on Pro), survey table (search, filters and pagination).
 
 Phase 3 — Metrics
 
@@ -162,7 +192,14 @@ The UI is available in English (default) and Spanish with next-intl. Full resear
 
 ```mermaid
 erDiagram
-  ORGANIZATION ||--o{ USER : has
+  USER ||--o| ORGANIZATION : owns_one
+  USER ||--o{ MEMBERSHIP : joins
+  ORGANIZATION ||--o{ MEMBERSHIP : has
+  USER ||--o| SUBSCRIPTION : pays
+  SUBSCRIPTION ||--o{ SUBSCRIPTION_SEAT : covers
+  USER ||--o| SUBSCRIPTION_SEAT : holds
+  ORGANIZATION ||--o{ INVITATION : sends
+  USER ||--o{ INVITATION : receives
   ORGANIZATION ||--o{ SURVEY : owns
   ORGANIZATION ||--o{ SURVEY_RESPONSE : scopes
   USER ||--o{ SURVEY : creates
@@ -176,14 +213,43 @@ erDiagram
   ORGANIZATION {
     string id PK
     string name
+    string ownerId FK,UK
     int activeSurveyCount
     datetime createdAt
   }
   USER {
     string id PK
     string email UK
+  }
+  MEMBERSHIP {
+    string id PK
+    string userId FK
     string organizationId FK
     enum role
+    boolean isActive
+  }
+  SUBSCRIPTION {
+    string id PK
+    string userId FK,UK
+    enum planType
+    enum billingInterval
+    enum status
+    datetime paidAt
+    datetime currentPeriodEnd
+    datetime canceledAt
+  }
+  SUBSCRIPTION_SEAT {
+    string id PK
+    string subscriptionId FK
+    string userId FK,UK
+  }
+  INVITATION {
+    string id PK
+    string organizationId FK
+    string userId FK
+    string subscriptionId FK
+    enum status
+    datetime expiresAt
   }
   SURVEY {
     string id PK
@@ -233,7 +299,7 @@ erDiagram
 
 ## 5. Prisma ORM 7 schema (PostgreSQL on Neon)
 
-The following is a proposed baseline, including the models needed by the Auth.js Prisma adapter. It is designed for organization-scoped data (one organization per user).
+The following is a proposed baseline, including the models needed by the Auth.js Prisma adapter. It is designed for organization-scoped data: a user belongs to organizations through memberships (up to 10, at most one owned), and plans live in subscriptions. Full research in `docs/subscriptions.md`. This is the target schema: `User.organizationId` and `User.role` are still in the database until the last phase of that research moves every query to `Membership`.
 
 File: `prisma/schema.prisma`
 
@@ -272,41 +338,166 @@ enum ResponseSource {
   QR
 }
 
+enum PlanType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE      // paid, renews
+  CANCELED    // auto-renew off: Pro until currentPeriodEnd
+  PAST_DUE    // renewal failed, provider retrying: Pro until currentPeriodEnd
+  INCOMPLETE  // first payment never completed: never Pro
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+}
+
+enum MembershipEventType {
+  LEFT
+  REMOVED
+}
+
 model Organization {
   id                String   @id @default(cuid())
   name              String
+  ownerId           String   @unique // one owned organization per user, one owner per organization
   activeSurveyCount Int      @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  users     User[]
-  surveys   Survey[]
-  responses SurveyResponse[]
+  owner            User              @relation("OwnedOrganization", fields: [ownerId], references: [id], onDelete: Restrict)
+  memberships      Membership[]
+  invitations      Invitation[]
+  membershipEvents MembershipEvent[]
+  surveys          Survey[]
+  responses        SurveyResponse[]
 }
 
 model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String?   @unique
-  emailVerified  DateTime?
-  image          String?
-  phone          String?
-  passwordHash   String?
-  role           Role      @default(MEMBER)
-  isActive       Boolean   @default(true)
-  organizationId String?
-  deletedAt      DateTime?
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  passwordHash  String?
+  isActive      Boolean   @default(true) // account level; per organization see Membership.isActive
+  deletedAt     DateTime?
 
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  accounts     Account[]
-  sessions     Session[]
-  surveys      Survey[]
+  ownedOrganization   Organization?     @relation("OwnedOrganization")
+  memberships         Membership[]
+  subscription        Subscription?
+  seat                SubscriptionSeat?
+  invitationsSent     Invitation[]      @relation("InvitationsSent")
+  invitationsReceived Invitation[]      @relation("InvitationsReceived")
+  membershipEvents    MembershipEvent[]
+  accounts            Account[]
+  sessions            Session[]
+  surveys             Survey[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Membership {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           Role     @default(MEMBER) // OWNER only for organization.ownerId
+  isActive       Boolean  @default(true)   // deactivated in this organization only
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId, isActive])
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String             @unique // the plan owner, who pays
+  planType           PlanType
+  billingInterval    BillingInterval
+  status             SubscriptionStatus @default(ACTIVE)
+  paidAt             DateTime?          // last successful payment
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime           // expiration: Pro until this instant
+  canceledAt         DateTime?
+
+  // Payment provider (none yet)
+  provider               String?
+  providerCustomerId     String?
+  providerSubscriptionId String? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([organizationId])
-  @@index([organizationId, isActive])
+  user        User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  seats       SubscriptionSeat[]
+  invitations Invitation[]
+}
+
+// A Business plan member: Pro through the owner's subscription; at most one seat per user
+model SubscriptionSeat {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  userId         String   @unique
+  createdAt      DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+}
+
+model Invitation {
+  id             String           @id @default(cuid())
+  organizationId String
+  invitedById    String
+  userId         String?          // the invited account (in-app invites)
+  email          String?          // email invites (later feature)
+  token          String?          @unique // email invites (later feature)
+  subscriptionId String?          // set: a Business plan invite (seat + organization)
+  status         InvitationStatus @default(PENDING)
+  expiresAt      DateTime         // 14 days after createdAt
+  respondedAt    DateTime?
+  createdAt      DateTime         @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User          @relation("InvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  user         User?         @relation("InvitationsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([organizationId, status])
+  @@index([subscriptionId, status])
+}
+
+// Who left or was removed, kept for the owner's email (email feature, pending)
+model MembershipEvent {
+  id             String              @id @default(cuid())
+  organizationId String
+  userId         String
+  type           MembershipEventType
+  notifiedAt     DateTime?
+  createdAt      DateTime            @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt(sort: Desc)])
 }
 
 model Account {
@@ -462,7 +653,7 @@ Use a separate Neon branch for development and preview deployments, so migration
 
 Changing `category` is rejected once the survey has responses (`409`), because past metrics would no longer make sense.
 
-**Active-survey limit:** "Max 5 active surveys" is enforced with an atomic counter on the organization. Activating a survey runs, inside `prisma.$transaction`, `organization.updateMany({ where: { id, activeSurveyCount: { lt: 5 } }, data: { activeSurveyCount: { increment: 1 } } })`; if it updates 0 rows the limit is reached (`409`). Deactivating or deleting an active survey decrements the counter. Two concurrent requests cannot create a sixth active survey. For a database-level guard, add `CHECK ("activeSurveyCount" BETWEEN 0 AND 5)` by editing the generated migration SQL before applying it (Prisma does not model `CHECK` constraints).
+**Active-survey limit:** the limit depends on the organization owner's plan (1 on Free or expired, 5 on Pro), read inside the same transaction, never from the cached context. It is enforced with an atomic counter on the organization. Activating a survey runs, inside `prisma.$transaction`, `organization.updateMany({ where: { id, activeSurveyCount: { lt: limit } }, data: { activeSurveyCount: { increment: 1 } } })`; if it updates 0 rows the limit is reached (`409`). Deactivating or deleting an active survey decrements the counter. Two concurrent requests cannot create a sixth active survey. For a database-level guard, add `CHECK ("activeSurveyCount" BETWEEN 0 AND 5)` (the Pro maximum; the per-plan limit stays in the service) by editing the generated migration SQL before applying it (Prisma does not model `CHECK` constraints).
 
 **Preserving ids on update:** the update service, inside one transaction, updates questions and options by `id`, creates rows for items without `id` and sets `archivedAt` on items omitted from the payload. Retyping an option that has answers creates a new option and archives the old one. Nothing that has answers is ever deleted; `onDelete: Restrict` makes the database refuse it.
 
@@ -472,7 +663,14 @@ Changing `category` is rejected once the survey has responses (`409`), because p
 
 **Soft delete:** every survey and user query filters `deletedAt: null`. Deleted users keep their surveys (`createdById`), and their email stays taken because `email` is unique.
 
-**Users:** a user cannot deactivate or delete themselves, and the organization always keeps one active `OWNER`; bulk changes check every id first and are all or nothing. `passwordHash` never leaves the server.
+**Users:** deactivating or removing a user acts on their `Membership` in the current organization, never on the account, so the other organizations are not affected. A user cannot deactivate or remove themselves, and the owner's membership can never be deactivated or removed (`OWNER_PROTECTED`). Removing someone from `/users` keeps the account and its surveys; if they hold a seat in that organization owner's Business plan, the seat ends too. Bulk changes check every id first and are all or nothing. `passwordHash` never leaves the server.
+
+**Plan and membership limits** (full design in `docs/subscriptions.md`):
+
+- `isPro` is never stored: it is derived from the subscription (status not `INCOMPLETE` and `currentPeriodEnd > now`), from the user's own subscription or a Business seat (a seat wins). So a plan expires on its own, with no scheduled job. The app context caches the raw rows and computes the tier on each request.
+- `Organization.ownerId @unique` enforces one owned organization per user and exactly one owner per organization; an organization's limits are its owner's plan.
+- Limits that count rows (owner + 3 invited members, 3 Business seats, 10 memberships) lock the parent row first (`SELECT … FOR UPDATE` on the organization, subscription or user) and then count inside the same transaction, so concurrent requests cannot go over. Pending invitations and deactivated members count; expired invitations do not.
+- Joining a Business plan cancels the member's own Individual plan (`CANCELED`, auto-renew off, after a confirmation the server requires). While they hold a seat they cannot renew or buy a plan.
 
 ### Prisma 7 configuration
 
@@ -652,11 +850,35 @@ Dashboard request body:
 1. Validate request bodies with the shared Zod schemas.
 2. Require an authenticated user for every non-public route.
 3. Check that the survey belongs to the user's organization before reading or changing it; return 404 (not 403) for other organizations' ids.
-4. Enforce the 5-active limit atomically on create and on inactive → active.
+4. Enforce the plan's active limit (1 Free, 5 Pro) atomically on create and on inactive → active.
 5. Use `prisma.$transaction` for multi-step changes (activation with the active-survey counter, delete of an active survey).
 6. On public submit, check that every `question` / `answer` id belongs to the survey, reject duplicated questions and store the snapshot.
 7. Rate limit public submissions by IP and `deviceId`, and rate limit auth endpoints.
-8. Return consistent status codes: 400 validation / inactive, 401 unauthenticated, 404 not found, 409 active limit, 429 rate limited.
+8. Enforce the plan rules on invites and memberships: organization invites only for Pro organizations, from the owner or an admin (max 3 invited members); Business plan invites only from the Business owner (max 3 seats, never to seat holders or Business owners); one owned organization per user; max 10 organizations per user. Creating a survey requires an active organization.
+9. Return consistent status codes: 400 validation / inactive, 401 unauthenticated, 403 forbidden, 404 not found, 409 limits and conflicts, 429 rate limited.
+
+Plan and membership error codes (`docs/subscriptions.md`, section 7.3):
+
+| Code | HTTP | When |
+| ---- | ---- | ---- |
+| `NO_ORGANIZATION` | 409 | Creating a survey without an active organization |
+| `ACTIVE_LIMIT` | 409 | Activating above the plan's limit (1 Free, 5 Pro) |
+| `PRO_REQUIRED` | 403 | Inviting (or accepting) while the organization owner is not Pro |
+| `BUSINESS_REQUIRED` | 403 | Plan invites from someone who is not a Business owner |
+| `FORBIDDEN` | 403 | A member (not owner / admin) inviting |
+| `INVITE_LIMIT` | 409 | Owner + 3 members reached (pending invites and deactivated members count) |
+| `SEAT_LIMIT` | 409 | 3 Business seats reached (pending plan invites count) |
+| `ALREADY_SUBSCRIBED` | 409 | Inviting a seat holder or a Business owner to a Business plan |
+| `INDIVIDUAL_CANCEL_REQUIRED` | 409 | Accepting a plan invite without confirming the Individual plan cancellation |
+| `IN_BUSINESS_PLAN` | 409 | Renewing or buying a plan while holding a seat |
+| `SEATS_IN_USE` | 409 | Switching Business → Individual with members or pending plan invites |
+| `OWNER_HAS_NO_ORGANIZATION` | 409 | A Business owner inviting to the plan before creating their organization |
+| `OWNER_LIMIT` | 409 | Creating a second owned organization |
+| `MEMBERSHIP_LIMIT` | 409 | Creating or joining an 11th organization |
+| `OWNER_CANNOT_LEAVE` | 409 | The owner leaving their own organization |
+| `OWNER_PROTECTED` | 409 | Deactivating or removing the owner's membership |
+| `USER_NOT_FOUND`, `ALREADY_MEMBER`, `ALREADY_INVITED` | 404 / 409 | Invite lookups (no account → "email invites coming soon") |
+| `INVITE_NOT_FOUND`, `INVITE_EXPIRED` | 404 / 409 | Answering an invitation that is gone or older than 14 days |
 
 ## 9. UI/UX specification
 
@@ -687,9 +909,14 @@ Full research in `docs/contextual-top-bar.md`.
 | Dashboard | Date + greeting | New survey |
 | Surveys | All surveys · count | New survey |
 | Create / edit survey | Create survey / Edit survey | Create survey / Save changes |
-| Users | Users · count | Invite user (coming soon) |
+| Users | Users · count | Invite user (owner / admin, Pro only, max 3; "Pro feature" on Free) |
 | Edit user | Edit user | Save changes |
 | My profile | My profile | Save changes |
+| Invitations | Invitations · count | — (Accept / Decline per row) |
+| Settings → Plan | Plan | — (Renew plan for the owner, coming soon until there is a payment provider) |
+| Welcome (no organization) | Welcome | Create organization |
+
+An expired plan shows a banner above the top bar on every admin page: members see the notice only; the plan owner also gets "Renew plan".
 
 ### Survey card requirements (dashboard)
 
@@ -726,21 +953,27 @@ Recommended content order:
 /                                  public landing (marketing)
 ├── /s?code=AB12CD                 public kiosk
 ├── /sign-in                       email / password and Google
-├── /register                      new account and organization
-├── /dashboard
-├── /surveys
-├── /surveys/new
-├── /surveys/[id]
-├── /surveys/[id]/metrics
-├── /users
-├── /users/[id]
+├── /register                      new account (no organization name)
+├── /welcome                       no organization yet: create one, pending invitations
+├── /invitations                   pending invitations: accept / decline
+├── /dashboard                     ┐
+├── /surveys                       │
+├── /surveys/new                   │ need an active organization
+├── /surveys/[id]                  │ (otherwise → /welcome)
+├── /surveys/[id]/metrics          │
+├── /users                         │
+├── /users/[id]                    ┘
 ├── /profile
-└── /settings
+└── /settings                      → /settings/plan
+    ├── /settings/plan             plan summary, Business members, renew (coming soon)
+    └── /settings/organization     rename, leave (later)
 ```
+
+The active organization is kept in an `httpOnly` cookie (`panda-org`), checked against the user's active memberships on every request; the organization switcher lists every membership and sets it through a Server Action.
 
 The same URLs serve both languages; the language comes from the browser's `localStorage` (see Internationalization in section 3).
 
-`/` is the public landing (`(marketing)` route group: its own nav and footer, no sidebar, fully static). Its account buttons point to `/sign-in`, `/register` and `/dashboard` through `LANDING_LINKS`. Users join by signing up (each new account owns a new organization); inviting people into an organization comes later.
+`/` is the public landing (`(marketing)` route group: its own nav and footer, no sidebar, fully static). Its account buttons point to `/sign-in`, `/register` and `/dashboard` through `LANDING_LINKS`. Users join by signing up; a new account has no organization until the user creates their own (the only one they can ever own) or is invited into one. Inviting people is for Pro organizations only, and email invites for people without an account come later (see Plans and limits in section 1).
 
 Dashboard filters live in the URL (`/dashboard?range=this-month&tz=America/Mexico_City&days=mon,tue,wed,thu,fri`), so a view can be shared.
 
@@ -870,9 +1103,18 @@ This structure is a starting point, not a requirement to create every folder imm
 - [ ] Survey CRUD with id-preserving update, archiving and soft delete
 - [ ] Category picker and per-category question editor (faces, stars, poll options with image upload to S3)
 - [ ] QR panel generated on the client
-- [ ] Atomic 5-active limit
 - [ ] Survey table with search, filters and pagination
 - [ ] User management: list (avatar, search, status filter, bulk activate / deactivate / soft delete), create / edit form, my profile
+
+### Plans and organizations (`docs/subscriptions.md`, section 10)
+
+- [ ] Phase 1 — Memberships and ownership: `Membership`, `Organization.ownerId` and backfill; context, users list and actions on memberships (per-organization deactivation, `OWNER_PROTECTED`); active-organization cookie and a working switcher
+- [ ] Phase 2 — Registration without an organization: `/register` and Google sign-up create only the user; `/welcome` with create organization (`OWNER_LIMIT`, `MEMBERSHIP_LIMIT`); account / app context split; `NO_ORGANIZATION` on survey creation
+- [ ] Phase 3 — Subscriptions and plan limits: `Subscription`, `SubscriptionSeat`, derived plan state, active limit per plan (1 Free, 5 Pro), plan badge, expired-plan banner (Renew coming soon), `/settings/plan` summary, `set-plan.ts` script, seed plans
+- [ ] Phase 4 — Organization invitations: invites from owner / admin (Pro only, owner + 3, 14-day expiry), `/invitations` and the sidebar badge, accept / decline / revoke, leave organization, `MembershipEvent`
+- [ ] Phase 5 — Business plan: members card in Settings → Plan, plan invites (3 seats), Individual plan cancellation on accept, remove member (seat + membership), renewal rules (`SEATS_IN_USE`, `IN_BUSINESS_PLAN`), "invite by email — coming soon"
+- [ ] Phase 6 — Contract: drop `User.organizationId` and `User.role`
+- [ ] Later: email invites and the "member left" email, payment provider (checkout, renew, upgrade), organization settings (rename)
 
 ### Metrics
 
@@ -896,7 +1138,10 @@ The first production release should meet these criteria:
 - Anyone can open a survey by code, link or QR (including on Safari) and answer it without an account.
 - The kiosk runs unattended: it restarts after each response, recovers fullscreen and never leaves the camera on.
 - A submission is stored once, even with Enter + click, and public submissions are rate limited.
-- Authenticated users can create, edit, activate and delete surveys; no organization can have more than 5 active surveys, including under concurrent requests.
+- Authenticated users can create, edit, activate and delete surveys; no organization can go over its plan's active limit (1 Free, 5 Pro), including under concurrent requests.
+- Invites are Pro only (max 3 invited members, 3 Business seats), including under concurrent requests; no user owns more than one organization or belongs to more than 10.
+- A plan expires on its own at `currentPeriodEnd`: the Pro features are blocked for the owner and every member, nothing is deleted, and renewing unlocks the whole plan at once.
+- A signed-in user without an organization can use `/welcome`, `/invitations`, `/profile` and `/settings/plan`, but cannot create surveys.
 - Satisfaction, Rating and Poll surveys can be created, answered on the kiosk and analyzed; option types always match the survey category.
 - Editing a survey never changes or drops the metrics of past responses.
 - Dashboard and per-survey metrics match the stored responses for any date range, timezone and day-of-week filter, for active and inactive surveys.
@@ -906,7 +1151,9 @@ The first production release should meet these criteria:
 
 ## 14. Open decisions
 
-- Multiple organizations from day one? Is the 5-active limit per user or per organization?
+- Payment provider and prices per plan and interval (pending; nothing is charged yet).
+- Email provider for the email invites feature and the "member left" email to the owner (none in the project yet).
+- Billing intervals beyond monthly / yearly (not needed so far; the enum can grow).
 - Support emoji as reaction values?
 - Must a public submission answer every question?
 - Should a survey store its own `locale`, so the kiosk UI defaults to the language the questions are written in?

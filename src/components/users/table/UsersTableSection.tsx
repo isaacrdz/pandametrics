@@ -58,7 +58,7 @@ export function UsersTableSection({ data, params }: UsersTableSectionProps) {
   // Selection is per list view: changing a filter or the page starts empty, and rows that left
   // the page drop out of it. The signed-in user can never be selected.
   const listKey = buildUsersHref(params);
-  const selectableIds = data.rows.filter((row) => !row.isCurrentUser).map((row) => row.id);
+  const selectableIds = data.rows.filter((row) => !row.isCurrentUser && !row.isOwner).map((row) => row.id);
   const [selection, setSelection] = useState<{ key: string; ids: ReadonlySet<string> }>({ key: listKey, ids: new Set() });
   const selectedIds = selection.key === listKey ? selectableIds.filter((id) => selection.ids.has(id)) : [];
 

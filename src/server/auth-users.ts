@@ -22,22 +22,27 @@ function organizationNameFor(user: NewUserData): string {
   return user.name?.trim() || user.email.split("@")[0];
 }
 
-// Never a user without an organization: both in one transaction, the user as its OWNER. Only for
+// The organization a new user owns: ownerId and the owner's membership, in the caller's transaction
+async function createOwnedOrganization(tx: Prisma.TransactionClient, ownerId: string, name: string) {
+  const organization = await tx.organization.create({ data: { name, ownerId } });
+  await tx.membership.create({ data: { userId: ownerId, organizationId: organization.id, role: "OWNER" } });
+}
+
+// Never a user without an organization: both in one transaction, the user as its owner. Only for
 // emails a provider verified (Google, checked in the signIn callback)
 export async function createUserWithOrganization(data: NewUserData) {
   return prisma.$transaction(async (tx) => {
-    const organization = await tx.organization.create({ data: { name: organizationNameFor(data) } });
-    return tx.user.create({
+    const user = await tx.user.create({
       data: {
         name: data.name ?? null,
         email: data.email,
         emailVerified: data.emailVerified ?? new Date(),
         image: data.image ?? null,
-        role: "OWNER",
         isActive: true,
-        organizationId: organization.id,
       },
     });
+    await createOwnedOrganization(tx, user.id, organizationNameFor(data));
+    return user;
   });
 }
 
@@ -103,15 +108,24 @@ function getDummyHash(): string {
 }
 
 // null for every failure alike (unknown email, wrong password, Google-only account, inactive,
-// deleted or organization-less user), so the answer never tells which emails exist
+// deleted user, or one with no active membership), so the answer never tells which emails exist
 export async function verifyCredentials(email: string, password: string): Promise<SignedInUser | null> {
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, name: true, email: true, image: true, passwordHash: true, isActive: true, deletedAt: true, organizationId: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      passwordHash: true,
+      isActive: true,
+      deletedAt: true,
+      _count: { select: { memberships: { where: { isActive: true } } } },
+    },
   });
   // Hash anyway when there is no user, so a missing email takes as long as a wrong password
   const valid = verifyPassword(password, user?.passwordHash ?? getDummyHash());
-  if (!user || !valid || !user.passwordHash || !user.isActive || user.deletedAt || !user.organizationId) return null;
+  if (!user || !valid || !user.passwordHash || !user.isActive || user.deletedAt || user._count.memberships === 0) return null;
   return { id: user.id, name: user.name, email: user.email, image: user.image };
 }
 
@@ -121,24 +135,23 @@ export class EmailTakenError extends Error {
   }
 }
 
-// Open registration: the organization and its OWNER in one transaction. The email stays unverified
+// Open registration: the user and the organization they own in one transaction. The email stays unverified
 // (emailVerified null) until its owner signs in with Google, which then takes the account over
 export async function registerOwner(input: RegisterValues): Promise<{ id: string }> {
   try {
     return await prisma.$transaction(async (tx) => {
-      const organization = await tx.organization.create({ data: { name: input.organizationName } });
-      return tx.user.create({
+      const user = await tx.user.create({
         data: {
           name: input.name,
           email: input.email,
           passwordHash: hashPassword(input.password),
           emailVerified: null,
-          role: "OWNER",
           isActive: true,
-          organizationId: organization.id,
         },
         select: { id: true },
       });
+      await createOwnedOrganization(tx, user.id, input.organizationName);
+      return user;
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new EmailTakenError();

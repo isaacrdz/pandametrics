@@ -6,12 +6,14 @@ import { hashPassword, verifyPassword } from "@/lib/users/password";
 import type { UserFormValues } from "@/lib/users/schema";
 import { userTag } from "@/lib/users/tags";
 import { prisma } from "@/server/prisma";
-import type { User } from "@/types/survey";
+import type { User, UserAccount } from "@/types/survey";
 
-// Users service on Prisma (Neon). The password hash is only read inside this module, to verify the
-// current password, and never returned: every query that leaves it uses USER_PUBLIC_SELECT.
+// Users service on Prisma (Neon). A user belongs to an organization through a Membership, which
+// holds their role and whether they are active there. The password hash is only read inside this
+// module, to verify the current password, and never returned: every query that leaves it uses
+// USER_PUBLIC_SELECT.
 
-export type UserErrorCode = "NOT_FOUND" | "SELF_DEACTIVATE" | "LAST_OWNER" | "EMAIL_TAKEN" | "WRONG_PASSWORD";
+export type UserErrorCode = "NOT_FOUND" | "SELF_DEACTIVATE" | "OWNER_PROTECTED" | "EMAIL_TAKEN" | "WRONG_PASSWORD";
 
 export class UserServiceError extends Error {
   constructor(readonly code: UserErrorCode) {
@@ -21,28 +23,33 @@ export class UserServiceError extends Error {
 
 export interface UserScope {
   organizationId: string;
-  // The signed-in user, who can never deactivate or delete themselves
+  // The signed-in user, who can never deactivate or remove themselves
   userId: string;
 }
 
-// Every column of the User type, never passwordHash
+// Every column of the account (UserAccount), never passwordHash. Role and status come from the membership
 export const USER_PUBLIC_SELECT = {
   id: true,
   name: true,
   email: true,
   image: true,
   phone: true,
-  role: true,
-  isActive: true,
-  organizationId: true,
   deletedAt: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
 
-// Listed users: the organization's, not soft deleted
+const MEMBER_SELECT = { role: true, isActive: true, user: { select: USER_PUBLIC_SELECT } } satisfies Prisma.MembershipSelect;
+
+type MemberRow = Prisma.MembershipGetPayload<{ select: typeof MEMBER_SELECT }>;
+
+function toUser({ user, role, isActive }: MemberRow): User {
+  return { ...user, role, isActive };
+}
+
+// Listed members: the organization's, with an account that is not soft deleted
 function listedIn(organizationId: string) {
-  return { organizationId, deletedAt: null } satisfies Prisma.UserWhereInput;
+  return { organizationId, user: { deletedAt: null } } satisfies Prisma.MembershipWhereInput;
 }
 
 // A unique-constraint error on the email column
@@ -55,19 +62,21 @@ function isEmailTaken(error: unknown): boolean {
 }
 
 export async function listUsers(organizationId: string): Promise<User[]> {
-  return prisma.user.findMany({ where: listedIn(organizationId), select: USER_PUBLIC_SELECT });
+  const rows = await prisma.membership.findMany({ where: listedIn(organizationId), select: MEMBER_SELECT });
+  return rows.map(toUser);
 }
 
 export async function getUser(organizationId: string, id: string): Promise<User | null> {
-  return prisma.user.findFirst({ where: { id, ...listedIn(organizationId) }, select: USER_PUBLIC_SELECT });
+  const row = await prisma.membership.findFirst({ where: { userId: id, ...listedIn(organizationId) }, select: MEMBER_SELECT });
+  return row && toUser(row);
 }
 
-// Any user, deleted or not: surveys keep showing who created them
-export async function getUserById(id: string): Promise<User | null> {
+// Any account, deleted or not and in any organization: surveys keep showing who created them
+export async function getUserById(id: string): Promise<UserAccount | null> {
   return prisma.user.findUnique({ where: { id }, select: USER_PUBLIC_SELECT });
 }
 
-type Change = "activate" | "deactivate" | "delete";
+type Change = "activate" | "deactivate" | "remove";
 
 // Checks every id before touching any of them, so a bulk change is all or nothing
 async function assertChangeAllowed(
@@ -77,26 +86,25 @@ async function assertChangeAllowed(
   change: Change,
 ): Promise<string[]> {
   const unique = [...new Set(ids)];
-  const found = await tx.user.count({ where: { id: { in: unique }, ...listedIn(scope.organizationId) } });
+  const found = await tx.membership.count({ where: { userId: { in: unique }, ...listedIn(scope.organizationId) } });
   if (found !== unique.length) throw new UserServiceError("NOT_FOUND");
   if (change === "activate") return unique;
 
   if (unique.includes(scope.userId)) throw new UserServiceError("SELF_DEACTIVATE");
 
-  // The organization must keep one active owner after the change
-  const ownersLeft = await tx.user.count({
-    where: { ...listedIn(scope.organizationId), role: "OWNER", isActive: true, id: { notIn: unique } },
-  });
-  if (ownersLeft === 0) throw new UserServiceError("LAST_OWNER");
+  // The owner's membership is never deactivated or removed
+  const organization = await tx.organization.findUnique({ where: { id: scope.organizationId }, select: { ownerId: true } });
+  if (organization && unique.includes(organization.ownerId)) throw new UserServiceError("OWNER_PROTECTED");
   return unique;
 }
 
-// Returns how many users actually changed
+// In this organization only: the account and its other memberships are untouched. Returns how many
+// users actually changed
 export async function setUsersActive(scope: UserScope, ids: string[], isActive: boolean): Promise<number> {
   return prisma.$transaction(async (tx) => {
     const targets = await assertChangeAllowed(tx, scope, ids, isActive ? "activate" : "deactivate");
-    const { count } = await tx.user.updateMany({
-      where: { id: { in: targets }, isActive: !isActive },
+    const { count } = await tx.membership.updateMany({
+      where: { organizationId: scope.organizationId, userId: { in: targets }, isActive: !isActive },
       data: { isActive },
     });
     return count;
@@ -107,11 +115,14 @@ export async function setUserActive(scope: UserScope, id: string, isActive: bool
   await setUsersActive(scope, [id], isActive);
 }
 
-// Soft delete: the email stays taken and the user's surveys keep their "created by"
-export async function softDeleteUsers(scope: UserScope, ids: string[]): Promise<number> {
+// Removes the users from this organization (their memberships). The accounts stay, so they can still
+// sign in elsewhere, and their surveys keep "created by"
+export async function removeUsers(scope: UserScope, ids: string[]): Promise<number> {
   return prisma.$transaction(async (tx) => {
-    const targets = await assertChangeAllowed(tx, scope, ids, "delete");
-    const { count } = await tx.user.updateMany({ where: { id: { in: targets } }, data: { deletedAt: new Date() } });
+    const targets = await assertChangeAllowed(tx, scope, ids, "remove");
+    const { count } = await tx.membership.deleteMany({
+      where: { organizationId: scope.organizationId, userId: { in: targets } },
+    });
     return count;
   });
 }
@@ -132,11 +143,12 @@ export async function hasPassword(id: string): Promise<boolean> {
 
 // Name, email and phone; the password only changes when a new one was sent
 export async function updateUser(scope: UserScope, id: string, input: UserFormValues): Promise<User> {
-  const user = await prisma.user.findFirst({
-    where: { id, ...listedIn(scope.organizationId) },
-    select: { id: true, passwordHash: true },
+  const membership = await prisma.membership.findFirst({
+    where: { userId: id, ...listedIn(scope.organizationId) },
+    select: { role: true, isActive: true, user: { select: { passwordHash: true } } },
   });
-  if (!user) throw new UserServiceError("NOT_FOUND");
+  if (!membership) throw new UserServiceError("NOT_FOUND");
+  const { user, role, isActive } = membership;
   // Your own password always needs the current one, even when the edit comes from the
   // user form instead of the profile (the page redirects, but the action can be called directly).
   // Without one (Google-only), the first password is set without it
@@ -145,7 +157,7 @@ export async function updateUser(scope: UserScope, id: string, input: UserFormVa
   }
 
   try {
-    return await prisma.user.update({
+    const account = await prisma.user.update({
       where: { id },
       data: {
         name: input.name,
@@ -155,6 +167,7 @@ export async function updateUser(scope: UserScope, id: string, input: UserFormVa
       },
       select: USER_PUBLIC_SELECT,
     });
+    return { ...account, role, isActive };
   } catch (error) {
     if (isEmailTaken(error)) throw new UserServiceError("EMAIL_TAKEN");
     throw error;
