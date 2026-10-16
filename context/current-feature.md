@@ -1,18 +1,28 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Prisma + Neon PostgreSQL Setup
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Prisma ORM 7 with Neon PostgreSQL (serverless): `prisma` (dev), `@prisma/client`, `@prisma/adapter-pg`, `dotenv` and `tsx` (dev); Prisma 7 upgrade guide read before starting
+- `prisma.config.ts`: schema `prisma/schema.prisma`, migrations in `prisma/migrations`, `datasource.url` from `DIRECT_URL` (CLI), `dotenv/config`
+- `prisma/schema.prisma` from the data models in `project-overview.md` (sections 4 and 5): generator `prisma-client` into `src/generated/prisma`, datasource without `url`; enums `Role`, `SurveyCategory`, `AnswerType`, `ResponseSource`; models `Organization`, `User` (phone, passwordHash, role, isActive, deletedAt), `Survey`, `Question`, `AnswerOption`, `SurveyResponse` (`Timestamptz` createdAt), `ResponseItem` (answer snapshot)
+- NextAuth / Auth.js models: `Account`, `Session`, `VerificationToken`, cascading from `User`
+- Indexes and delete rules as in the overview: cascade where data belongs to its parent (Auth.js rows, response items), `Restrict` where history must survive (surveys, questions, options, responses), `SetNull` for a user's organization; unique `Survey.code`, `User.email`, `[responseId, questionId]`
+- `.env` with `DATABASE_URL` (pooled, development branch) and `DIRECT_URL` (direct); `.env.example` committed; `.env` and `src/generated/prisma` git-ignored
+- First migration created with `prisma migrate dev --name init` on the development branch (never `db push`), with the `activeSurveyCount BETWEEN 0 AND 5` CHECK added to its SQL; schema and migrations committed
+- Server-only Prisma client (`PrismaPg` adapter, `globalThis` singleton) not yet used by the app
+- `yarn lint`, `tsc --noEmit`, `yarn build` still pass; the app keeps the in-memory stores
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/database-spec.md`; data models: `context/project-overview.md` (sections 4 and 5); standards: `context/coding-standars.md`
+- A development branch (in `DATABASE_URL`) and a production branch: always migrations, never push directly unless specified
+- Prisma 7 breaking changes: https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7 ; setup guide: https://www.prisma.io/docs/getting-started/prisma-orm/quickstart/prisma-postgres
+- Needs the Neon connection strings from the user before migrating
+- Seed is a separate feature (`context/features/seed-spec.md`)
 
 ## History
 

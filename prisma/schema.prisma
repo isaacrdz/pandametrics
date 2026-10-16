@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum SurveyCategory {
+  SATISFACTION
+  RATING
+  POLL
+}
+
+enum AnswerType {
+  REACTION
+  RATING
+  TEXT
+  IMAGE
+}
+
+enum ResponseSource {
+  KIOSK
+  LINK
+  QR
+}
+
+model Organization {
+  id                String   @id @default(cuid())
+  name              String
+  activeSurveyCount Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  users     User[]
+  surveys   Survey[]
+  responses SurveyResponse[]
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  phone          String?
+  passwordHash   String?
+  role           Role      @default(MEMBER)
+  isActive       Boolean   @default(true)
+  organizationId String?
+  deletedAt      DateTime?
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  accounts     Account[]
+  sessions     Session[]
+  surveys      Survey[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, isActive])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Survey {
+  id             String         @id @default(cuid())
+  organizationId String
+  createdById    String
+  code           String         @unique @db.VarChar(6)
+  name           String
+  description    String         @default("")
+  category       SurveyCategory
+  isActive       Boolean        @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  createdBy    User             @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  questions    Question[]
+  responses    SurveyResponse[]
+
+  @@index([organizationId, isActive])
+  @@index([organizationId, category])
+  @@index([organizationId, updatedAt(sort: Desc)])
+}
+
+model Question {
+  id         String    @id @default(cuid())
+  surveyId   String
+  text       String
+  position   Int
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  survey  Survey         @relation(fields: [surveyId], references: [id], onDelete: Restrict)
+  options AnswerOption[]
+  items   ResponseItem[]
+
+  @@index([surveyId, position])
+}
+
+model AnswerOption {
+  id         String     @id @default(cuid())
+  questionId String
+  type       AnswerType
+  value      String
+  label      String
+  color      String     @default("")
+  position   Int
+  archivedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  question Question       @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  items    ResponseItem[]
+
+  @@index([questionId, position])
+}
+
+model SurveyResponse {
+  id             String         @id @default(cuid())
+  surveyId       String
+  organizationId String
+  source         ResponseSource
+  deviceId       String?
+  locale         String?
+  durationMs     Int?
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+
+  survey       Survey         @relation(fields: [surveyId], references: [id], onDelete: Restrict)
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  items        ResponseItem[]
+
+  @@index([surveyId, createdAt(sort: Desc)])
+  @@index([organizationId, createdAt(sort: Desc)])
+}
+
+model ResponseItem {
+  id             String     @id @default(cuid())
+  responseId     String
+  questionId     String
+  answerOptionId String
+  answerType     AnswerType
+  answerValue    String
+  answerLabel    String
+
+  response     SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question     Question       @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  answerOption AnswerOption   @relation(fields: [answerOptionId], references: [id], onDelete: Restrict)
+
+  @@unique([responseId, questionId])
+  @@index([questionId])
+  @@index([answerOptionId])
+}
