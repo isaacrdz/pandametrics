@@ -4,7 +4,7 @@ import { AppContentSkeleton, NavUserSkeleton } from "@/components/layout/AppShel
 import { AppShellProvider } from "@/components/layout/AppShellProvider";
 import { SidebarUser } from "@/components/layout/SidebarUser";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { getAppContext } from "@/server/app-context";
+import { getAccountContext } from "@/server/app-context";
 
 // Collapsed rail wide enough for the 40px logo, nav buttons and avatar used when expanded
 const SIDEBAR_STYLE = { "--sidebar-width-icon": "4rem" } as CSSProperties;
@@ -12,11 +12,15 @@ const SIDEBAR_STYLE = { "--sidebar-width-icon": "4rem" } as CSSProperties;
 // The signed-in user comes from the session cookie (request data), so the sidebar frame and
 // navigation are the static shell and everything that depends on the user streams in Suspense
 async function AppContent({ children }: { children: React.ReactNode }) {
-  const { user, organization, organizations } = await getAppContext();
+  // The account level: /profile works without an organization; the organization pages call
+  // getAppContext themselves, which sends a user without one to /welcome
+  const { user, organization, organizations, ownsOrganization } = await getAccountContext();
 
   return (
     // Each page renders its own AppTopBar (its header) from this shared data
-    <AppShellProvider value={{ userName: user.name, organizations, currentOrganizationId: organization.id }}>
+    <AppShellProvider
+      value={{ userName: user.name, organizations, currentOrganizationId: organization?.id ?? null, ownsOrganization }}
+    >
       <div className="flex-1">{children}</div>
     </AppShellProvider>
   );

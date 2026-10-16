@@ -4,8 +4,6 @@ import { USER_LIMITS, baseSchema, isValidPassword } from "@/lib/users/schema";
 // Sign-in and registration input. Shared by the API, Auth.js and (phase 3) the forms, with the same
 // field rules as the user form. Error messages are keys under "validation" in src/messages.
 
-export const ORGANIZATION_NAME_MAX = 80;
-
 export const signInSchema = z.object({
   email: baseSchema.shape.email,
   // Only presence and the upper bound: the rules belong to registration, not to checking a password
@@ -18,11 +16,6 @@ export const registerSchema = z
     email: baseSchema.shape.email,
     password: z.string(),
     confirmPassword: z.string(),
-    organizationName: z
-      .string()
-      .trim()
-      .min(1, { error: "required" })
-      .max(ORGANIZATION_NAME_MAX, { error: "tooLong" }),
   })
   .superRefine((values, ctx) => {
     if (values.password === "") {

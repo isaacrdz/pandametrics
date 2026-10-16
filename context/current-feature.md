@@ -1,18 +1,33 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Subscriptions Phase 2 — Registration Without an Organization
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `registerSchema` without `organizationName`; `ORGANIZATION_NAME_MAX` and `organizationSchema` (trimmed name, 1–80) in `src/lib/organizations/schema.ts`; `RegisterForm`, `POST /api/v1/auth/register` and i18n keys follow
+- `registerOwner` → `registerUser` (user only: scrypt hash, `emailVerified: null`, active); Google `createUser` uses the Prisma adapter default; `createUserWithOrganization` deleted; comments updated
+- `verifyCredentials` drops the active-membership condition: an account without an organization can sign in; after sign-in / registration still `/dashboard`
+- `getAccountContext()` (user, memberships, `ownsOrganization`, `organization: Organization | null`; redirect to sign-in without a usable account) and `getAppContext()` built on it, redirecting to `/welcome` without an active organization; `getSessionAppContext()` non-redirecting variant for Server Actions (`signed-out` / `no-organization` / `ok`)
+- `(app)` layout on `getAccountContext()`; `AppShellProvider.currentOrganizationId: string | null`; with no organization: no switcher in the top bars, Dashboard / Surveys / Users link to `/welcome`, `/profile` keeps working
+- `OrganizationSwitcher` "Create organization" item (→ `/welcome`) while the user owns none
+- `/welcome` in `src/app/(onboarding)/welcome` with a minimal layout (logo, user menu: name, theme, language, sign out; no sidebar): "Welcome, {name}", "Create my organization" card (name field, pending state, errors); users who already own one → `/dashboard`
+- `createOrganization` action → `src/lib/organizations/service.ts`: one transaction locking the user row, `OWNER_LIMIT` (already owns one, or `P2002` on `ownerId`), `MEMBERSHIP_LIMIT` (≥ 10, `MAX_MEMBERSHIPS` in `src/lib/plans/limits.ts`), organization + owner membership; expire `user:{id}`, set `panda-org`, go to `/dashboard`
+- `createSurvey` returns `NO_ORGANIZATION` without an active organization (`getSessionAppContext`); `SurveyForm` toasts and pushes `/welcome`; the survey service checks an active membership in `scope.organizationId` inside the create transaction; `/surveys/new` calls `getAppContext()` itself
+- `src/proxy.ts` matcher adds `/welcome`; i18n namespaces `onboarding` and `organizations` (errors `OWNER_LIMIT`, `MEMBERSHIP_LIMIT`) plus `surveys.errors.NO_ORGANIZATION` in en / es
+- Seed: Nora Díaz (`nora@example.com`, dev password) with no memberships
+- `yarn lint`, `tsc` and `yarn build` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/subscriptions-phase-2-no-organization-spec.md`; research: `docs/subscriptions.md` (sections 5 and 7.1)
+- Pending invitations on `/welcome` come in phase 4; the organization settings page comes later
+- Any user who does not own an organization can create one at any time (Business members included, phase 5)
+- Existing users keep their organization; only new sign-ups start without one
+- Phase 1 behavior to replace: a user with no memberships is sent to `/sign-in`; from now on they land on `/welcome`
+- Testing: register by email and by Google (new account → `/welcome`, nothing created in Neon), create "Nora Studio", parallel second create → `OWNER_LIMIT`, 10 memberships → `MEMBERSHIP_LIMIT`, `/dashboard` / `/surveys` / `/surveys/new` → `/welcome`, `/profile` works, `createSurvey` posted directly → `NO_ORGANIZATION`
+- Restart the dev server on :3000 before testing in the browser (it still has the pre-phase-1 Prisma client)
 
 ## History
 

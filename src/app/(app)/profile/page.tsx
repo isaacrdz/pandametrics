@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { ProfilePictureCard } from "@/components/users/ProfilePictureCard";
 import { UserForm } from "@/components/users/form/UserForm";
 import { ProfileFormSkeleton } from "@/components/users/form/UserFormSkeleton";
-import { getAppContext } from "@/server/app-context";
+import { getAccountContext } from "@/server/app-context";
 import { getInitials } from "@/lib/format";
 import { toUserFormValues } from "@/lib/users/schema";
 import { hasPassword } from "@/lib/users/service";
@@ -15,7 +15,8 @@ export const metadata: Metadata = {
 // The signed-in user only (from the session); plain values, never the password hash. The session is
 // request data, so it is read inside Suspense: a navigation shows the skeleton at once
 async function ProfileContent() {
-  const { user } = await getAppContext();
+  // Works without an organization too (a new account on its way to /welcome)
+  const { user, role } = await getAccountContext();
   // Google-only accounts set a first password instead of changing one
   const mode = (await hasPassword(user.id)) ? "profile" : "profileSetPassword";
 
@@ -30,7 +31,7 @@ async function ProfileContent() {
         <ProfilePictureCard
           name={user.name ?? user.email ?? ""}
           email={user.email ?? ""}
-          role={user.role}
+          role={role}
           image={user.image}
           initials={getInitials(user.name)}
         />

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { WELCOME_PATH } from "@/lib/auth/paths";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, type FieldErrors, type FieldPath, type Resolver } from "react-hook-form";
 import { useTranslations } from "next-intl";
@@ -76,6 +77,8 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
         form.setError("isActive", { type: "server", message: "ACTIVE_LIMIT" });
       }
       toast.error(t(`errors.${error.code}`, { limit: ACTIVE_SURVEY_LIMIT }));
+      // No organization yet (or no longer a member): create one first
+      if (error.code === "NO_ORGANIZATION") router.push(WELCOME_PATH);
     });
   }
 

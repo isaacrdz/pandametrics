@@ -8,7 +8,10 @@ import type { Organization } from "@/types/survey";
 export interface AppShellValue {
   userName: string | null;
   organizations: Organization[];
-  currentOrganizationId: string;
+  // null without an organization yet (/profile on the way to /welcome): no switcher
+  currentOrganizationId: string | null;
+  // false: the switcher offers "Create organization"
+  ownsOrganization: boolean;
 }
 
 const AppShellContext = createContext<AppShellValue | null>(null);

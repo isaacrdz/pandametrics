@@ -136,6 +136,8 @@ providers: [
 
 ### 4.1 Open sign-up: anyone may sign in
 
+> **Superseded (2026-10-16):** sign-up no longer creates an organization, neither with Google nor on `/register` (which no longer asks for an organization name). A new account starts with no organization and creates its own on `/welcome`, or joins one through an invitation. See `docs/subscriptions.md`, section 5. The text below and in 4.2 describes the original decision.
+
 Any Google account with a verified email can sign in. An email that is not in `User` creates a **new user who is `OWNER` of a new organization** (named after the user, e.g. "Miguel Rayon"; renaming comes with the future organization settings). An existing email signs in to that user.
 
 Implementation: the adapter's `createUser` is wrapped (`{ ...PrismaAdapter(prisma), createUser }`). One transaction creates the organization and the user (`role: OWNER`, `organizationId`), so no user ever exists without an organization.

@@ -13,6 +13,7 @@ import type {
   SurveyCategory,
   SurveyResponse,
   User,
+  UserAccount,
 } from "@/types/survey";
 
 export const REACTION_OPTIONS: {
@@ -87,6 +88,7 @@ export const JORDAN_ID = objectId(ID_KIND.user, 1);
 export const ANA_ID = objectId(ID_KIND.user, 2);
 // Panda Labs' owner; user 9 is the real owner account (prisma/seed.ts)
 export const VALERIA_ID = objectId(ID_KIND.user, 10);
+export const NORA_ID = objectId(ID_KIND.user, 11);
 
 export function buildOrganizations(now: Date): Organization[] {
   return [
@@ -159,6 +161,22 @@ export function buildUsers(now: Date): SeedMember[] {
     updatedAt: daysAgo(now, 40),
   };
   return [...acme, valeria];
+}
+
+// Accounts with no organization: they land on /welcome (docs/subscriptions.md, phase 2)
+export function buildAccounts(now: Date): UserAccount[] {
+  return [
+    {
+      id: NORA_ID,
+      name: "Nora Díaz",
+      email: "nora@example.com",
+      image: null,
+      phone: null,
+      deletedAt: null,
+      createdAt: daysAgo(now, 2),
+      updatedAt: daysAgo(now, 2),
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------

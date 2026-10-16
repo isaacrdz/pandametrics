@@ -13,7 +13,8 @@ import type { Role } from "@/types/survey";
 interface ProfilePictureCardProps {
   name: string;
   email: string;
-  role: Role;
+  // In the active organization; null without one
+  role: Role | null;
   image: string | null;
   initials: string;
 }
@@ -54,7 +55,7 @@ export function ProfilePictureCard({ name, email, role, image, initials }: Profi
         <div className="flex min-w-0 flex-col gap-1.5 @4xl/profile:items-center">
           <p className="truncate text-lg font-semibold text-foreground">{name}</p>
           <p className="truncate text-sm text-muted-foreground">{email}</p>
-          <UserRoleBadge role={role} />
+          {role && <UserRoleBadge role={role} />}
         </div>
       </div>
 

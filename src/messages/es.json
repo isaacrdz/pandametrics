@@ -30,7 +30,8 @@
     "organizationLabel": "Organización: {name}",
     "language": "Idioma",
     "languageLabel": "Idioma: {name}",
-    "organizationSwitchError": "No se pudo cambiar de organización. Inténtalo de nuevo."
+    "organizationSwitchError": "No se pudo cambiar de organización. Inténtalo de nuevo.",
+    "createOrganization": "Crear organización"
   },
   "greeting": {
     "hello": "{period, select, morning {Buenos días} afternoon {Buenas tardes} evening {Buenas noches} other {Hola}}, {name}"
@@ -419,7 +420,8 @@
       "ACTIVE_LIMIT": "Ya tienes {limit} encuestas activas. Desactiva una primero.",
       "NOT_FOUND": "Esta encuesta ya no existe.",
       "CATEGORY_LOCKED": "La categoría no se puede cambiar porque esta encuesta ya tiene respuestas.",
-      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
+      "NO_ORGANIZATION": "Primero crea tu organización para hacer encuestas."
     },
     "questions": {
       "label": "Pregunta {number}",
@@ -622,6 +624,28 @@
       "close": "Cerrar"
     }
   },
+  "onboarding": {
+    "title": "Hola, {name}",
+    "titleNoName": "Te damos la bienvenida a Panda Metrics",
+    "subtitle": "Necesitas una organización para crear encuestas y ver sus resultados.",
+    "create": {
+      "title": "Crear mi organización",
+      "description": "Tu empresa, tienda o equipo. La organización será tuya.",
+      "name": "Nombre de la organización",
+      "hint": "Puedes cambiarle el nombre después.",
+      "submit": "Crear organización",
+      "pending": "Creando…"
+    }
+  },
+  "organizations": {
+    "errors": {
+      "OWNER_LIMIT": "Ya tienes una organización propia. Cada cuenta puede tener solo una.",
+      "MEMBERSHIP_LIMIT": "Ya estás en {max} organizaciones, el máximo permitido. Sal de una primero.",
+      "NOT_FOUND": "Esta organización ya no está disponible.",
+      "VALIDATION": "Revisa los campos marcados.",
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
+    }
+  },
   "auth": {
     "signIn": {
       "title": "Bienvenido de nuevo",
@@ -634,7 +658,7 @@
     },
     "register": {
       "title": "Crea tu cuenta",
-      "subtitle": "Tu propia organización, lista en un minuto.",
+      "subtitle": "Empieza gratis. Después configurarás tu organización.",
       "submit": "Crear cuenta",
       "pending": "Creando cuenta…",
       "haveAccount": "¿Ya tienes cuenta?",
@@ -645,8 +669,6 @@
       "email": "Email",
       "password": "Contraseña",
       "confirmPassword": "Confirmar contraseña",
-      "organizationName": "Nombre de la organización",
-      "organizationHint": "Tu empresa, tienda o equipo.",
       "passwordRules": "Al menos 8 caracteres, con una letra y un número."
     },
     "google": "Continuar con Google",

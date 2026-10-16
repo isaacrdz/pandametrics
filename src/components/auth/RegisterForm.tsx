@@ -17,12 +17,12 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { DEFAULT_AFTER_SIGN_IN, SIGN_IN_PATH } from "@/lib/auth/paths";
-import { ORGANIZATION_NAME_MAX, registerSchema, type RegisterInput } from "@/lib/auth/schema";
+import { registerSchema, type RegisterInput } from "@/lib/auth/schema";
 import { USER_LIMITS } from "@/lib/users/schema";
 
-const EMPTY: RegisterInput = { name: "", email: "", password: "", confirmPassword: "", organizationName: "" };
+const EMPTY: RegisterInput = { name: "", email: "", password: "", confirmPassword: "" };
 
-const FIELD_NAMES: FieldPath<RegisterInput>[] = ["name", "email", "password", "confirmPassword", "organizationName"];
+const FIELD_NAMES: FieldPath<RegisterInput>[] = ["name", "email", "password", "confirmPassword"];
 
 // Max length per field, for the "Use {max} characters or fewer" message
 const MAX: Record<FieldPath<RegisterInput>, number> = {
@@ -30,7 +30,6 @@ const MAX: Record<FieldPath<RegisterInput>, number> = {
   email: USER_LIMITS.email,
   password: USER_LIMITS.passwordMax,
   confirmPassword: USER_LIMITS.passwordMax,
-  organizationName: ORGANIZATION_NAME_MAX,
 };
 
 interface ApiError {
@@ -79,7 +78,7 @@ export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
     });
   }
 
-  function textField(name: "name" | "email" | "organizationName", type: "text" | "email", autoComplete: string, hint?: string) {
+  function textField(name: "name" | "email", type: "text" | "email", autoComplete: string, hint?: string) {
     const id = `register-${name}`;
     return (
       <Controller
@@ -160,7 +159,6 @@ export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
           {textField("email", "email", "email")}
           {passwordField("password", t("fields.passwordRules"))}
           {passwordField("confirmPassword")}
-          {textField("organizationName", "text", "organization", t("fields.organizationHint"))}
         </FieldGroup>
 
         <Button type="submit" disabled={isPending} className="h-12 w-full gap-2 rounded-xl text-[0.95rem] font-semibold">

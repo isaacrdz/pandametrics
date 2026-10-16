@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthFormSkeleton } from "@/components/auth/AuthFormSkeleton";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { safeCallbackUrl } from "@/lib/auth/paths";
-import { getSessionContext } from "@/server/app-context";
+import { getSessionAccount } from "@/server/app-context";
 
 export const metadata: Metadata = {
   title: "Create your account · Panda Metrics",
@@ -13,13 +13,13 @@ export const metadata: Metadata = {
 async function RegisterContent({ searchParams }: Pick<PageProps<"/register">, "searchParams">) {
   const params = await searchParams;
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
-  if (await getSessionContext()) redirect(callbackUrl);
+  if (await getSessionAccount()) redirect(callbackUrl);
   return <RegisterForm callbackUrl={callbackUrl} />;
 }
 
 export default function RegisterPage({ searchParams }: PageProps<"/register">) {
   return (
-    <Suspense fallback={<AuthFormSkeleton fields={5} />}>
+    <Suspense fallback={<AuthFormSkeleton fields={4} />}>
       <RegisterContent searchParams={searchParams} />
     </Suspense>
   );

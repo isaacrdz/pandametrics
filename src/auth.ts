@@ -8,13 +8,14 @@ import { revalidateTag } from "next/cache";
 import authConfig, { CREDENTIAL_FIELDS } from "@/auth.config";
 import { signInSchema } from "@/lib/auth/schema";
 import { userTag } from "@/lib/users/tags";
-import { canSignIn, createUserWithOrganization, onGoogleAccountLinked, syncGooglePhoto, verifyCredentials } from "@/server/auth-users";
+import { canSignIn, createProviderUser, onGoogleAccountLinked, syncGooglePhoto, verifyCredentials } from "@/server/auth-users";
 import { clientIpFrom } from "@/server/client-ip";
 import { createRateLimiter } from "@/server/rate-limit";
 import { prisma } from "@/server/prisma";
 
 // The app's Auth.js instance: shared options (auth.config.ts) plus the database. Sign-up is open:
-// a new Google account becomes the OWNER of its own organization (rules in src/server/auth-users.ts)
+// a new Google account starts with no organization and creates it on /welcome (rules in
+// src/server/auth-users.ts)
 
 // The adapter's types expect @prisma/client; the app's client is generated in src/generated/prisma
 const prismaAdapter = PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]);
@@ -22,7 +23,7 @@ const prismaAdapter = PrismaAdapter(prisma as unknown as Parameters<typeof Prism
 const adapter: Adapter = {
   ...prismaAdapter,
   async createUser(user) {
-    return (await createUserWithOrganization(user)) as AdapterUser;
+    return (await createProviderUser(user)) as AdapterUser;
   },
 };
 

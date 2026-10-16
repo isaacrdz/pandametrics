@@ -1,7 +1,7 @@
 // Fills the Neon development branch with the demo data (src/lib/seed-data.ts): 2 organizations,
-// 9 users with their memberships (Acme's 8, Panda Labs' owner Valeria), 5 surveys and their
-// responses, with fixed ids and seeded counts. Then the owner account: Miguel Rayon, owner and only
-// member of Leyinork.
+// 9 users with their memberships (Acme's 8, Panda Labs' owner Valeria), Nora without an organization,
+// 5 surveys and their responses, with fixed ids and seeded counts. Then the owner account: Miguel
+// Rayon, owner and only member of Leyinork.
 //
 //   npx prisma db seed
 //
@@ -13,6 +13,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import {
   ID_KIND,
+  buildAccounts,
   buildAllResponses,
   buildOrganizations,
   buildSurveys,
@@ -72,6 +73,7 @@ async function main() {
   const surveys = buildSurveys(now);
   const responses = buildAllResponses(surveys, now);
   const users = buildUsers(now);
+  const accounts = buildAccounts(now);
   // The active-survey counter must match the active surveys the seed creates
   const organizations = buildOrganizations(now).map((organization) => ({
     ...organization,
@@ -82,19 +84,26 @@ async function main() {
 
   await prisma.$transaction(
     async (tx) => {
-      // Previous seed, in foreign-key order (response items cascade from their response)
-      const inSeededOrganizations = { organizationId: { in: organizationIds } };
+      // Previous seed, in foreign-key order (response items cascade from their response). Besides
+      // the seeded organizations, any organization a seeded account created since (Nora on
+      // /welcome) goes too: its owner is about to be deleted
+      const emails = [...users, ...accounts].map((user) => user.email ?? "");
+      const previous = await tx.organization.findMany({
+        where: { OR: [{ id: { in: organizationIds } }, { owner: { email: { in: emails } } }] },
+        select: { id: true },
+      });
+      const inSeededOrganizations = { organizationId: { in: previous.map((organization) => organization.id) } };
       await tx.surveyResponse.deleteMany({ where: inSeededOrganizations });
       await tx.answerOption.deleteMany({ where: { question: { survey: inSeededOrganizations } } });
       await tx.question.deleteMany({ where: { survey: inSeededOrganizations } });
       await tx.survey.deleteMany({ where: inSeededOrganizations });
       // Organizations before their owners (ownerId is Restrict); their memberships cascade
-      await tx.organization.deleteMany({ where: { id: { in: organizationIds } } });
-      await tx.user.deleteMany({ where: { email: { in: users.map((user) => user.email ?? "") } } });
+      await tx.organization.deleteMany({ where: { id: { in: previous.map((organization) => organization.id) } } });
+      await tx.user.deleteMany({ where: { email: { in: emails } } });
 
       // The account only: role and status live in the membership
       await tx.user.createMany({
-        data: users.map((user) => ({
+        data: [...users, ...accounts].map((user) => ({
           id: user.id,
           name: user.name,
           email: user.email,

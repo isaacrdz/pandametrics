@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { refresh, updateTag } from "next/cache";
-import { getAppContext } from "@/server/app-context";
+import { getAppContext, getSessionAppContext } from "@/server/app-context";
 import { toFormValues } from "@/lib/surveys/form-values";
 import { surveysTag, surveyTag } from "@/lib/surveys/list";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
@@ -61,6 +61,10 @@ function validate(values: unknown): Validation {
 export async function createSurvey(values: SurveyFormInput): Promise<ActionResult<{ id: string }>> {
   const validation = validate(values);
   if (!validation.ok) return validation.result;
+
+  // A user without an organization gets a code, so the form can send them to /welcome
+  const session = await getSessionAppContext();
+  if (session.status === "no-organization") return { success: false, error: { code: "NO_ORGANIZATION" } };
 
   try {
     const scope = await getScope();

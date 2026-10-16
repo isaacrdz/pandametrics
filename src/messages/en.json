@@ -30,7 +30,8 @@
     "organizationLabel": "Organization: {name}",
     "language": "Language",
     "languageLabel": "Language: {name}",
-    "organizationSwitchError": "Couldn't switch the organization. Try again."
+    "organizationSwitchError": "Couldn't switch the organization. Try again.",
+    "createOrganization": "Create organization"
   },
   "greeting": {
     "hello": "{period, select, morning {Good morning} afternoon {Good afternoon} evening {Good evening} other {Hello}}, {name}"
@@ -419,7 +420,8 @@
       "ACTIVE_LIMIT": "You already have {limit} active surveys. Deactivate one first.",
       "NOT_FOUND": "This survey no longer exists.",
       "CATEGORY_LOCKED": "The category can't change because this survey already has responses.",
-      "UNKNOWN": "Something went wrong. Try again."
+      "UNKNOWN": "Something went wrong. Try again.",
+      "NO_ORGANIZATION": "Create your organization first to make surveys."
     },
     "questions": {
       "label": "Question {number}",
@@ -622,6 +624,28 @@
       "close": "Close"
     }
   },
+  "onboarding": {
+    "title": "Welcome, {name}",
+    "titleNoName": "Welcome to Panda Metrics",
+    "subtitle": "You need an organization to create surveys and see their results.",
+    "create": {
+      "title": "Create my organization",
+      "description": "Your company, store or team. It will be yours.",
+      "name": "Organization name",
+      "hint": "You can rename it later.",
+      "submit": "Create organization",
+      "pending": "Creating…"
+    }
+  },
+  "organizations": {
+    "errors": {
+      "OWNER_LIMIT": "You already own an organization. Each account can own only one.",
+      "MEMBERSHIP_LIMIT": "You're already in {max} organizations, the most allowed. Leave one first.",
+      "NOT_FOUND": "This organization is no longer available.",
+      "VALIDATION": "Check the highlighted fields.",
+      "UNKNOWN": "Something went wrong. Try again."
+    }
+  },
   "auth": {
     "signIn": {
       "title": "Welcome back",
@@ -634,7 +658,7 @@
     },
     "register": {
       "title": "Create your account",
-      "subtitle": "Your own organization, ready in a minute.",
+      "subtitle": "Free to start. You'll set up your organization next.",
       "submit": "Create account",
       "pending": "Creating account…",
       "haveAccount": "Already have an account?",
@@ -645,8 +669,6 @@
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm password",
-      "organizationName": "Organization name",
-      "organizationHint": "Your company, store or team.",
       "passwordRules": "At least 8 characters, with a letter and a number."
     },
     "google": "Continue with Google",

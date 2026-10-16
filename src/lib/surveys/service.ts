@@ -12,7 +12,7 @@ import type { AnswerOption, AnswerType, Question, Survey, SurveyCategory } from 
 // may have answers; the active-survey limit is an atomic counter on the organization (backed by the
 // CHECK constraint of the init migration). See the overview, "Important schema notes".
 
-export type SurveyErrorCode = "NOT_FOUND" | "ACTIVE_LIMIT" | "CATEGORY_LOCKED";
+export type SurveyErrorCode = "NOT_FOUND" | "ACTIVE_LIMIT" | "CATEGORY_LOCKED" | "NO_ORGANIZATION";
 
 export class SurveyServiceError extends Error {
   constructor(readonly code: SurveyErrorCode) {
@@ -338,6 +338,13 @@ export async function createSurvey(scope: SurveyScope, input: SurveyFormValues):
   for (let attempt = 1; ; attempt++) {
     try {
       return await prisma.$transaction(async (tx) => {
+        // Only an active member creates surveys there, on every plan: a user removed or deactivated
+        // since their page loaded gets NO_ORGANIZATION instead of a survey
+        const membership = await tx.membership.count({
+          where: { userId: scope.userId, organizationId: scope.organizationId, isActive: true },
+        });
+        if (membership === 0) throw new SurveyServiceError("NO_ORGANIZATION");
+
         if (input.isActive) await changeActiveCount(tx, scope.organizationId, 1);
         const survey = await tx.survey.create({
           data: {

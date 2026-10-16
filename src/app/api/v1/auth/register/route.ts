@@ -1,9 +1,9 @@
 import { registerSchema } from "@/lib/auth/schema";
-import { EmailTakenError, registerOwner } from "@/server/auth-users";
+import { EmailTakenError, registerUser } from "@/server/auth-users";
 import { clientIpFrom } from "@/server/client-ip";
 import { createRateLimiter } from "@/server/rate-limit";
 
-// Open registration: a new organization and its OWNER (docs/auth.md, section 4.2). Public, like the
+// Open registration: a new account with no organization, created next on /welcome (docs/subscriptions.md, section 5.1). Public, like the
 // rest of /api/v1 it answers { success, data } or { success: false, error: { code } }; the client
 // translates the codes
 
@@ -40,7 +40,7 @@ export async function POST(request: Request): Promise<Response> {
   if (!registerLimiter.take([ip])) return failure(429, "RATE_LIMITED");
 
   try {
-    const user = await registerOwner(parsed.data);
+    const user = await registerUser(parsed.data);
     return Response.json({ success: true, data: { id: user.id } }, { status: 201 });
   } catch (error) {
     if (error instanceof EmailTakenError) return failure(409, "EMAIL_TAKEN");

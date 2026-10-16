@@ -21,7 +21,7 @@ interface AppTopBarProps {
 // A container: with the sidebar open the bar is much narrower than the viewport, so the buttons
 // only show their labels when the bar itself has room for them and the heading.
 export function AppTopBar({ heading, actions, hideSwitchersWhenNarrow = false }: AppTopBarProps) {
-  const { organizations, currentOrganizationId } = useAppShell();
+  const { organizations, currentOrganizationId, ownsOrganization } = useAppShell();
 
   return (
     <header className="@container sticky top-0 z-20 flex h-20 shrink-0 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur md:px-8">
@@ -29,7 +29,13 @@ export function AppTopBar({ heading, actions, hideSwitchersWhenNarrow = false }:
       <div className="flex min-w-0 flex-1 items-center">{heading}</div>
       <div className="flex shrink-0 items-center gap-2 @3xl:gap-3">
         <div className={cn("items-center gap-2 @3xl:gap-3", hideSwitchersWhenNarrow ? "hidden @xl:flex" : "flex")}>
-          <OrganizationSwitcher organizations={organizations} currentId={currentOrganizationId} />
+          {currentOrganizationId && (
+            <OrganizationSwitcher
+              organizations={organizations}
+              currentId={currentOrganizationId}
+              canCreate={!ownsOrganization}
+            />
+          )}
           <LanguageSwitcher />
         </div>
         {actions}

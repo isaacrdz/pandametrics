@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthFormSkeleton } from "@/components/auth/AuthFormSkeleton";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { safeCallbackUrl } from "@/lib/auth/paths";
-import { getSessionContext } from "@/server/app-context";
+import { getSessionAccount } from "@/server/app-context";
 
 export const metadata: Metadata = {
   title: "Sign in · Panda Metrics",
@@ -15,9 +15,10 @@ async function SignInContent({ searchParams }: Pick<PageProps<"/sign-in">, "sear
   const params = await searchParams;
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
 
-  // Already signed in (and still allowed in): straight to the app. A session of a deactivated
-  // user is ignored here, so it never bounces between this page and the dashboard
-  if (await getSessionContext()) redirect(callbackUrl);
+  // Already signed in (and still allowed in): straight to the app, which sends a user without an
+  // organization on to /welcome. A session of a deactivated user is ignored here, so it never
+  // bounces between this page and the dashboard
+  if (await getSessionAccount()) redirect(callbackUrl);
 
   return (
     <SignInForm

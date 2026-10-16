@@ -6,8 +6,8 @@ import { hashPassword, verifyPassword } from "@/lib/users/password";
 import { prisma } from "@/server/prisma";
 
 // The database side of sign-in (src/auth.ts) and registration: who may sign in, checking a password,
-// creating a user with their own organization (open sign-up) and what changes when a Google account
-// is linked. Kept apart from the Auth.js wiring so the rules can be checked directly
+// creating a new account (open sign-up, with no organization: the user creates theirs on /welcome)
+// and what changes when a Google account is linked. Kept apart from the Auth.js wiring so the rules can be checked directly
 // (docs/auth.md, section 4).
 
 export interface NewUserData {
@@ -17,32 +17,17 @@ export interface NewUserData {
   image?: string | null;
 }
 
-// "Miguel Rayon" → organization "Miguel Rayon"; renaming comes with the organization settings
-function organizationNameFor(user: NewUserData): string {
-  return user.name?.trim() || user.email.split("@")[0];
-}
-
-// The organization a new user owns: ownerId and the owner's membership, in the caller's transaction
-async function createOwnedOrganization(tx: Prisma.TransactionClient, ownerId: string, name: string) {
-  const organization = await tx.organization.create({ data: { name, ownerId } });
-  await tx.membership.create({ data: { userId: ownerId, organizationId: organization.id, role: "OWNER" } });
-}
-
-// Never a user without an organization: both in one transaction, the user as its owner. Only for
-// emails a provider verified (Google, checked in the signIn callback)
-export async function createUserWithOrganization(data: NewUserData) {
-  return prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        name: data.name ?? null,
-        email: data.email,
-        emailVerified: data.emailVerified ?? new Date(),
-        image: data.image ?? null,
-        isActive: true,
-      },
-    });
-    await createOwnedOrganization(tx, user.id, organizationNameFor(data));
-    return user;
+// A new Google account: the account only, with no organization (the user creates theirs or joins one
+// through an invite). Only for emails a provider verified (Google, checked in the signIn callback)
+export async function createProviderUser(data: NewUserData) {
+  return prisma.user.create({
+    data: {
+      name: data.name ?? null,
+      email: data.email,
+      emailVerified: data.emailVerified ?? new Date(),
+      image: data.image ?? null,
+      isActive: true,
+    },
   });
 }
 
@@ -107,8 +92,9 @@ function getDummyHash(): string {
   return dummyHash;
 }
 
-// null for every failure alike (unknown email, wrong password, Google-only account, inactive,
-// deleted user, or one with no active membership), so the answer never tells which emails exist
+// null for every failure alike (unknown email, wrong password, Google-only account, inactive or
+// deleted user), so the answer never tells which emails exist. An account without an organization
+// signs in and lands on /welcome
 export async function verifyCredentials(email: string, password: string): Promise<SignedInUser | null> {
   const user = await prisma.user.findUnique({
     where: { email },
@@ -120,12 +106,11 @@ export async function verifyCredentials(email: string, password: string): Promis
       passwordHash: true,
       isActive: true,
       deletedAt: true,
-      _count: { select: { memberships: { where: { isActive: true } } } },
     },
   });
   // Hash anyway when there is no user, so a missing email takes as long as a wrong password
   const valid = verifyPassword(password, user?.passwordHash ?? getDummyHash());
-  if (!user || !valid || !user.passwordHash || !user.isActive || user.deletedAt || user._count.memberships === 0) return null;
+  if (!user || !valid || !user.passwordHash || !user.isActive || user.deletedAt) return null;
   return { id: user.id, name: user.name, email: user.email, image: user.image };
 }
 
@@ -135,23 +120,19 @@ export class EmailTakenError extends Error {
   }
 }
 
-// Open registration: the user and the organization they own in one transaction. The email stays unverified
-// (emailVerified null) until its owner signs in with Google, which then takes the account over
-export async function registerOwner(input: RegisterValues): Promise<{ id: string }> {
+// Open registration: the account only, with no organization (created on /welcome). The email stays
+// unverified (emailVerified null) until its owner signs in with Google, which then takes the account over
+export async function registerUser(input: RegisterValues): Promise<{ id: string }> {
   try {
-    return await prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          name: input.name,
-          email: input.email,
-          passwordHash: hashPassword(input.password),
-          emailVerified: null,
-          isActive: true,
-        },
-        select: { id: true },
-      });
-      await createOwnedOrganization(tx, user.id, input.organizationName);
-      return user;
+    return await prisma.user.create({
+      data: {
+        name: input.name,
+        email: input.email,
+        passwordHash: hashPassword(input.password),
+        emailVerified: null,
+        isActive: true,
+      },
+      select: { id: true },
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new EmailTakenError();
