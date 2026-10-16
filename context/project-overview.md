@@ -615,7 +615,7 @@ Rules:
 
 Use Next.js Route Handlers under `/api/v1`, with shared service functions for the business logic. All responses use `{ success, data }` or `{ success: false, error }`.
 
-> **Current state:** the services (`src/lib/users`, `src/lib/surveys`, `src/server/metrics.ts`) run on Prisma against Neon; there is no in-memory data left. The pages and Server Actions call them directly, and the Route Handlers below are still to be built on top of them. The acting user comes from the Auth.js session (Google sign-in; `src/auth.ts`), read by `src/server/app-context.ts`; `src/proxy.ts` redirects signed-out visitors on the admin routes. The kiosk rate limit is still in memory (one server process).
+> **Current state:** the services (`src/lib/users`, `src/lib/surveys`, `src/server/metrics.ts`) run on Prisma against Neon; there is no in-memory data left. The pages and Server Actions call them directly, and the Route Handlers below are still to be built on top of them. The acting user comes from the Auth.js session (Google or email / password on `/sign-in`, registration on `/register`; `src/auth.ts`), read by `src/server/app-context.ts`; `src/proxy.ts` sends signed-out visitors on the admin routes to `/sign-in`. The kiosk rate limit is still in memory (one server process).
 
 | Endpoint                                     | Method | Auth | Purpose                                              |
 | -------------------------------------------- | ------ | ---- | ---------------------------------------------------- |
@@ -687,8 +687,8 @@ Full research in `docs/contextual-top-bar.md`.
 | Dashboard | Date + greeting | New survey |
 | Surveys | All surveys · count | New survey |
 | Create / edit survey | Create survey / Edit survey | Create survey / Save changes |
-| Users | Users · count | New user |
-| Create / edit user | Create user / Edit user | Create user / Save changes |
+| Users | Users · count | Invite user (coming soon) |
+| Edit user | Edit user | Save changes |
 | My profile | My profile | Save changes |
 
 ### Survey card requirements (dashboard)
@@ -725,14 +725,14 @@ Recommended content order:
 ```
 /                                  public landing (marketing)
 ├── /s?code=AB12CD                 public kiosk
-├── /login
+├── /sign-in                       email / password and Google
+├── /register                      new account and organization
 ├── /dashboard
 ├── /surveys
 ├── /surveys/new
 ├── /surveys/[id]
 ├── /surveys/[id]/metrics
 ├── /users
-├── /users/new
 ├── /users/[id]
 ├── /profile
 └── /settings
@@ -740,7 +740,7 @@ Recommended content order:
 
 The same URLs serve both languages; the language comes from the browser's `localStorage` (see Internationalization in section 3).
 
-`/` is the public landing (`(marketing)` route group: its own nav and footer, no sidebar, fully static). Its account buttons point to `/dashboard` through `LANDING_LINKS` until `/login` exists.
+`/` is the public landing (`(marketing)` route group: its own nav and footer, no sidebar, fully static). Its account buttons point to `/sign-in`, `/register` and `/dashboard` through `LANDING_LINKS`. Users join by signing up (each new account owns a new organization); inviting people into an organization comes later.
 
 Dashboard filters live in the URL (`/dashboard?range=this-month&tz=America/Mexico_City&days=mon,tue,wed,thu,fri`), so a view can be shared.
 

@@ -156,7 +156,7 @@
   "users": {
     "title": "Usuarios",
     "subtitle": "Administra quién tiene acceso a tu organización.",
-    "new": "Nuevo usuario",
+    "invite": "Invitar usuario",
     "caption": "Usuarios",
     "loading": "Cargando usuarios",
     "toolbar": {
@@ -244,12 +244,9 @@
     }
   },
   "userForm": {
-    "createTitle": "Crear usuario",
-    "createSubtitle": "Agrega a una persona a tu organización.",
     "editTitle": "Editar usuario",
     "editSubtitle": "Actualiza los datos y el acceso del usuario.",
     "actions": {
-      "create": "Crear usuario",
       "save": "Guardar cambios"
     },
     "sections": {
@@ -258,10 +255,6 @@
         "description": "Nombre e información de contacto."
       },
       "password": {
-        "create": {
-          "title": "Crear contraseña",
-          "description": "El usuario inicia sesión con esta contraseña. Compártela de forma segura."
-        },
         "reset": {
           "title": "Restablecer contraseña",
           "description": "Define una nueva contraseña para este usuario. Déjala vacía para conservar la actual."
@@ -269,6 +262,10 @@
         "change": {
           "title": "Cambiar contraseña",
           "description": "Déjala vacía para conservar tu contraseña actual."
+        },
+        "set": {
+          "title": "Crea una contraseña",
+          "description": "Inicias sesión con Google. Agrega una contraseña para entrar también con tu email."
         }
       },
       "permissions": {
@@ -276,7 +273,6 @@
         "description": "Elige qué puede ver y hacer este usuario.",
         "note": "Los permisos se podrán editar en una próxima versión. Los usuarios nuevos entran como Miembro.",
         "current": "Rol actual",
-        "default": "Rol por defecto",
         "roles": {
           "OWNER": "Acceso total, incluida la organización y sus usuarios.",
           "ADMIN": "Administra encuestas y usuarios.",
@@ -298,7 +294,6 @@
     },
     "statusHint": "Cambia el estado desde la lista de usuarios.",
     "toasts": {
-      "created": "Usuario creado",
       "saved": "Cambios guardados"
     },
     "errors": {
@@ -316,7 +311,7 @@
     "subtitle": "Actualiza tus datos personales y tu contraseña.",
     "picture": {
       "title": "Foto de perfil",
-      "description": "Aquí podrás subir una foto. Por ahora mostramos tus iniciales.",
+      "description": "Aquí podrás subir una foto. Por ahora usamos tu foto de Google o tus iniciales.",
       "change": "Cambiar foto"
     },
     "toasts": {
@@ -622,6 +617,46 @@
         "notSurvey": "Este QR no es de una encuesta de Panda Metrics."
       },
       "close": "Cerrar"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Bienvenido de nuevo",
+      "subtitle": "Inicia sesión para ver tus encuestas y resultados.",
+      "submit": "Iniciar sesión",
+      "pending": "Iniciando sesión…",
+      "noAccount": "¿No tienes cuenta?",
+      "register": "Crea una",
+      "registered": "Cuenta creada. Inicia sesión para continuar."
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Tu propia organización, lista en un minuto.",
+      "submit": "Crear cuenta",
+      "pending": "Creando cuenta…",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "signIn": "Inicia sesión"
+    },
+    "fields": {
+      "name": "Tu nombre",
+      "email": "Email",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "organizationName": "Nombre de la organización",
+      "organizationHint": "Tu empresa, tienda o equipo.",
+      "passwordRules": "Al menos 8 caracteres, con una letra y un número."
+    },
+    "google": "Continuar con Google",
+    "or": "o",
+    "errors": {
+      "CredentialsSignin": "Email o contraseña incorrectos.",
+      "AccessDenied": "Esta cuenta no puede iniciar sesión. Puede que esté desactivada.",
+      "OAuthAccountNotLinked": "Este email ya se usa con otro método de inicio de sesión.",
+      "Configuration": "El inicio de sesión no está disponible ahora. Inténtalo más tarde.",
+      "EMAIL_TAKEN": "Este email ya tiene una cuenta. Inicia sesión.",
+      "RATE_LIMITED": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+      "VALIDATION": "Revisa los campos marcados.",
+      "default": "Algo salió mal. Inténtalo de nuevo."
     }
   }
 }

@@ -1,6 +1,7 @@
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import { SIGN_IN_PATH } from "@/lib/auth/paths";
 
 // Auth.js options shared by the app (src/auth.ts) and the proxy (src/proxy.ts). No Prisma or
 // other server-only imports: the proxy runs on every request and only reads the session cookie.
@@ -34,6 +35,8 @@ export default {
   // Credentials (phase 2) needs JWT sessions; the token only carries the user id, and the user
   // and organization are always read from the database (src/server/app-context.ts)
   session: { strategy: "jwt" },
+  // The app's own page for signing in and for errors (?error=AccessDenied, …)
+  pages: { signIn: SIGN_IN_PATH, error: SIGN_IN_PATH },
   callbacks: {
     jwt({ token, user }) {
       if (user?.id) token.id = user.id;

@@ -156,7 +156,7 @@
   "users": {
     "title": "Users",
     "subtitle": "Manage who has access to your organization.",
-    "new": "New user",
+    "invite": "Invite user",
     "caption": "Users",
     "loading": "Loading users",
     "toolbar": {
@@ -244,12 +244,9 @@
     }
   },
   "userForm": {
-    "createTitle": "Create user",
-    "createSubtitle": "Add a person to your organization.",
     "editTitle": "Edit user",
     "editSubtitle": "Update the user's details and access.",
     "actions": {
-      "create": "Create user",
       "save": "Save changes"
     },
     "sections": {
@@ -258,10 +255,6 @@
         "description": "Name and contact information."
       },
       "password": {
-        "create": {
-          "title": "Create password",
-          "description": "The user signs in with this password. Share it with them securely."
-        },
         "reset": {
           "title": "Reset password",
           "description": "Set a new password for this user. Leave it empty to keep the current one."
@@ -269,6 +262,10 @@
         "change": {
           "title": "Change password",
           "description": "Leave it empty to keep your current password."
+        },
+        "set": {
+          "title": "Set a password",
+          "description": "You sign in with Google. Add a password to also sign in with your email."
         }
       },
       "permissions": {
@@ -276,7 +273,6 @@
         "description": "Choose what this user can see and do.",
         "note": "Permissions will be editable in a future version. New users join as Member.",
         "current": "Current role",
-        "default": "Default role",
         "roles": {
           "OWNER": "Full access, including the organization and its users.",
           "ADMIN": "Manages surveys and users.",
@@ -298,7 +294,6 @@
     },
     "statusHint": "Change the status from the user list.",
     "toasts": {
-      "created": "User created",
       "saved": "Changes saved"
     },
     "errors": {
@@ -316,7 +311,7 @@
     "subtitle": "Update your personal details and password.",
     "picture": {
       "title": "Profile picture",
-      "description": "You'll be able to upload a photo here. For now we show your initials.",
+      "description": "You'll be able to upload a photo here. For now we use your Google photo or your initials.",
       "change": "Change photo"
     },
     "toasts": {
@@ -622,6 +617,46 @@
         "notSurvey": "This QR is not a Panda Metrics survey."
       },
       "close": "Close"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to see your surveys and results.",
+      "submit": "Sign in",
+      "pending": "Signing in…",
+      "noAccount": "Don't have an account?",
+      "register": "Create one",
+      "registered": "Account created. Sign in to continue."
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Your own organization, ready in a minute.",
+      "submit": "Create account",
+      "pending": "Creating account…",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "fields": {
+      "name": "Your name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "organizationName": "Organization name",
+      "organizationHint": "Your company, store or team.",
+      "passwordRules": "At least 8 characters, with a letter and a number."
+    },
+    "google": "Continue with Google",
+    "or": "or",
+    "errors": {
+      "CredentialsSignin": "Wrong email or password.",
+      "AccessDenied": "This account can't sign in. It may have been deactivated.",
+      "OAuthAccountNotLinked": "This email is already used with another sign-in method.",
+      "Configuration": "Sign-in isn't available right now. Try again later.",
+      "EMAIL_TAKEN": "This email already has an account. Sign in instead.",
+      "RATE_LIMITED": "Too many attempts. Wait a few minutes and try again.",
+      "VALIDATION": "Check the highlighted fields.",
+      "default": "Something went wrong. Try again."
     }
   }
 }

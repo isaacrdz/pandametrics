@@ -45,7 +45,7 @@ export function UserForm({ mode, defaultValues, meta, aside }: UserFormProps) {
   // raw: submit the strings as typed. The server parses them again and stores the normalized
   // values (an empty phone becomes null there), so the client never sends transformed output.
   const [resolver] = useState(
-    () => zodResolver(userFormSchema(mode), undefined, { raw: true }) as unknown as Resolver<UserFormInput>,
+    () => zodResolver(userFormSchema(config.schemaMode), undefined, { raw: true }) as unknown as Resolver<UserFormInput>,
   );
   const form = useForm<UserFormInput>({ resolver, defaultValues, mode: "onTouched" });
   const { isDirty } = form.formState;
@@ -91,7 +91,7 @@ export function UserForm({ mode, defaultValues, meta, aside }: UserFormProps) {
     <>
       <UserDetailsSection isActive={config.showStatus ? meta?.isActive : undefined} />
       <PasswordSection variant={config.passwordVariant} />
-      {config.showPermissions && <PermissionsSection role={meta?.role ?? "MEMBER"} isNew={!meta} />}
+      {config.showPermissions && <PermissionsSection role={meta?.role ?? "MEMBER"} />}
     </>
   );
 
@@ -109,7 +109,7 @@ export function UserForm({ mode, defaultValues, meta, aside }: UserFormProps) {
             <PageHeading back={{ onClick: goBack }} title={tRoot(config.titleKey)} subtitle={tRoot(config.subtitleKey)} />
           }
           actions={
-            <SubmitButton label={t(`actions.${config.submitKey}`)} pendingLabel={tForm("saving")} pending={isPending} />
+            <SubmitButton label={t("actions.save")} pendingLabel={tForm("saving")} pending={isPending} />
           }
         />
         <div className={cn("mx-auto flex w-full flex-col gap-8 px-4 py-8 md:px-8 md:py-10", config.containerClass)}>

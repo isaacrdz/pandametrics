@@ -8,7 +8,7 @@ import { revalidateTag } from "next/cache";
 import authConfig, { CREDENTIAL_FIELDS } from "@/auth.config";
 import { signInSchema } from "@/lib/auth/schema";
 import { userTag } from "@/lib/users/tags";
-import { canSignIn, createUserWithOrganization, onGoogleAccountLinked, verifyCredentials } from "@/server/auth-users";
+import { canSignIn, createUserWithOrganization, onGoogleAccountLinked, syncGooglePhoto, verifyCredentials } from "@/server/auth-users";
 import { clientIpFrom } from "@/server/client-ip";
 import { createRateLimiter } from "@/server/rate-limit";
 import { prisma } from "@/server/prisma";
@@ -61,10 +61,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   events: {
-    async linkAccount({ user, account, profile }) {
+    async linkAccount({ user, account }) {
       if (!user.id || account.provider !== "google") return;
-      await onGoogleAccountLinked(user.id, profile.image);
+      await onGoogleAccountLinked(user.id);
       revalidateTag(userTag(user.id), { expire: 0 });
+    },
+    // After every successful sign-in. The sidebar and profile read the cached context, so it is
+    // expired when the photo changed
+    async signIn({ user, account, profile }) {
+      if (!user.id || account?.provider !== "google") return;
+      const picture = typeof profile?.picture === "string" ? profile.picture : null;
+      if (await syncGooglePhoto(user.id, picture)) revalidateTag(userTag(user.id), { expire: 0 });
     },
   },
 });

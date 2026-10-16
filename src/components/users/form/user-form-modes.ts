@@ -1,11 +1,12 @@
-import { createUser, updateProfile, updateUser, type UserActionResult } from "@/actions/users";
-import type { UserFormInput } from "@/lib/users/schema";
+import { updateProfile, updateUser, type UserActionResult } from "@/actions/users";
+import type { UserFormInput, UserFormSchemaMode } from "@/lib/users/schema";
 import type { Role } from "@/types/survey";
 
-// The only place that knows the difference between creating and editing a user.
-// UserForm reads one entry; its sections receive plain props and never see the mode.
+// The only place that knows the difference between editing a user and the own profile (with or
+// without a password: Google-only users set a first one). UserForm reads one entry; its sections
+// receive plain props and never see the mode. Users join by signing up, so there is no create mode.
 
-export type UserFormMode = "create" | "edit" | "profile";
+export type UserFormMode = "edit" | "profile" | "profileSetPassword";
 
 export type UserActionError = Extract<UserActionResult<unknown>, { success: false }>["error"];
 
@@ -22,16 +23,17 @@ export interface UserSaveHelpers {
   notify: (toast: ToastKey) => void;
 }
 
-type ToastKey = "userForm.toasts.created" | "userForm.toasts.saved" | "profile.toasts.updated";
+type ToastKey = "userForm.toasts.saved" | "profile.toasts.updated";
 
 interface UserFormModeConfig {
   // Full message keys: the profile has its own namespace
-  titleKey: "userForm.createTitle" | "userForm.editTitle" | "profile.title";
-  subtitleKey: "userForm.createSubtitle" | "userForm.editSubtitle" | "profile.subtitle";
-  submitKey: "create" | "save";
-  // create: required password; reset: optional, empty keeps the current one;
-  // change: optional, and a new password asks for the current one
-  passwordVariant: "create" | "reset" | "change";
+  titleKey: "userForm.editTitle" | "profile.title";
+  subtitleKey: "userForm.editSubtitle" | "profile.subtitle";
+  // Validation rules on the client (the server action applies its own)
+  schemaMode: UserFormSchemaMode;
+  // reset: optional, empty keeps the current one; change: optional, and a new password asks for
+  // the current one; set: optional first password, no current one (Google-only account)
+  passwordVariant: "reset" | "change" | "set";
   showStatus: boolean;
   // A user never edits their own role, so the profile has no permissions card
   showPermissions: boolean;
@@ -42,28 +44,20 @@ interface UserFormModeConfig {
   save: (values: UserFormInput, meta: UserFormMeta | undefined, helpers: UserSaveHelpers) => Promise<UserActionError | null>;
 }
 
+// Both profile modes: no id, the server edits the signed-in user
+const saveProfile: UserFormModeConfig["save"] = async (values, _meta, { reset, notify }) => {
+  const result = await updateProfile(values);
+  if (!result.success) return result.error;
+  reset(result.data.values);
+  notify("profile.toasts.updated");
+  return null;
+};
+
 export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
-  create: {
-    titleKey: "userForm.createTitle",
-    subtitleKey: "userForm.createSubtitle",
-    submitKey: "create",
-    passwordVariant: "create",
-    showStatus: false,
-    showPermissions: true,
-    containerClass: "max-w-5xl",
-    backHref: "/users",
-    async save(values, _meta, { navigate, notify }) {
-      const result = await createUser(values);
-      if (!result.success) return result.error;
-      notify("userForm.toasts.created");
-      navigate(`/users/${result.data.id}`);
-      return null;
-    },
-  },
   edit: {
     titleKey: "userForm.editTitle",
     subtitleKey: "userForm.editSubtitle",
-    submitKey: "save",
+    schemaMode: "edit",
     passwordVariant: "reset",
     showStatus: true,
     showPermissions: true,
@@ -82,19 +76,23 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
   profile: {
     titleKey: "profile.title",
     subtitleKey: "profile.subtitle",
-    submitKey: "save",
+    schemaMode: "profile",
     passwordVariant: "change",
     showStatus: false,
     showPermissions: false,
     containerClass: "max-w-6xl",
     backHref: "/dashboard",
-    async save(values, _meta, { reset, notify }) {
-      // No id: the server edits the signed-in user
-      const result = await updateProfile(values);
-      if (!result.success) return result.error;
-      reset(result.data.values);
-      notify("profile.toasts.updated");
-      return null;
-    },
+    save: saveProfile,
+  },
+  profileSetPassword: {
+    titleKey: "profile.title",
+    subtitleKey: "profile.subtitle",
+    schemaMode: "edit",
+    passwordVariant: "set",
+    showStatus: false,
+    showPermissions: false,
+    containerClass: "max-w-6xl",
+    backHref: "/dashboard",
+    save: saveProfile,
   },
 };

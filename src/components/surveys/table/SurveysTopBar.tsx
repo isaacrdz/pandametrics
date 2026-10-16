@@ -5,7 +5,8 @@ import { AppTopBar } from "@/components/layout/AppTopBar";
 import { NewSurveyButton } from "@/components/layout/NewSurveyButton";
 import { PageHeading } from "@/components/layout/PageHeading";
 
-export function SurveysTopBar({ count }: { count: number }) {
+// count is left out while it loads (the page streams it in), so the bar shows right away
+export function SurveysTopBar({ count }: { count?: number }) {
   const t = useTranslations("surveys");
 
   return (

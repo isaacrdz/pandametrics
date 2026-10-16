@@ -14,7 +14,7 @@ interface UserAvatarProps {
 export function UserAvatar({ image, initials, className, fallbackClassName }: UserAvatarProps) {
   return (
     <Avatar aria-hidden className={cn("size-9", className)}>
-      {image && <AvatarImage src={image} alt="" />}
+      {image && <AvatarImage src={image} alt="" referrerPolicy="no-referrer" />}
       <AvatarFallback className={cn("bg-accent font-semibold text-accent-foreground", fallbackClassName)}>{initials}</AvatarFallback>
     </Avatar>
   );

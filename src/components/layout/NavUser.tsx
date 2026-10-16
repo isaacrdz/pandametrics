@@ -46,7 +46,7 @@ export function NavUser({ name, email, image }: NavUserProps) {
               className="h-auto gap-3 rounded-2xl bg-muted/70 p-3 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:bg-transparent"
             >
               <Avatar className="size-10">
-                {image && <AvatarImage src={image} alt="" />}
+                {image && <AvatarImage src={image} alt="" referrerPolicy="no-referrer" />}
                 <AvatarFallback className="bg-accent font-semibold text-accent-foreground">
                   {getInitials(name)}
                 </AvatarFallback>

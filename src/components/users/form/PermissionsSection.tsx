@@ -11,12 +11,10 @@ const ROLES: Role[] = ["OWNER", "ADMIN", "MEMBER"];
 interface PermissionsSectionProps {
   // The user's role, or Member for a new user
   role: Role;
-  // A new user has no role yet: Member is the default, not the current one
-  isNew: boolean;
 }
 
 // Coming soon: a preview of the future role picker. Nothing in it is focusable or submitted.
-export function PermissionsSection({ role, isNew }: PermissionsSectionProps) {
+export function PermissionsSection({ role }: PermissionsSectionProps) {
   const t = useTranslations("userForm.sections.permissions");
   const tRoles = useTranslations("users.roles");
   const tForm = useTranslations("form");
@@ -46,7 +44,7 @@ export function PermissionsSection({ role, isNew }: PermissionsSectionProps) {
                   {isCurrent && (
                     <span className="flex items-center gap-1 text-xs font-medium text-primary">
                       <CheckIcon aria-hidden className="size-3.5" />
-                      {t(isNew ? "default" : "current")}
+                      {t("current")}
                     </span>
                   )}
                 </span>

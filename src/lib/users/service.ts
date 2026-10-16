@@ -1,8 +1,10 @@
 import "server-only";
 
+import { cacheTag } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
 import { hashPassword, verifyPassword } from "@/lib/users/password";
 import type { UserFormValues } from "@/lib/users/schema";
+import { userTag } from "@/lib/users/tags";
 import { prisma } from "@/server/prisma";
 import type { User } from "@/types/survey";
 
@@ -115,29 +117,17 @@ export async function softDeleteUsers(scope: UserScope, ids: string[]): Promise<
 }
 
 // ---------------------------------------------------------------------------
-// Create and update (user form)
+// Update (user form and profile). Users join by signing up; invitations come later
 // ---------------------------------------------------------------------------
 
-// Emails are unique across the app, deleted users included (the unique index enforces it)
-export async function createUser(scope: UserScope, input: UserFormValues): Promise<User> {
-  try {
-    return await prisma.user.create({
-      data: {
-        name: input.name,
-        email: input.email,
-        phone: input.phone,
-        passwordHash: hashPassword(input.password),
-        // Permissions are not editable yet: everyone joins as a member
-        role: "MEMBER",
-        isActive: true,
-        organizationId: scope.organizationId,
-      },
-      select: USER_PUBLIC_SELECT,
-    });
-  } catch (error) {
-    if (isEmailTaken(error)) throw new UserServiceError("EMAIL_TAKEN");
-    throw error;
-  }
+// Whether the user can sign in with a password; Google-only accounts have none. Never the hash.
+// Cached with the user's tag: every password change (profile, user form, a Google takeover) expires
+// it, and the profile page reads it outside Suspense
+export async function hasPassword(id: string): Promise<boolean> {
+  "use cache";
+  cacheTag(userTag(id));
+  const user = await prisma.user.findUnique({ where: { id }, select: { passwordHash: true } });
+  return Boolean(user?.passwordHash);
 }
 
 // Name, email and phone; the password only changes when a new one was sent
@@ -148,8 +138,9 @@ export async function updateUser(scope: UserScope, id: string, input: UserFormVa
   });
   if (!user) throw new UserServiceError("NOT_FOUND");
   // Your own password always needs the current one, even when the edit comes from the
-  // user form instead of the profile (the page redirects, but the action can be called directly)
-  if (id === scope.userId && input.password && !verifyPassword(input.currentPassword, user.passwordHash)) {
+  // user form instead of the profile (the page redirects, but the action can be called directly).
+  // Without one (Google-only), the first password is set without it
+  if (id === scope.userId && input.password && user.passwordHash && !verifyPassword(input.currentPassword, user.passwordHash)) {
     throw new UserServiceError("WRONG_PASSWORD");
   }
 

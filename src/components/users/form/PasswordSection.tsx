@@ -3,7 +3,6 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { FormSection } from "@/components/form/FormSection";
-import { RequiredMark } from "@/components/form/RequiredMark";
 import { useValidationMessage } from "@/components/form/form-hooks";
 import { PasswordInput } from "@/components/users/form/PasswordInput";
 import { USER_INPUT_CLASS } from "@/components/users/form/UserDetailsSection";
@@ -11,16 +10,16 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import type { UserFormInput } from "@/lib/users/schema";
 
 interface PasswordSectionProps {
-  // create: required. reset: optional, an empty pair keeps the current password.
+  // reset: optional, an empty pair keeps the current password.
   // change (profile): optional, and a new password asks for the current one first.
-  variant: "create" | "reset" | "change";
+  // set (profile of a Google-only user): optional first password, no current one.
+  variant: "reset" | "change" | "set";
 }
 
 export function PasswordSection({ variant }: PasswordSectionProps) {
   const t = useTranslations("userForm");
   const validationMessage = useValidationMessage();
   const { control } = useFormContext<UserFormInput>();
-  const required = variant === "create";
   const isChange = variant === "change";
 
   return (
@@ -59,7 +58,7 @@ export function PasswordSection({ variant }: PasswordSectionProps) {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-password-input" className="font-semibold text-muted-foreground">
-                {t(isChange ? "fields.newPassword" : "fields.password")} {required && <RequiredMark />}
+                {t(isChange ? "fields.newPassword" : "fields.password")}
               </FieldLabel>
               <PasswordInput
                 {...field}
@@ -84,7 +83,7 @@ export function PasswordSection({ variant }: PasswordSectionProps) {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-confirm-password" className="font-semibold text-muted-foreground">
-                {t("fields.confirmPassword")} {required && <RequiredMark />}
+                {t("fields.confirmPassword")}
               </FieldLabel>
               <PasswordInput
                 {...field}

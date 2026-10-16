@@ -20,14 +20,20 @@ async function SurveysContent({ searchParams }: Pick<PageProps<"/surveys">, "sea
   return <SurveysTableSection data={data} params={params} />;
 }
 
-export default async function SurveysPage({ searchParams }: PageProps<"/surveys">) {
-  // The total does not depend on the URL, so the bar (title + count) is part of the static shell
+// The count needs the signed-in user's organization (the session, request data). Inside its own
+// Suspense, so a navigation shows the bar at once and the number streams in; cached and tagged, so
+// it refreshes after survey actions
+async function SurveysTopBarWithCount() {
   const { organization } = await getAppContext();
-  const total = await countListedSurveys(organization.id);
+  return <SurveysTopBar count={await countListedSurveys(organization.id)} />;
+}
 
+export default function SurveysPage({ searchParams }: PageProps<"/surveys">) {
   return (
     <>
-      <SurveysTopBar count={total} />
+      <Suspense fallback={<SurveysTopBar />}>
+        <SurveysTopBarWithCount />
+      </Suspense>
       <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8 md:py-10">
         <Suspense fallback={<SurveysTableSkeleton />}>
           <SurveysContent searchParams={searchParams} />

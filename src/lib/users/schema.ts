@@ -13,9 +13,9 @@ export const USER_LIMITS = {
   passwordMax: 72,
 } as const;
 
-// create: the password is required. edit: an empty pair keeps the current password.
-// profile: like edit, and changing the password also asks for the current one.
-export type UserFormSchemaMode = "create" | "edit" | "profile";
+// edit: an empty pair keeps the current password (also a first password on the profile of a
+// Google-only user). profile: like edit, and changing the password also asks for the current one.
+export type UserFormSchemaMode = "edit" | "profile";
 
 // Spaces, dashes, dots and parentheses are dropped; a leading "+" is kept
 export function normalizePhone(value: string): string {
@@ -66,7 +66,6 @@ export const baseSchema = z.object({
 export function userFormSchema(mode: UserFormSchemaMode) {
   return baseSchema.superRefine((values, ctx) => {
     const wantsPassword =
-      mode === "create" ||
       values.password !== "" ||
       values.confirmPassword !== "" ||
       (mode === "profile" && values.currentPassword !== "");
@@ -94,15 +93,6 @@ export type UserFormInput = z.input<typeof baseSchema>;
 
 // What the server receives after parsing: normalized email and phone (null when empty)
 export type UserFormValues = z.output<typeof baseSchema>;
-
-export const EMPTY_USER_VALUES: UserFormInput = {
-  name: "",
-  email: "",
-  phone: "",
-  password: "",
-  confirmPassword: "",
-  currentPassword: "",
-};
 
 // Never carries a password: the form always starts with empty password fields
 export function toUserFormValues(user: { name: string | null; email: string | null; phone: string | null }): UserFormInput {

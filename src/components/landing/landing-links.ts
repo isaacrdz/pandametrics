@@ -1,9 +1,11 @@
-// No Auth.js yet: every account call to action opens the dashboard. Change these when
-// /login and /signup exist.
+import { DEFAULT_AFTER_SIGN_IN, REGISTER_PATH, SIGN_IN_PATH } from "@/lib/auth/paths";
+
+// Account calls to action. "Start" opens the dashboard: signed-out visitors are sent to sign in
+// by the proxy and come back afterwards
 export const LANDING_LINKS = {
-  signIn: "/dashboard",
-  signUp: "/dashboard",
-  start: "/dashboard",
+  signIn: SIGN_IN_PATH,
+  signUp: REGISTER_PATH,
+  start: DEFAULT_AFTER_SIGN_IN,
 } as const;
 
 export const SECTION_IDS = {

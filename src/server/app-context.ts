@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { cacheTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { auth } from "@/auth";
 import { SIGN_IN_PATH } from "@/lib/auth/paths";
 import { userTag } from "@/lib/users/tags";
@@ -36,11 +37,19 @@ async function loadAppContext(userId: string): Promise<AppContext | null> {
   return { user, organization, organizations: [organization] };
 }
 
-// The session cookie is request data: callers render inside Suspense (the admin layout wraps the
-// sidebar user and the pages). Deduplicated per request, since the layout and the page both ask
-export const getAppContext = cache(async (): Promise<AppContext> => {
+// The signed-in user who can use the app, or null (no session, or a session of a user who was
+// deactivated, deleted or lost their organization). The session cookie is request data: callers
+// render inside Suspense. Deduplicated per request, since the layout and the page both ask
+export const getSessionContext = cache(async (): Promise<AppContext | null> => {
+  // Request time only: Auth.js makes a random CSRF token on every call, which a prerender rejects
+  await connection();
   const session = await auth();
-  const context = session?.user?.id ? await loadAppContext(session.user.id) : null;
+  return session?.user?.id ? loadAppContext(session.user.id) : null;
+});
+
+// For the admin pages and actions: the context, or a redirect to sign in
+export async function getAppContext(): Promise<AppContext> {
+  const context = await getSessionContext();
   if (!context) redirect(SIGN_IN_PATH);
   return context;
-});
+}

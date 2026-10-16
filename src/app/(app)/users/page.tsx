@@ -20,15 +20,20 @@ async function UsersContent({ searchParams }: Pick<PageProps<"/users">, "searchP
   return <UsersTableSection data={data} params={params} />;
 }
 
-export default async function UsersPage({ searchParams }: PageProps<"/users">) {
-  // The total does not depend on the URL, so the bar (title + count) is part of the static shell
+// The count needs the signed-in user's organization (the session, request data). Inside its own
+// Suspense, so a navigation shows the bar at once and the number streams in; cached and tagged, so
+// it refreshes after user actions
+async function UsersTopBarWithCount() {
   const { organization } = await getAppContext();
-  // Cached and tagged, so it stays in the static shell and refreshes after user actions
-  const total = await countListedUsers(organization.id);
+  return <UsersTopBar count={await countListedUsers(organization.id)} />;
+}
 
+export default function UsersPage({ searchParams }: PageProps<"/users">) {
   return (
     <>
-      <UsersTopBar count={total} />
+      <Suspense fallback={<UsersTopBar />}>
+        <UsersTopBarWithCount />
+      </Suspense>
       <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8 md:py-10">
         <Suspense fallback={<UsersTableSkeleton />}>
           <UsersContent searchParams={searchParams} />

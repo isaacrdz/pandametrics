@@ -1,18 +1,28 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Auth Phase 3 — Sign In, Register, Profile and Users UI
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `/sign-in`: public page outside the admin layout (logo, language switcher, light / dark); email and password with the existing form patterns (Zod `signInSchema`, `PasswordInput`); "Continue with Google" following Google's branding ("G" logo, white / outlined); link to `/register`; validation and `?error=` mapped to translated messages (`CredentialsSignin`, `AccessDenied`, `OAuthAccountNotLinked`, `Configuration`, default); same-origin `callbackUrl` (default `/dashboard`); `pages: { signIn: "/sign-in", error: "/sign-in" }` and `SIGN_IN_PATH` = `/sign-in`, so the proxy, `getAppContext` and sign out land there
+- `/register`: name, email, password, confirm password and organization name (`registerSchema`); client validation and server field errors (`EMAIL_TAKEN`, `RATE_LIMITED`); submits to `POST /api/v1/auth/register`; on success → `/sign-in` with an "Account created, sign in" message; "Continue with Google" too
+- Signed-in visitors on `/sign-in` / `/register` go to `/dashboard`
+- `NavUser`: avatar (Google `image` or initials) and name; the menu keeps My profile, theme and Sign out (phase 1)
+- `/profile`: Sign out button (phase 1); Google-only users (`passwordHash = null`) see "Set a password" (new + confirm, no current password) from a `hasPassword` flag (never the hash); `updateProfile` sets a first password without the current one only when there is none
+- `/users`: "New user" → "Invite user", disabled with a "Coming soon" tooltip (`aria-disabled`); create flow removed (`/users/new`, the `create` mode of `UserForm`, the `createUser` action and service function, create-only messages); edit, list, filters and bulk actions kept
+- `LANDING_LINKS`: `signIn` → `/sign-in`, `signUp` → `/register`, `start` → `/dashboard`
+- Copy in an `auth` namespace (en / es, key parity in `yarn lint`)
+- `yarn lint`, `tsc --noEmit`, `yarn build`; custom pages in en / es, light / dark, 375 / 768 / 1280 without overflow; email / password and wrong-password flows; register → message → sign in → empty dashboard; sign out from both places → `/sign-in`; "Set a password" then credentials sign-in; "Invite user" coming soon and `/users/new` 404; landing buttons
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/auth-phase-3-spec.md`; research: `docs/auth.md` (sections 4 and 5.4); master: `context/features/next-auth-master-spec.md`
+- Phase 3 of 3 of authentication
+- From phase 1–2: `SIGN_IN_PATH` in `src/lib/auth/paths.ts` (today the default `/api/auth/signin`), `signInSchema` / `registerSchema` in `src/lib/auth/schema.ts`, sign-out action in `src/actions/auth.ts`, credentials and Google providers, register route codes (`VALIDATION`, `EMAIL_TAKEN`, `RATE_LIMITED`, `UNKNOWN`)
+- Copy is rendered by Client Components (the language lives in `localStorage`); validation messages are keys under `validation`
+- The Google button can only be checked up to the redirect to Google; the real sign-in is done by the user
 
 ## History
 

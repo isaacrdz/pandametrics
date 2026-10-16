@@ -105,19 +105,6 @@ function validate(values: unknown, mode: UserFormSchemaMode): Validation {
   return { ok: false, result: { success: false, error: { code: "VALIDATION", fieldErrors } } };
 }
 
-export async function createUser(values: UserFormInput): Promise<UserActionResult<{ id: string }>> {
-  const validation = validate(values, "create");
-  if (!validation.ok) return validation.result;
-  try {
-    const scope = await getScope();
-    const user = await userService.createUser(scope, validation.data);
-    afterChange(scope, [user.id]);
-    return { success: true, data: { id: user.id } };
-  } catch (error) {
-    return toErrorResult(error);
-  }
-}
-
 export async function updateUser(id: string, values: UserFormInput): Promise<UserActionResult<{ values: UserFormInput }>> {
   if (!idSchema.safeParse(id).success) return VALIDATION_ERROR;
   const validation = validate(values, "edit");
@@ -135,7 +122,9 @@ export async function updateUser(id: string, values: UserFormInput): Promise<Use
 
 // Always the signed-in user (from the session), never an id sent by the client
 export async function updateProfile(values: UserFormInput): Promise<UserActionResult<{ values: UserFormInput }>> {
-  const validation = validate(values, "profile");
+  // The edit rules (an optional pair): the service asks for the current password only when the
+  // user has one, so a Google-only user can set a first password
+  const validation = validate(values, "edit");
   if (!validation.ok) return validation.result;
   try {
     const scope = await getScope();

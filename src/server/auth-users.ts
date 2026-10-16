@@ -56,13 +56,31 @@ export async function canSignIn(provider: string, providerAccountId: string, ema
 
 // First Google sign-in of an existing user. A self-registered (unverified) email may have been
 // claimed by someone else with a password: the verified Google owner takes over and that password
-// stops working. The Google photo fills an empty avatar, never replaces one
-export async function onGoogleAccountLinked(userId: string, image: string | null | undefined): Promise<void> {
+// stops working
+export async function onGoogleAccountLinked(userId: string): Promise<void> {
   await prisma.user.updateMany({
     where: { id: userId, emailVerified: null },
     data: { emailVerified: new Date(), passwordHash: null },
   });
-  if (image) await prisma.user.updateMany({ where: { id: userId, image: null }, data: { image } });
+}
+
+// Google profile photos are served from googleusercontent.com
+const GOOGLE_PHOTO_HOST = "googleusercontent.com/";
+
+// Every Google sign-in: the profile picture follows the Google photo, so a new photo there shows up
+// here on the next sign-in. Only an empty avatar or an earlier Google photo is replaced; a photo
+// uploaded in the app (later) is never overwritten. Returns whether the user changed
+export async function syncGooglePhoto(userId: string, picture: string | null | undefined): Promise<boolean> {
+  if (!picture?.startsWith("https://")) return false;
+  const { count } = await prisma.user.updateMany({
+    where: {
+      id: userId,
+      // "Not the same photo" only on the Google branch: NOT (image = …) is NULL for an empty image
+      OR: [{ image: null }, { image: { contains: GOOGLE_PHOTO_HOST, not: picture } }],
+    },
+    data: { image: picture },
+  });
+  return count > 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -76,8 +94,13 @@ export interface SignedInUser {
   image: string | null;
 }
 
-// A valid scrypt hash of a random password nobody knows, only to spend the same time
-const DUMMY_HASH = hashPassword(crypto.randomUUID());
+// A valid scrypt hash of a random password nobody knows, only to spend the same time. Made on first
+// use, not when the module loads (pages that import this module are prerendered)
+let dummyHash: string | undefined;
+function getDummyHash(): string {
+  dummyHash ??= hashPassword(crypto.randomUUID());
+  return dummyHash;
+}
 
 // null for every failure alike (unknown email, wrong password, Google-only account, inactive,
 // deleted or organization-less user), so the answer never tells which emails exist
@@ -87,7 +110,7 @@ export async function verifyCredentials(email: string, password: string): Promis
     select: { id: true, name: true, email: true, image: true, passwordHash: true, isActive: true, deletedAt: true, organizationId: true },
   });
   // Hash anyway when there is no user, so a missing email takes as long as a wrong password
-  const valid = verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
+  const valid = verifyPassword(password, user?.passwordHash ?? getDummyHash());
   if (!user || !valid || !user.passwordHash || !user.isActive || user.deletedAt || !user.organizationId) return null;
   return { id: user.id, name: user.name, email: user.email, image: user.image };
 }
