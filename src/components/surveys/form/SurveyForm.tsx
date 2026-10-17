@@ -115,7 +115,7 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
           }
         />
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-8 md:py-10">
-          <SurveyDetailsSection />
+          <SurveyDetailsSection publishOnCreate={config.publishOnCreate} />
           <CategoryPicker locked={config.lockCategory(meta)} />
           <QuestionsSection />
           {config.showShare && meta && (

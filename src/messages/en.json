@@ -408,7 +408,8 @@
       "active": "Active",
       "inactive": "Draft",
       "activeHint": "The survey is published and your customers can answer it through its link or QR code.",
-      "inactiveHint": "The survey is a draft. Turn it on to start collecting answers."
+      "inactiveHint": "The survey is a draft. Turn it on to start collecting answers.",
+      "createHint": "It's published when you create it, if your plan has a free active slot; otherwise it's saved as a draft."
     },
     "category": {
       "locked": "The category can't change because this survey already has responses.",
@@ -419,7 +420,8 @@
       "cancel": "Cancel"
     },
     "toasts": {
-      "created": "Survey created",
+      "created": "Survey created and published",
+      "createdAsDraft": "Survey created as a draft: your plan's active survey limit is reached",
       "saved": "Changes saved",
       "deleted": "Survey deleted"
     },

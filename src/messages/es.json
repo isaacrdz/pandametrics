@@ -408,7 +408,8 @@
       "active": "Activa",
       "inactive": "Borrador",
       "activeHint": "La encuesta está publicada y tus clientes pueden responderla mediante su enlace o código QR.",
-      "inactiveHint": "La encuesta es un borrador. Actívala para empezar a recibir respuestas."
+      "inactiveHint": "La encuesta es un borrador. Actívala para empezar a recibir respuestas.",
+      "createHint": "Se publica al crearla si tu plan tiene un espacio activo libre; si no, se guarda como borrador."
     },
     "category": {
       "locked": "La categoría no se puede cambiar porque esta encuesta ya tiene respuestas.",
@@ -419,7 +420,8 @@
       "cancel": "Cancelar"
     },
     "toasts": {
-      "created": "Encuesta creada",
+      "created": "Encuesta creada y publicada",
+      "createdAsDraft": "Encuesta creada como borrador: se alcanzó el límite de encuestas activas de tu plan",
       "saved": "Cambios guardados",
       "deleted": "Encuesta borrada"
     },

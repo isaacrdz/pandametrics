@@ -321,13 +321,20 @@ async function changeActiveCount(tx: Prisma.TransactionClient, organizationId: s
   // The limit is the owner's plan, read in this transaction: 1 on Free or expired, 5 on Pro. Only
   // growing is checked, so an organization above its limit after a downgrade can still edit and
   // deactivate (the CHECK of the init migration caps the counter at 5, the Pro maximum)
+  const claim = await claimActiveSlots(tx, organizationId, delta);
+  if (!claim.ok) throw new SurveyServiceError("ACTIVE_LIMIT", { limit: claim.limit, tier: claim.tier });
+}
+
+// The guarded UPDATE behind changeActiveCount, reporting instead of throwing: a failed claim
+// changes nothing, so the transaction can go on (createSurvey falls back to a draft)
+async function claimActiveSlots(tx: Prisma.TransactionClient, organizationId: string, delta: number) {
   const tier = await organizationTier(tx, organizationId, new Date());
   const { activeSurveys: limit } = limitsFor(tier);
   const { count } = await tx.organization.updateMany({
     where: { id: organizationId, activeSurveyCount: { lte: limit - delta } },
     data: { activeSurveyCount: { increment: delta } },
   });
-  if (count === 0) throw new SurveyServiceError("ACTIVE_LIMIT", { limit, tier });
+  return { ok: count > 0, limit, tier };
 }
 
 // ---------------------------------------------------------------------------
@@ -337,6 +344,8 @@ async function changeActiveCount(tx: Prisma.TransactionClient, organizationId: s
 // Neon's latency varies, and a survey write is several round trips: Prisma's 5 s default is too tight
 const WRITE_TRANSACTION = { maxWait: 10_000, timeout: 15_000 };
 
+// A new survey is published when the organization has a free active slot, whatever the form's
+// switch says; at the limit it is created as a draft instead of failing
 export async function createSurvey(scope: SurveyScope, input: SurveyFormValues): Promise<Survey> {
   const now = new Date();
   const questions = mergeQuestions(input.category, [], input.questions, new Set(), now);
@@ -351,7 +360,7 @@ export async function createSurvey(scope: SurveyScope, input: SurveyFormValues):
         });
         if (membership === 0) throw new SurveyServiceError("NO_ORGANIZATION");
 
-        if (input.isActive) await changeActiveCount(tx, scope.organizationId, 1);
+        const { ok: isActive } = await claimActiveSlots(tx, scope.organizationId, 1);
         const survey = await tx.survey.create({
           data: {
             id: newObjectId(),
@@ -361,7 +370,7 @@ export async function createSurvey(scope: SurveyScope, input: SurveyFormValues):
             name: input.name,
             description: input.description,
             category: input.category,
-            isActive: input.isActive,
+            isActive,
           },
         });
         await writeQuestions(tx, survey.id, questions, now);

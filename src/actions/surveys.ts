@@ -60,7 +60,7 @@ function validate(values: unknown): Validation {
   return { ok: false, result: { success: false, error: { code: "VALIDATION", fieldErrors } } };
 }
 
-export async function createSurvey(values: SurveyFormInput): Promise<ActionResult<{ id: string }>> {
+export async function createSurvey(values: SurveyFormInput): Promise<ActionResult<{ id: string; isActive: boolean }>> {
   const validation = validate(values);
   if (!validation.ok) return validation.result;
 
@@ -72,7 +72,7 @@ export async function createSurvey(values: SurveyFormInput): Promise<ActionResul
     const scope = await getScope();
     const survey = await surveyService.createSurvey(scope, validation.data);
     afterChange(scope, [survey.id]);
-    return { success: true, data: { id: survey.id } };
+    return { success: true, data: { id: survey.id, isActive: survey.isActive } };
   } catch (error) {
     return toErrorResult(error);
   }

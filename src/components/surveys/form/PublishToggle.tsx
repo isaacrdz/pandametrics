@@ -9,7 +9,9 @@ import { Switch } from "@/components/ui/switch";
 import type { SurveyFormInput } from "@/lib/surveys/schema";
 import { cn } from "@/lib/utils";
 
-export function PublishToggle() {
+// On create the switch is read-only: the survey is published when it is created if the plan has a
+// free active slot, otherwise saved as a draft (the server decides, see createSurvey)
+export function PublishToggle({ publishOnCreate }: { publishOnCreate: boolean }) {
   const t = useTranslations("surveyForm");
   const activeLimit = useActiveLimitParams();
   const { control } = useFormContext<SurveyFormInput>();
@@ -39,15 +41,17 @@ export function PublishToggle() {
               <span id="publish-title" className="font-semibold text-foreground">
                 {t("publish.title")}
               </span>
-              <Badge
-                variant={field.value ? "default" : "secondary"}
-                className={cn(field.value && "bg-success-foreground text-white dark:text-background")}
-              >
-                {field.value ? t("publish.active") : t("publish.inactive")}
-              </Badge>
+              {!publishOnCreate && (
+                <Badge
+                  variant={field.value ? "default" : "secondary"}
+                  className={cn(field.value && "bg-success-foreground text-white dark:text-background")}
+                >
+                  {field.value ? t("publish.active") : t("publish.inactive")}
+                </Badge>
+              )}
             </div>
             <p id="publish-hint" className="mt-1 text-sm text-muted-foreground">
-              {field.value ? t("publish.activeHint") : t("publish.inactiveHint")}
+              {t(publishOnCreate ? "publish.createHint" : field.value ? "publish.activeHint" : "publish.inactiveHint")}
             </p>
             {fieldState.error?.message === "ACTIVE_LIMIT" && (
               <p role="alert" className="mt-2 text-sm font-medium text-destructive">
@@ -59,6 +63,7 @@ export function PublishToggle() {
             checked={field.value}
             onCheckedChange={field.onChange}
             onBlur={field.onBlur}
+            disabled={publishOnCreate}
             aria-labelledby="publish-title"
             aria-describedby="publish-hint"
             aria-invalid={fieldState.invalid}

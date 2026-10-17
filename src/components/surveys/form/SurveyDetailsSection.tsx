@@ -14,7 +14,7 @@ import type { SurveyFormInput } from "@/lib/surveys/schema";
 
 const INPUT_CLASS = "h-12 rounded-xl bg-muted/60 px-4 text-[0.95rem]";
 
-export function SurveyDetailsSection() {
+export function SurveyDetailsSection({ publishOnCreate }: { publishOnCreate: boolean }) {
   const t = useTranslations("surveyForm");
   const validationMessage = useValidationMessage();
   const { control } = useFormContext<SurveyFormInput>();
@@ -73,7 +73,7 @@ export function SurveyDetailsSection() {
           )}
         />
 
-        <PublishToggle />
+        <PublishToggle publishOnCreate={publishOnCreate} />
       </FieldGroup>
     </FormSection>
   );

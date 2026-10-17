@@ -12,7 +12,7 @@ type ActionError = Extract<ActionResult<unknown>, { success: false }>["error"];
 export interface SaveHelpers {
   navigate: (href: string) => void;
   reset: (values: SurveyFormInput) => void;
-  notify: (toast: "created" | "saved") => void;
+  notify: (toast: "created" | "createdAsDraft" | "saved") => void;
 }
 
 interface FormModeConfig {
@@ -21,6 +21,8 @@ interface FormModeConfig {
   submitKey: "create" | "save";
   showDelete: boolean;
   showShare: boolean;
+  // Create publishes on its own when a slot is free (the server decides), so the switch is read-only
+  publishOnCreate: boolean;
   lockCategory: (meta?: SurveyFormMeta) => boolean;
   // Returns the error to show, or null when the save succeeded
   save: (values: SurveyFormInput, meta: SurveyFormMeta | undefined, helpers: SaveHelpers) => Promise<ActionError | null>;
@@ -33,11 +35,13 @@ export const FORM_MODES: Record<SurveyFormMode, FormModeConfig> = {
     submitKey: "create",
     showDelete: false,
     showShare: false,
+    publishOnCreate: true,
     lockCategory: () => false,
     async save(values, _meta, { navigate, notify }) {
       const result = await createSurvey(values);
       if (!result.success) return result.error;
-      notify("created");
+      // Published when a slot was free, otherwise kept as a draft
+      notify(result.data.isActive ? "created" : "createdAsDraft");
       // The edit page shows the share panel (link and QR), the next thing the user needs
       navigate(`/surveys/${result.data.id}`);
       return null;
@@ -49,6 +53,7 @@ export const FORM_MODES: Record<SurveyFormMode, FormModeConfig> = {
     submitKey: "save",
     showDelete: true,
     showShare: true,
+    publishOnCreate: false,
     lockCategory: (meta) => meta?.hasResponses ?? false,
     async save(values, meta, { reset, notify }) {
       if (!meta) return { code: "NOT_FOUND" };
