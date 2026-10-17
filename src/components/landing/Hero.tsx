@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { HeroVisual } from "@/components/landing/HeroVisual";
+import { HeroSurveyPreview } from "@/components/landing/HeroSurveyPreview";
 import { FOCUS_RING, LANDING_LINKS, SECTION_IDS } from "@/components/landing/landing-links";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ export function Hero() {
         <p className="max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl">{t("subtitle")}</p>
 
         <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
-          <Button asChild className={cn("h-14 w-full gap-2 rounded-2xl px-7 text-base font-semibold shadow-[0_18px_36px_-16px_var(--primary)] md:w-auto", FOCUS_RING)}>
+          <Button asChild className={cn("h-14 w-full gap-2 rounded-2xl px-7 text-base font-semibold md:w-auto", FOCUS_RING)}>
             <Link href={LANDING_LINKS.start}>
               {t("primaryCta")}
               <ArrowRightIcon aria-hidden className="size-5" />
@@ -47,7 +47,7 @@ export function Hero() {
         </ul>
       </div>
 
-      <HeroVisual />
+      <HeroSurveyPreview />
     </section>
   );
 }

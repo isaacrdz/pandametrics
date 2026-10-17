@@ -71,7 +71,7 @@ The only hard-coded colors outside `globals.css` are the flags (`LanguageFlag`) 
 
 From `landing-view.png`, `landing-view-2.png` and `landing-view-3.png`:
 
-- **Page background**: very light pink with a soft pink radial glow at the top left of the hero.
+- **Page background**: very light pink with a soft pink radial glow at the top left of the hero. *(Removed 2026-10-17: the landing uses the plain page background, no glow.)*
 - **Nav** (max width ~1120px, centered):
   - logo tile (rounded square with the panda on pink, ~44px) + "Panda Metrics" (bold);
   - center links "Funciones", "Cómo funciona", "Precios" (muted, ~15px);
@@ -337,7 +337,7 @@ Decisions:
 | `LandingNav` | yes (text) | `Logo`, `Button`, `LanguageSwitcher`, `MobileNav` | Sticky; links hidden below `md` |
 | `MobileNav` | yes | `Sheet`, `Button` | Menu button with `aria-label`; links + switcher + both auth buttons; closes on link click |
 | `Hero` | yes (text) | `Badge`-like pill, `Button` (`asChild` + `Link`), `CheckIcon` | `h1` is the headline; CTAs as links |
-| `HeroVisual` | yes (stat label) | `next/image` (`panda-hero`), `fetchPriority="high"` | Pink `bg-brand` panel in a white frame; floating stat card with static numbers (`2,486`, `+18.4%`, 10 bar heights in a constant), formatted with `useFormatter` |
+| `HeroSurveyPreview` | yes (preview copy, reaction labels) | `SurveyResults` / `OptionList` from the dashboard | Replaced `HeroVisual` (2026-10-17): a dashboard survey card with example data (Satisfaction, 2 questions, counts in a constant) as a plain card (no frame, panel or glow; the hero buttons have no glow either); example code `PANDA1` (contains a reserved token, so never a real survey); "Example" badge, `figure` with an accessible label, working question pager; `panda-hero.webp` removed |
 | `FeaturesSection` / `FeatureCard` | yes (text) | lucide `SparklesIcon`, `ChartColumnIcon`, `StarIcon` | `id="features"`; cards `bg-accent/60 border-card-border` |
 | `HowItWorksSection` | yes (text) | numbered tiles like `FormSection` | `id="how-it-works"` |
 | `CtaBanner` | yes (text) | `Button` (white, `text-primary`) | `bg-inverse text-inverse-foreground` |

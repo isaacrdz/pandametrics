@@ -542,8 +542,15 @@
       "secondaryCta": "Conoce más",
       "noCard": "Sin tarjeta de crédito",
       "quickSetup": "Configuración en minutos",
-      "statLabel": "Respuestas este mes",
-      "statDescription": "Ejemplo: {count} respuestas este mes, {growth} más"
+      "preview": {
+        "label": "Ejemplo de resultados de una encuesta",
+        "badge": "Ejemplo",
+        "name": "Experiencia en tienda",
+        "questions": {
+          "visit": "¿Cómo fue tu visita hoy?",
+          "staff": "¿Cómo te atendió nuestro personal?"
+        }
+      }
     },
     "features": {
       "eyebrow": "Todo lo que necesitas",

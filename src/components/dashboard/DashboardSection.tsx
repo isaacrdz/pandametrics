@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { CollectionsToolbar } from "@/components/dashboard/CollectionsToolbar";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { SurveyGrid } from "@/components/dashboard/SurveyGrid";
+import { useLiveDashboard } from "@/components/dashboard/use-live-dashboard";
 import type { SurveyCardData } from "@/lib/dashboard";
 import type { DashboardRange } from "@/lib/dashboard-range";
 
@@ -19,6 +20,8 @@ interface DashboardSectionProps {
 export function DashboardSection({ cards, activeSurveyCount, range }: DashboardSectionProps) {
   const t = useTranslations("dashboard");
   const headingRef = useRef<HTMLHeadingElement>(null);
+  // New kiosk answers and survey changes show up without a reload
+  useLiveDashboard();
 
   // Wait for the dialog or menu to finish restoring focus before moving it
   function focusHeading() {
