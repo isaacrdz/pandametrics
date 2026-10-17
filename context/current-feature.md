@@ -1,18 +1,25 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Landing Account Buttons When Signed In
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Signed in (a valid session for an active account, the same check `/sign-in` uses: `getSessionAccount`), the landing at `/` shows one "Go to dashboard" button (to `DEFAULT_AFTER_SIGN_IN`, `/dashboard`) instead of "Sign in" + "Create account"
+- Applies everywhere those buttons appear: the desktop nav (`LandingNav`, from `lg`), the mobile menu sheet (`MobileNav`, full width, closes on click like today) and the dark CTA banner (`CtaBanner`, "Create account" → "Go to dashboard")
+- Signed out (or a cookie for a deactivated / deleted account): unchanged
+- An account without an organization still lands on `/welcome` (the dashboard already redirects there); no new logic for it
+- The landing stays fast: its static shell is prerendered and only the account buttons depend on the session (no `auth()` at the page level making all of `/` dynamic)
+- New `landing.nav.goToDashboard` (and banner) messages in en / es; same sizes, focus ring and styles as the buttons they replace; no layout shift in the nav at 375 / 768 / 1280
+- Added on request: `/sign-in` and `/register` show the Panda Metrics logo (icon + wordmark, `size="md"`, links to `/`) centered above the card and no language switcher (`AuthFrame logoAboveCard`); `/welcome` keeps its top bar with the switcher and account menu
 
 ## Notes
 
-<!-- Any extra notes -->
+- Inline request, no spec. Buttons today: `LandingNav.tsx` (lines ~38–45), `MobileNav.tsx` (~82–90), `CtaBanner.tsx` (`LANDING_LINKS.signUp`); the hero's primary CTA already links to `/dashboard` (`LANDING_LINKS.start`) and stays as is
+- `(marketing)` is a static route group under Cache Components. Plan: a small server component reading `getSessionAccount()` (with `connection()` before `auth()`, as on the auth pages) inside `<Suspense>`, passing `signedIn` to the button groups; the fallback renders the signed-out buttons so crawlers and first paint match today. The session cookie is `httpOnly`, so the client can't read it directly; `useSession` would add a `SessionProvider` and an extra `/api/auth/session` request, so prefer the server read
+- `MobileNav` is a Client Component: pass `signedIn` as a prop (or the actions as children) from the server
+- Check: signed out → Sign in / Create account (nav, sheet, banner) as today; Jordan → Go to dashboard everywhere → `/dashboard`; Nora (no organization) → `/welcome`; `yarn build` route table shows `/` partially prerendered, not fully dynamic; en / es, light / dark, 375 / 768 / 1280
 
 ## History
 

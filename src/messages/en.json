@@ -530,6 +530,7 @@
       "howItWorks": "How it works",
       "signIn": "Sign in",
       "signUp": "Create account",
+      "goToDashboard": "Go to dashboard",
       "menu": "Open menu",
       "menuTitle": "Menu"
     },
@@ -567,7 +568,8 @@
     "cta": {
       "eyebrow": "Ready to listen",
       "title": "Ask questions. Find patterns. Grow with confidence.",
-      "button": "Create my account"
+      "button": "Create my account",
+      "dashboardButton": "Go to dashboard"
     },
     "footer": {
       "copyright": "© {year} Panda Metrics",

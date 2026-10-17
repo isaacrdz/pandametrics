@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Logo } from "@/components/brand/Logo";
 import { FOCUS_RING, LANDING_LINKS, SECTION_IDS } from "@/components/landing/landing-links";
+import { useLandingSignedIn } from "@/components/landing/landing-session";
 import { MobileNav } from "@/components/landing/MobileNav";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 export function LandingNav() {
   const t = useTranslations("landing.nav");
+  const signedIn = useLandingSignedIn();
 
   return (
     <header className="sticky top-0 z-30 border-b border-transparent bg-background/80 backdrop-blur">
@@ -37,11 +39,17 @@ export function LandingNav() {
         <div className="ml-auto flex items-center gap-3 lg:ml-0">
           <div className="hidden items-center gap-3 lg:flex">
             <LanguageSwitcher />
-            <Button asChild variant="ghost" className={cn("h-11 rounded-xl px-4 font-semibold text-primary hover:bg-accent hover:text-primary", FOCUS_RING)}>
-              <Link href={LANDING_LINKS.signIn}>{t("signIn")}</Link>
-            </Button>
+            {!signedIn && (
+              <Button asChild variant="ghost" className={cn("h-11 rounded-xl px-4 font-semibold text-primary hover:bg-accent hover:text-primary", FOCUS_RING)}>
+                <Link href={LANDING_LINKS.signIn}>{t("signIn")}</Link>
+              </Button>
+            )}
             <Button asChild className={cn("h-11 rounded-xl px-5 font-semibold shadow-[0_10px_24px_-12px_var(--primary)]", FOCUS_RING)}>
-              <Link href={LANDING_LINKS.signUp}>{t("signUp")}</Link>
+              {signedIn ? (
+                <Link href={LANDING_LINKS.dashboard}>{t("goToDashboard")}</Link>
+              ) : (
+                <Link href={LANDING_LINKS.signUp}>{t("signUp")}</Link>
+              )}
             </Button>
           </div>
           <MobileNav />
