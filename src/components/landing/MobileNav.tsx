@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MenuIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FOCUS_RING, LANDING_LINKS, SECTION_IDS } from "@/components/landing/landing-links";
+import { useLandingSignedIn } from "@/components/landing/landing-session";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 // Menu below lg: section links, language and account actions in a sheet
 export function MobileNav() {
   const t = useTranslations("landing.nav");
+  const signedIn = useLandingSignedIn();
   const [open, setOpen] = useState(false);
   // Section picked in the menu, scrolled to once the sheet has closed and released the scroll lock
   const pendingSection = useRef<string | null>(null);
@@ -78,16 +80,26 @@ export function MobileNav() {
         </div>
 
         <div className="mt-auto flex flex-col gap-3 border-t border-card-border p-6">
-          <Button asChild variant="outline" className={cn("h-12 rounded-xl border-card-border bg-card text-base font-semibold text-primary hover:bg-accent hover:text-primary", FOCUS_RING)}>
-            <Link href={LANDING_LINKS.signIn} onClick={() => setOpen(false)}>
-              {t("signIn")}
-            </Link>
-          </Button>
-          <Button asChild className={cn("h-12 rounded-xl text-base font-semibold", FOCUS_RING)}>
-            <Link href={LANDING_LINKS.signUp} onClick={() => setOpen(false)}>
-              {t("signUp")}
-            </Link>
-          </Button>
+          {signedIn ? (
+            <Button asChild className={cn("h-12 rounded-xl text-base font-semibold", FOCUS_RING)}>
+              <Link href={LANDING_LINKS.dashboard} onClick={() => setOpen(false)}>
+                {t("goToDashboard")}
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Button asChild variant="outline" className={cn("h-12 rounded-xl border-card-border bg-card text-base font-semibold text-primary hover:bg-accent hover:text-primary", FOCUS_RING)}>
+                <Link href={LANDING_LINKS.signIn} onClick={() => setOpen(false)}>
+                  {t("signIn")}
+                </Link>
+              </Button>
+              <Button asChild className={cn("h-12 rounded-xl text-base font-semibold", FOCUS_RING)}>
+                <Link href={LANDING_LINKS.signUp} onClick={() => setOpen(false)}>
+                  {t("signUp")}
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
       </SheetContent>
     </Sheet>

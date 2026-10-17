@@ -6,6 +6,7 @@ export const LANDING_LINKS = {
   signIn: SIGN_IN_PATH,
   signUp: REGISTER_PATH,
   start: DEFAULT_AFTER_SIGN_IN,
+  dashboard: DEFAULT_AFTER_SIGN_IN,
 } as const;
 
 export const SECTION_IDS = {

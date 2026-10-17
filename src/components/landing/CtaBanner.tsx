@@ -4,10 +4,12 @@ import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LANDING_LINKS } from "@/components/landing/landing-links";
+import { useLandingSignedIn } from "@/components/landing/landing-session";
 import { Button } from "@/components/ui/button";
 
 export function CtaBanner() {
   const t = useTranslations("landing.cta");
+  const signedIn = useLandingSignedIn();
 
   return (
     <section aria-labelledby="cta-title" className="border-t border-card-border bg-accent/40 py-20 lg:py-24">
@@ -24,8 +26,8 @@ export function CtaBanner() {
             asChild
             className="h-12 w-fit shrink-0 gap-2 rounded-xl bg-card px-6 text-base font-semibold text-primary outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-inverse"
           >
-            <Link href={LANDING_LINKS.signUp}>
-              {t("button")}
+            <Link href={signedIn ? LANDING_LINKS.dashboard : LANDING_LINKS.signUp}>
+              {signedIn ? t("dashboardButton") : t("button")}
               <ArrowRightIcon aria-hidden className="size-5" />
             </Link>
           </Button>
