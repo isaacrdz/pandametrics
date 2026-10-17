@@ -20,7 +20,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { getInitials } from "@/lib/format";
 import type { PlanTier } from "@/lib/plans/plan";
@@ -37,7 +36,6 @@ interface NavUserProps {
 export function NavUser({ name, email, image, planTier, invitationCount }: NavUserProps) {
   const t = useTranslations("userMenu");
   const tInvitations = useTranslations("invitations");
-  const { isMobile } = useSidebar();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [signingOut, startSignOut] = useTransition();
@@ -74,9 +72,9 @@ export function NavUser({ name, email, image, planTier, invitationCount }: NavUs
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            side={isMobile ? "top" : "right"}
-            align="end"
-            className="min-w-56 rounded-xl"
+            side="top"
+            align="start"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-xl"
           >
             <DropdownMenuLabel>{t("account")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
