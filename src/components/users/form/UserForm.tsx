@@ -30,11 +30,13 @@ interface UserFormProps {
   defaultValues: UserFormInput;
   // Edit only: id, role and status, shown but never sent
   meta?: UserFormMeta;
-  // Profile only: the picture card next to the form (left half from lg)
+  // Profile only: the picture card above the form's cards
   aside?: ReactNode;
+  // Profile only: the last card under the sections (deleting the account)
+  footer?: ReactNode;
 }
 
-export function UserForm({ mode, defaultValues, meta, aside }: UserFormProps) {
+export function UserForm({ mode, defaultValues, meta, aside, footer }: UserFormProps) {
   const config = USER_FORM_MODES[mode];
   const t = useTranslations("userForm");
   const tRoot = useTranslations();
@@ -90,8 +92,9 @@ export function UserForm({ mode, defaultValues, meta, aside }: UserFormProps) {
   const sections = (
     <>
       <UserDetailsSection isActive={config.showStatus ? meta?.isActive : undefined} emailReadOnly={config.emailReadOnly} />
-      {config.passwordVariant && <PasswordSection variant={config.passwordVariant} />}
+      {config.showPassword && <PasswordSection />}
       {config.showPermissions && <PermissionsSection role={meta?.role ?? "MEMBER"} />}
+      {footer}
     </>
   );
 
@@ -113,18 +116,9 @@ export function UserForm({ mode, defaultValues, meta, aside }: UserFormProps) {
           }
         />
         <div className={cn("mx-auto flex w-full flex-col gap-8 px-4 py-8 md:px-8 md:py-10", config.containerClass)}>
-          {aside ? (
-            // Profile: picture card on the left, the cards on the right, 4 / 8 once the page has
-            // 56rem for them (a container: the sidebar takes part of the width); stacked below
-            <div className="@container/profile">
-              <div className="grid items-start gap-8 @4xl/profile:grid-cols-12">
-                <div className="@4xl/profile:sticky @4xl/profile:top-24 @4xl/profile:col-span-4">{aside}</div>
-                <div className="flex min-w-0 flex-col gap-8 @4xl/profile:col-span-8">{sections}</div>
-              </div>
-            </div>
-          ) : (
-            sections
-          )}
+          {/* Profile: the picture card first, above the form's cards */}
+          {aside}
+          {sections}
         </div>
       </form>
       <UnsavedChangesDialog open={leaveOpen} onOpenChange={setLeaveOpen} onDiscard={() => router.push(config.backHref)} />

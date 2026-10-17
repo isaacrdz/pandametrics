@@ -1,9 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
-import { ImageUpIcon, LogOutIcon } from "lucide-react";
+import { ImageUpIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { signOutAction } from "@/actions/auth";
 import { UserAvatar } from "@/components/users/UserAvatar";
 import { UserRoleBadge } from "@/components/users/table/UserRowParts";
 import { Button } from "@/components/ui/button";
@@ -14,88 +12,87 @@ import type { Role } from "@/types/survey";
 
 interface ProfilePictureCardProps {
   name: string;
-  email: string;
+  // The organization the user is working in; null without one
+  organizationName: string | null;
   // In the active organization; null without one
   role: Role | null;
   plan: PlanState;
   image: string | null;
   initials: string;
+  // Accounts that signed up with email and password; a Google sign-up's photo comes from Google
+  canChangePhoto: boolean;
 }
 
-// Coming soon: shows the avatar (or the initials) with a disabled "Change photo" button. Then
-// "Sign out". Rendered inside the profile <form>, but nothing here submits it: plain buttons.
-export function ProfilePictureCard({ name, email, role, plan, image, initials }: ProfilePictureCardProps) {
-  const tPlan = useTranslations("plan");
+// The profile's header card: a tinted cover band with the avatar (or the initials) overlapping it,
+// the name as the heading, the organization and badges, then "Change photo" (coming soon, accounts
+// that signed up with email and password). Rendered inside the profile <form>, but nothing here
+// submits it: a plain button. Signing out lives in the sidebar's user menu.
+export function ProfilePictureCard({ name, organizationName, role, plan, image, initials, canChangePhoto }: ProfilePictureCardProps) {
   const t = useTranslations("profile.picture");
   const tForm = useTranslations("form");
-  const tMenu = useTranslations("userMenu");
-  const [signingOut, startSignOut] = useTransition();
 
   return (
     <section
       aria-labelledby="profile-picture-title"
-      className="flex flex-col gap-6 rounded-3xl border border-card-border bg-card p-5 sm:p-8"
+      className="@container/picture overflow-hidden rounded-3xl border border-card-border bg-card"
     >
-      <header className="flex flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h2 id="profile-picture-title" className="text-xl font-bold text-foreground sm:text-2xl">
-            {t("title")}
-          </h2>
-          <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-accent-foreground">
-            {tForm("comingSoon")}
-          </span>
-        </div>
-        <p className="text-muted-foreground">{t("description")}</p>
-      </header>
+      {/* Decorative cover in the brand's tints (light and dark follow the tokens) */}
+      <div aria-hidden className="h-24 bg-linear-to-br from-primary/20 via-accent to-primary/5 sm:h-28" />
 
-      {/* Stacked: avatar next to the text. Side column (the profile grid): centered and larger. */}
-      <div className="flex items-center gap-5 @4xl/profile:flex-col @4xl/profile:gap-4 @4xl/profile:text-center">
-        <UserAvatar
-          image={image}
-          initials={initials}
-          className="size-24 @4xl/profile:size-32"
-          fallbackClassName="text-2xl @4xl/profile:text-4xl"
-        />
-        <div className="flex min-w-0 flex-col gap-1.5 @4xl/profile:items-center">
-          <p className="truncate text-lg font-semibold text-foreground">{name}</p>
-          <p className="truncate text-sm text-muted-foreground">{email}</p>
-          <div className="flex flex-wrap items-center gap-2 @4xl/profile:justify-center">
-            {role && <UserRoleBadge role={role} />}
-            <PlanBadge tier={plan.tier} />
+      <div className="flex flex-col gap-6 px-5 pb-6 sm:px-8 sm:pb-8">
+        {/* Wide card: details on the left, the button at the bottom right; stacked below */}
+        <div className="flex flex-col gap-5 @xl/picture:flex-row @xl/picture:items-end @xl/picture:justify-between">
+          <div className="flex min-w-0 flex-col gap-4">
+            {/* Half over the cover; the ring in the card's color cuts it out of the band */}
+            <UserAvatar
+              image={image}
+              initials={initials}
+              className="-mt-12 size-24 ring-4 ring-card sm:-mt-14 sm:size-28"
+              fallbackClassName="text-2xl sm:text-3xl"
+            />
+            <div className="flex min-w-0 flex-col gap-3">
+              {/* Name and organization read as one block; the badges sit apart below */}
+              <div className="flex min-w-0 flex-col gap-1">
+                <h2 id="profile-picture-title" className="truncate text-xl leading-tight font-bold text-foreground sm:text-2xl">
+                  {name}
+                </h2>
+                {organizationName && (
+                  <p title={organizationName} className="truncate text-muted-foreground">
+                    {organizationName}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {role && <UserRoleBadge role={role} />}
+                <PlanBadge tier={plan.tier} />
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {plan.planType ? tPlan("name", { type: tPlan(`types.${plan.planType}`) }) : tPlan("free.title")}
-          </p>
+
+          {canChangePhoto && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* aria-disabled (not disabled) so the tooltip still shows on hover and focus */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-disabled="true"
+                  onClick={(event) => event.preventDefault()}
+                  className="h-11 w-full cursor-not-allowed gap-2 rounded-xl border-card-border bg-card px-4 font-semibold text-muted-foreground opacity-60 hover:bg-card hover:text-muted-foreground @xl/picture:w-auto"
+                >
+                  <ImageUpIcon aria-hidden />
+                  {t("change")}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{tForm("comingSoon")}</TooltipContent>
+            </Tooltip>
+          )}
         </div>
+
+        <p className="border-t border-card-border pt-4 text-sm text-muted-foreground">
+          {t(canChangePhoto ? "description" : "descriptionGoogle")}
+        </p>
       </div>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {/* aria-disabled (not disabled) so the tooltip still shows on hover and focus */}
-          <Button
-            type="button"
-            variant="outline"
-            aria-disabled="true"
-            onClick={(event) => event.preventDefault()}
-            className="h-11 w-full cursor-not-allowed gap-2 rounded-xl border-card-border bg-card font-semibold text-muted-foreground opacity-60 hover:bg-card hover:text-muted-foreground @4xl/profile:w-auto @4xl/profile:self-center"
-          >
-            <ImageUpIcon aria-hidden />
-            {t("change")}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{tForm("comingSoon")}</TooltipContent>
-      </Tooltip>
-
-      <Button
-        type="button"
-        variant="ghost"
-        disabled={signingOut}
-        onClick={() => startSignOut(() => signOutAction())}
-        className="h-11 w-full gap-2 rounded-xl font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive @4xl/profile:w-auto @4xl/profile:self-center"
-      >
-        <LogOutIcon aria-hidden />
-        {tMenu("signOut")}
-      </Button>
     </section>
   );
 }

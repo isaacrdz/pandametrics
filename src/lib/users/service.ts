@@ -187,8 +187,10 @@ export async function updateUser(scope: UserScope, id: string, input: UserFormVa
   }
   // Your own password always needs the current one, even when the edit comes from the
   // user form instead of the profile (the page redirects, but the action can be called directly).
-  // Without one (Google-only), the first password is set without it
-  if (isSelf && input.password && user.passwordHash && !verifyPassword(input.currentPassword, user.passwordHash)) {
+  // Accounts without one (Google sign-ups) never get one here: the profile hides the card and a
+  // password sent anyway is ignored
+  const changesPassword = isSelf && Boolean(input.password) && Boolean(user.passwordHash);
+  if (changesPassword && !verifyPassword(input.currentPassword, user.passwordHash!)) {
     throw new UserServiceError("WRONG_PASSWORD");
   }
 
@@ -200,7 +202,7 @@ export async function updateUser(scope: UserScope, id: string, input: UserFormVa
             name: input.name,
             email: input.email,
             phone: input.phone,
-            ...(input.password ? { passwordHash: hashPassword(input.password) } : {}),
+            ...(changesPassword ? { passwordHash: hashPassword(input.password!) } : {}),
           }
         : { name: input.name, phone: input.phone },
       select: USER_PUBLIC_SELECT,

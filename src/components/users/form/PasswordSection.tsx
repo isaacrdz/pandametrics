@@ -9,56 +9,48 @@ import { USER_INPUT_CLASS } from "@/components/users/form/UserDetailsSection";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import type { UserFormInput } from "@/lib/users/schema";
 
-interface PasswordSectionProps {
-  // Only on the profile: someone else's password is never changed from the user form.
-  // change: optional, and a new password asks for the current one first.
-  // set (Google-only user): optional first password, no current one.
-  variant: "change" | "set";
-}
-
-export function PasswordSection({ variant }: PasswordSectionProps) {
+// Only on the profile of an account with a password: someone else's password is never changed from
+// the user form, and Google sign-ups have none. Optional; a new password asks for the current one first.
+export function PasswordSection() {
   const t = useTranslations("userForm");
   const validationMessage = useValidationMessage();
   const { control } = useFormContext<UserFormInput>();
-  const isChange = variant === "change";
 
   return (
     <FormSection
       id="user-password"
       number={2}
-      title={t(`sections.password.${variant}.title`)}
-      description={t(`sections.password.${variant}.description`)}
+      title={t("sections.password.title")}
+      description={t("sections.password.description")}
     >
       <FieldGroup className="grid gap-6 @lg:grid-cols-2">
-        {isChange && (
-          <Controller
-            name="currentPassword"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="@lg:col-span-2 @lg:max-w-[calc(50%-0.75rem)]">
-                <FieldLabel htmlFor="user-current-password" className="font-semibold text-muted-foreground">
-                  {t("fields.currentPassword")}
-                </FieldLabel>
-                <PasswordInput
-                  {...field}
-                  id="user-current-password"
-                  autoComplete="current-password"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.invalid ? "user-current-password-error" : undefined}
-                  className={USER_INPUT_CLASS}
-                />
-                <FieldError id="user-current-password-error">{validationMessage(fieldState.error?.message)}</FieldError>
-              </Field>
-            )}
-          />
-        )}
+        <Controller
+          name="currentPassword"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className="@lg:col-span-2 @lg:max-w-[calc(50%-0.75rem)]">
+              <FieldLabel htmlFor="user-current-password" className="font-semibold text-muted-foreground">
+                {t("fields.currentPassword")}
+              </FieldLabel>
+              <PasswordInput
+                {...field}
+                id="user-current-password"
+                autoComplete="current-password"
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? "user-current-password-error" : undefined}
+                className={USER_INPUT_CLASS}
+              />
+              <FieldError id="user-current-password-error">{validationMessage(fieldState.error?.message)}</FieldError>
+            </Field>
+          )}
+        />
         <Controller
           name="password"
           control={control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-password-input" className="font-semibold text-muted-foreground">
-                {t(isChange ? "fields.newPassword" : "fields.password")}
+                {t("fields.newPassword")}
               </FieldLabel>
               <PasswordInput
                 {...field}

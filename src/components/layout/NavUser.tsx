@@ -10,7 +10,6 @@ import { signOutAction } from "@/actions/auth";
 import { leaveOrganization, switchOrganization } from "@/actions/organizations";
 import { LeaveOrganizationDialog, OrganizationMenuItems, type OrganizationMenuData } from "@/components/layout/OrganizationMenu";
 import { PlanBadge } from "@/components/plans/PlanBadge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +23,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { UserAvatar } from "@/components/users/UserAvatar";
 import { getInitials } from "@/lib/format";
 import { MAX_MEMBERSHIPS } from "@/lib/plans/limits";
 import type { PlanTier } from "@/lib/plans/plan";
@@ -81,12 +81,7 @@ export function NavUser({ name, email, image, planTier, invitationCount, organiz
               className="h-auto gap-3 rounded-2xl bg-muted/70 p-3 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:bg-transparent"
             >
               <span className="relative shrink-0">
-                <Avatar className="size-10">
-                  {image && <AvatarImage src={image} alt="" referrerPolicy="no-referrer" />}
-                  <AvatarFallback className="bg-accent font-semibold text-accent-foreground">
-                    {getInitials(name)}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar image={image} initials={getInitials(name, email)} className="size-10" />
                 {invitationCount > 0 && (
                   <span aria-hidden className="absolute -top-0.5 -right-0.5 size-3 rounded-full border-2 border-sidebar bg-primary" />
                 )}

@@ -269,14 +269,8 @@
         "description": "Name and contact information."
       },
       "password": {
-        "change": {
-          "title": "Change password",
-          "description": "Leave it empty to keep your current password."
-        },
-        "set": {
-          "title": "Set a password",
-          "description": "You sign in with Google. Add a password to also sign in with your email."
-        }
+        "title": "Change password",
+        "description": "Leave it empty to keep your current password."
       },
       "permissions": {
         "title": "Permissions",
@@ -294,8 +288,6 @@
       "name": "Name",
       "email": "Email",
       "phone": "Phone",
-      "phonePlaceholder": "+52 55 1234 5678",
-      "password": "Password",
       "confirmPassword": "Confirm password",
       "showPassword": "Show password",
       "passwordRules": "At least 8 characters, with a letter and a number.",
@@ -322,12 +314,32 @@
     "title": "My profile",
     "subtitle": "Update your personal details and password.",
     "picture": {
-      "title": "Profile picture",
-      "description": "You'll be able to upload a photo here. For now we use your Google photo or your initials.",
+      "description": "Photo uploads are coming soon. For now we use your Google photo or your initials.",
+      "descriptionGoogle": "Your photo comes from your Google account, or we show your initials.",
       "change": "Change photo"
     },
     "toasts": {
       "updated": "Profile updated"
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "description": "Permanently delete your account. This can’t be undone.",
+      "ownerAlone": "“{organization}” and its surveys are deleted too.",
+      "ownerWithMembers": "Remove the {count, plural, one {# other person} other {# other people}} in “{organization}” first.",
+      "button": "Delete account",
+      "dialog": {
+        "title": "Delete your account?",
+        "description": "Your personal data is erased and you leave every organization. This can’t be undone.",
+        "organization": "“{organization}”, its surveys and responses are deleted too.",
+        "reuse": "You can sign up again with the same email.",
+        "confirm": "Delete my account",
+        "deleting": "Deleting…"
+      },
+      "errors": {
+        "ORGANIZATION_HAS_MEMBERS": "Your organization still has other people. Remove them from Users first.",
+        "NOT_FOUND": "This account no longer exists.",
+        "UNKNOWN": "We couldn’t delete your account. Try again."
+      }
     }
   },
   "results": {
@@ -373,7 +385,25 @@
       "confirm": "Discard and leave",
       "cancel": "Keep editing"
     },
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "typedConfirm": {
+      "word": "delete",
+      "typeLabel": "Type <strong>{word}</strong> to confirm",
+      "cancel": "Cancel"
+    },
+    "phone": {
+      "country": "Country code",
+      "countries": {
+        "MX": "Mexico",
+        "US": "United States",
+        "OTHER": "Other country"
+      },
+      "placeholders": {
+        "MX": "55 1234 5678",
+        "US": "(415) 555-0134",
+        "OTHER": "+44 20 7946 0958"
+      }
+    }
   },
   "surveyForm": {
     "createTitle": "Create survey",
@@ -473,10 +503,7 @@
       "title": "Delete “{name}”?",
       "description": "Its responses are kept, but its link and QR code stop working.",
       "confirm": "Delete survey",
-      "deleting": "Deleting…",
-      "cancel": "Cancel",
-      "word": "delete",
-      "typeLabel": "Type <strong>{word}</strong> to confirm"
+      "deleting": "Deleting…"
     },
     "danger": {
       "title": "Delete survey",
@@ -508,7 +535,9 @@
     "invalidReaction": "Pick a valid reaction.",
     "invalidColor": "Pick a valid color.",
     "invalidEmail": "Enter a valid email.",
-    "invalidPhone": "Enter 7 to 15 digits, with an optional + at the start.",
+    "invalidPhone": "Start with + and the country code, 7 to 15 digits in all.",
+    "invalidPhoneMx": "Mexican numbers have 10 digits.",
+    "invalidPhoneUs": "US numbers have 10 digits, and the area code can’t start with 0 or 1.",
     "passwordRules": "Use 8 to 72 characters with at least one letter and one number.",
     "passwordMismatch": "The passwords don't match."
   },
@@ -579,7 +608,7 @@
       "dashboardButton": "Go to dashboard"
     },
     "footer": {
-      "copyright": "© {year} Panda Metrics",
+      "copyright": "© {year} Panda Metrics is an Ellyonsoft Inc. company",
       "tagline": "Simple feedback for teams that listen."
     }
   },
@@ -877,7 +906,8 @@
       "pending": "Signing in…",
       "noAccount": "Don't have an account?",
       "register": "Create one",
-      "registered": "Account created. Sign in to continue."
+      "registered": "Account created. Sign in to continue.",
+      "accountDeleted": "Your account was deleted."
     },
     "register": {
       "title": "Create your account",

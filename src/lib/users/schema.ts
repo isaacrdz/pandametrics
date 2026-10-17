@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { parsePhone } from "@/lib/phone";
 
 // Shared by react-hook-form (client) and the Server Actions.
 // Error messages are keys under "validation" in src/messages, translated on the client.
@@ -6,37 +7,27 @@ import * as z from "zod";
 export const USER_LIMITS = {
   name: 80,
   email: 254,
-  phoneMinDigits: 7,
-  phoneMaxDigits: 15,
   passwordMin: 8,
   // A sane upper bound (scrypt has none); also keeps bcrypt's 72-byte limit if hashing ever moves
   passwordMax: 72,
 } as const;
 
-// edit: an empty pair keeps the current password (also a first password on the profile of a
-// Google-only user). profile: like edit, and changing the password also asks for the current one.
+// edit: an empty pair keeps the current password. profile: like edit, and changing the password
+// also asks for the current one.
 export type UserFormSchemaMode = "edit" | "profile";
 
-// Spaces, dashes, dots and parentheses are dropped; a leading "+" is kept
-export function normalizePhone(value: string): string {
-  const trimmed = value.trim();
-  const digits = trimmed.replace(/\D/g, "");
-  return trimmed.startsWith("+") ? `+${digits}` : digits;
-}
-
+// The field holds "+52 55 1234 5678" (or the US / another country's form); stored as E.164.
+// Empty is allowed: the phone is optional
 const phoneSchema = z
   .string()
   .trim()
-  .refine((value) => value === "" || /^\+?[\d\s().-]+$/.test(value), { error: "invalidPhone" })
-  .refine(
-    (value) => {
-      if (value === "") return true;
-      const digits = value.replace(/\D/g, "").length;
-      return digits >= USER_LIMITS.phoneMinDigits && digits <= USER_LIMITS.phoneMaxDigits;
-    },
-    { error: "invalidPhone" },
-  )
-  .transform((value) => (value === "" ? null : normalizePhone(value)));
+  .transform((value, ctx) => {
+    if (value === "") return null;
+    const parsed = parsePhone(value);
+    if (parsed.ok) return parsed.phone;
+    ctx.addIssue({ code: "custom", message: parsed.error });
+    return z.NEVER;
+  });
 
 export function isValidPassword(value: string): boolean {
   return (

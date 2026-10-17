@@ -96,7 +96,7 @@ export function PlanMembersCard({ data, expired, ownsOrganization }: PlanMembers
           <ul className="divide-y divide-card-border rounded-2xl border border-card-border">
             {data.members.map((member) => (
               <li key={member.userId} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-                <UserAvatar image={member.image} initials={getInitials(member.name)} />
+                <UserAvatar image={member.image} initials={getInitials(member.name, member.email)} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate font-semibold text-foreground">{member.name ?? member.email}</span>
                   <span className="truncate text-sm text-muted-foreground">{member.email}</span>

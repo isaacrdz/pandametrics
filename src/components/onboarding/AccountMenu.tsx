@@ -5,8 +5,8 @@ import { LogOutIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { signOutAction } from "@/actions/auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/users/UserAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,10 +34,7 @@ export function AccountMenu({ name, email, image }: AccountMenuProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={t("account")} className="size-11 rounded-full">
-          <Avatar className="size-10">
-            {image && <AvatarImage src={image} alt="" referrerPolicy="no-referrer" />}
-            <AvatarFallback className="bg-accent font-semibold text-accent-foreground">{getInitials(name)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar image={image} initials={getInitials(name, email)} className="size-10" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56 rounded-xl">

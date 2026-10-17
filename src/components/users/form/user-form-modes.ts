@@ -3,10 +3,11 @@ import type { UserFormInput, UserFormSchemaMode } from "@/lib/users/schema";
 import type { Role } from "@/types/survey";
 
 // The only place that knows the difference between editing a user and the own profile (with or
-// without a password: Google-only users set a first one). UserForm reads one entry; its sections
-// receive plain props and never see the mode. Users join by signing up, so there is no create mode.
+// without a password: only accounts that signed up with email and password have one to change).
+// UserForm reads one entry; its sections receive plain props and never see the mode. Users join by
+// signing up, so there is no create mode.
 
-export type UserFormMode = "edit" | "profile" | "profileSetPassword";
+export type UserFormMode = "edit" | "profile" | "profileNoPassword";
 
 export type UserActionError = Extract<UserActionResult<unknown>, { success: false }>["error"];
 
@@ -31,17 +32,16 @@ interface UserFormModeConfig {
   subtitleKey: "userForm.editSubtitle" | "profile.subtitle";
   // Validation rules on the client (the server action applies its own)
   schemaMode: UserFormSchemaMode;
-  // change: optional, and a new password asks for the current one; set: optional first password,
-  // no current one (Google-only account)
-  // null: no password card (someone else's account: only its owner changes the password)
-  passwordVariant: "change" | "set" | null;
+  // Optional, and a new password asks for the current one. Hidden for someone else's account (only
+  // its owner changes the password) and for accounts without one (Google sign-up: Google signs them in)
+  showPassword: boolean;
   // Someone else's account: the email stays with its owner (the server ignores it)
   emailReadOnly: boolean;
   showStatus: boolean;
   // A user never edits their own role, so the profile has no permissions card
   showPermissions: boolean;
-  // Width of the content under the top bar: the profile has the picture card next to the form
-  containerClass: "max-w-5xl" | "max-w-6xl";
+  // Width of the content under the top bar
+  containerClass: "max-w-5xl";
   backHref: string;
   // Returns the error to show, or null when the save succeeded
   save: (values: UserFormInput, meta: UserFormMeta | undefined, helpers: UserSaveHelpers) => Promise<UserActionError | null>;
@@ -61,7 +61,7 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
     titleKey: "userForm.editTitle",
     subtitleKey: "userForm.editSubtitle",
     schemaMode: "edit",
-    passwordVariant: null,
+    showPassword: false,
     emailReadOnly: true,
     showStatus: true,
     showPermissions: true,
@@ -81,23 +81,23 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
     titleKey: "profile.title",
     subtitleKey: "profile.subtitle",
     schemaMode: "profile",
-    passwordVariant: "change",
+    showPassword: true,
     emailReadOnly: false,
     showStatus: false,
     showPermissions: false,
-    containerClass: "max-w-6xl",
+    containerClass: "max-w-5xl",
     backHref: "/dashboard",
     save: saveProfile,
   },
-  profileSetPassword: {
+  profileNoPassword: {
     titleKey: "profile.title",
     subtitleKey: "profile.subtitle",
     schemaMode: "edit",
-    passwordVariant: "set",
+    showPassword: false,
     emailReadOnly: false,
     showStatus: false,
     showPermissions: false,
-    containerClass: "max-w-6xl",
+    containerClass: "max-w-5xl",
     backHref: "/dashboard",
     save: saveProfile,
   },

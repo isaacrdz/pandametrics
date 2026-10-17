@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { StatusPill } from "@/components/table/StatusPill";
+import { formatPhone } from "@/lib/phone";
 import type { UserRow } from "@/lib/users/list";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types/survey";
@@ -72,5 +73,6 @@ export function UserPhone({ phone }: { phone: string | null }) {
       </span>
     );
   }
-  return <span className="whitespace-nowrap tabular-nums">{phone}</span>;
+  // Stored as E.164; Mexican and US numbers read grouped
+  return <span className="whitespace-nowrap tabular-nums">{formatPhone(phone)}</span>;
 }

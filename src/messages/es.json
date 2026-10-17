@@ -269,14 +269,8 @@
         "description": "Nombre e información de contacto."
       },
       "password": {
-        "change": {
-          "title": "Cambiar contraseña",
-          "description": "Déjala vacía para conservar tu contraseña actual."
-        },
-        "set": {
-          "title": "Crea una contraseña",
-          "description": "Inicias sesión con Google. Agrega una contraseña para entrar también con tu email."
-        }
+        "title": "Cambiar contraseña",
+        "description": "Déjala vacía para conservar tu contraseña actual."
       },
       "permissions": {
         "title": "Permisos",
@@ -294,8 +288,6 @@
       "name": "Nombre",
       "email": "Email",
       "phone": "Teléfono",
-      "phonePlaceholder": "+52 55 1234 5678",
-      "password": "Contraseña",
       "confirmPassword": "Confirmar contraseña",
       "showPassword": "Mostrar contraseña",
       "passwordRules": "Al menos 8 caracteres, con una letra y un número.",
@@ -322,12 +314,32 @@
     "title": "Mi perfil",
     "subtitle": "Actualiza tus datos personales y tu contraseña.",
     "picture": {
-      "title": "Foto de perfil",
-      "description": "Aquí podrás subir una foto. Por ahora usamos tu foto de Google o tus iniciales.",
+      "description": "Pronto podrás subir una foto. Por ahora usamos tu foto de Google o tus iniciales.",
+      "descriptionGoogle": "Tu foto viene de tu cuenta de Google o mostramos tus iniciales.",
       "change": "Cambiar foto"
     },
     "toasts": {
       "updated": "Perfil actualizado"
+    },
+    "deleteAccount": {
+      "title": "Eliminar cuenta",
+      "description": "Elimina tu cuenta de forma permanente. No se puede deshacer.",
+      "ownerAlone": "“{organization}” y sus encuestas también se eliminan.",
+      "ownerWithMembers": "Primero quita a {count, plural, one {la # otra persona} other {las # otras personas}} de “{organization}”.",
+      "button": "Eliminar cuenta",
+      "dialog": {
+        "title": "¿Eliminar tu cuenta?",
+        "description": "Se borran tus datos personales y sales de todas tus organizaciones. No se puede deshacer.",
+        "organization": "“{organization}”, sus encuestas y respuestas también se eliminan.",
+        "reuse": "Puedes registrarte de nuevo con el mismo correo.",
+        "confirm": "Eliminar mi cuenta",
+        "deleting": "Eliminando…"
+      },
+      "errors": {
+        "ORGANIZATION_HAS_MEMBERS": "Tu organización todavía tiene otras personas. Quítalas primero desde Usuarios.",
+        "NOT_FOUND": "Esta cuenta ya no existe.",
+        "UNKNOWN": "No pudimos eliminar tu cuenta. Inténtalo de nuevo."
+      }
     }
   },
   "results": {
@@ -373,7 +385,25 @@
       "confirm": "Descartar y salir",
       "cancel": "Seguir editando"
     },
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "typedConfirm": {
+      "word": "borrar",
+      "typeLabel": "Escribe <strong>{word}</strong> para confirmar",
+      "cancel": "Cancelar"
+    },
+    "phone": {
+      "country": "Código de país",
+      "countries": {
+        "MX": "México",
+        "US": "Estados Unidos",
+        "OTHER": "Otro país"
+      },
+      "placeholders": {
+        "MX": "55 1234 5678",
+        "US": "(415) 555-0134",
+        "OTHER": "+44 20 7946 0958"
+      }
+    }
   },
   "surveyForm": {
     "createTitle": "Crear encuesta",
@@ -473,10 +503,7 @@
       "title": "¿Borrar «{name}»?",
       "description": "Sus respuestas se conservan, pero su enlace y su código QR dejan de funcionar.",
       "confirm": "Borrar encuesta",
-      "deleting": "Borrando…",
-      "cancel": "Cancelar",
-      "word": "borrar",
-      "typeLabel": "Escribe <strong>{word}</strong> para confirmar"
+      "deleting": "Borrando…"
     },
     "danger": {
       "title": "Eliminar encuesta",
@@ -508,7 +535,9 @@
     "invalidReaction": "Elige una reacción válida.",
     "invalidColor": "Elige un color válido.",
     "invalidEmail": "Escribe un email válido.",
-    "invalidPhone": "Escribe de 7 a 15 dígitos, con un + opcional al inicio.",
+    "invalidPhone": "Empieza con + y el código del país, de 7 a 15 dígitos en total.",
+    "invalidPhoneMx": "Los números de México tienen 10 dígitos.",
+    "invalidPhoneUs": "Los números de EE. UU. tienen 10 dígitos y la lada no puede empezar con 0 ni 1.",
     "passwordRules": "Usa de 8 a 72 caracteres con al menos una letra y un número.",
     "passwordMismatch": "Las contraseñas no coinciden."
   },
@@ -579,7 +608,7 @@
       "dashboardButton": "Ir al dashboard"
     },
     "footer": {
-      "copyright": "© {year} Panda Metrics",
+      "copyright": "© {year} Panda Metrics es una empresa de Ellyonsoft Inc.",
       "tagline": "Feedback simple para equipos que escuchan."
     }
   },
@@ -877,7 +906,8 @@
       "pending": "Iniciando sesión…",
       "noAccount": "¿No tienes cuenta?",
       "register": "Crea una",
-      "registered": "Cuenta creada. Inicia sesión para continuar."
+      "registered": "Cuenta creada. Inicia sesión para continuar.",
+      "accountDeleted": "Tu cuenta fue eliminada."
     },
     "register": {
       "title": "Crea tu cuenta",
