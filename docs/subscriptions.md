@@ -387,6 +387,7 @@ interface AppContext extends AccountContext {
   - It returns the **raw rows** (subscription status and dates, memberships), never a computed `isPro`.
   - The tier is computed **outside** the cache with the request's `new Date()`. A cached `PRO` therefore turns `EXPIRED` the moment the period ends, with no cache invalidation.
   - Service checks (activation, invites, seats) always read the database inside their transaction and never trust the context.
+  - As built (phase 3): the plan rows live in their own cached read, `loadPlanRows` in `src/server/plans.ts`, which also uses `cacheLife("minutes")`. Plans can change outside the app (`scripts/data/set-plan.ts`, later a payment webhook), where no tag is expired; such a change shows up within a minute or two without a restart. Changes made by the app still expire the tags and show at once.
 
 ### 4.4 Tags to expire
 

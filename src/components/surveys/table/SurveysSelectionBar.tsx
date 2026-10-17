@@ -15,9 +15,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 import { BAR_BUTTON_CLASS, SelectionBar } from "@/components/table/SelectionBar";
 import { Button } from "@/components/ui/button";
-import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 
 type SuccessKey = "toasts.bulkActivated" | "toasts.bulkDeactivated" | "toasts.bulkDeleted";
 
@@ -40,7 +40,7 @@ export function SurveysSelectionBar({ ids, onDone }: SurveysSelectionBarProps) {
       const result = await action();
       setConfirmOpen(false);
       if (!result.success) {
-        toast.error(tErrors(result.error.code, activeLimit));
+        toast.error(tErrors(result.error.code, { ...activeLimit, ...result.error.activeLimit }));
         return;
       }
       toast.success(t(successKey, { count: result.data.count }));

@@ -663,7 +663,7 @@ Changing `category` is rejected once the survey has responses (`409`), because p
 
 **Soft delete:** every survey and user query filters `deletedAt: null`. Deleted users keep their surveys (`createdById`), and their email stays taken because `email` is unique.
 
-**Users:** deactivating or removing a user acts on their `Membership` in the current organization, never on the account, so the other organizations are not affected. A user cannot deactivate or remove themselves, and the owner's membership can never be deactivated or removed (`OWNER_PROTECTED`). Removing someone from `/users` keeps the account and its surveys; if they hold a seat in that organization owner's Business plan, the seat ends too. Bulk changes check every id first and are all or nothing. `passwordHash` never leaves the server.
+**Users:** deactivating or removing a user acts on their `Membership` in the current organization, never on the account, so the other organizations are not affected. A user cannot deactivate or remove themselves, and the owner's membership can never be deactivated or removed (`OWNER_PROTECTED`). Only the organization's owner and admins manage other people (`FORBIDDEN` for members); from `/users` they edit only another person's name and phone, never their email or password (an account can belong to several organizations, and a new email could be claimed with Google), and nobody but the owner edits the owner. Removing someone from `/users` keeps the account and its surveys; if they hold a seat in that organization owner's Business plan, the seat ends too. Bulk changes check every id first and are all or nothing. `passwordHash` never leaves the server.
 
 **Plan and membership limits** (full design in `docs/subscriptions.md`):
 

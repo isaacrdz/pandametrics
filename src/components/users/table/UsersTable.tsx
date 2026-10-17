@@ -31,6 +31,7 @@ export function UsersTable({ rows, now, controls }: UsersTableProps) {
           <TableHead scope="col" className="w-12 pr-0 pl-6">
             <TableCheckbox
               checked={controls.allState}
+              disabled={!controls.canManage}
               onCheckedChange={(checked) => controls.onToggleAll(checked === true)}
               aria-label={t("select.all")}
             />
@@ -69,7 +70,7 @@ export function UsersTable({ rows, now, controls }: UsersTableProps) {
               <TableCheckbox
                 checked={controls.isSelected(row.id)}
                 // The signed-in user and the owner can never be deactivated or removed from here
-                disabled={row.isCurrentUser || row.isOwner}
+                disabled={!controls.canManage || row.isCurrentUser || row.isOwner}
                 onCheckedChange={(checked) => controls.onToggle(row.id, checked === true)}
                 aria-label={row.isCurrentUser ? t("select.self") : row.isOwner ? t("select.owner") : t("select.row", { name: row.name })}
               />
@@ -79,7 +80,7 @@ export function UsersTable({ rows, now, controls }: UsersTableProps) {
             </TableCell>
             <th scope="row" className="w-[34%] max-w-0 py-4 pr-4 pl-3 text-left font-normal">
               <div className="flex min-w-0 flex-col gap-1.5">
-                <UserName row={row} />
+                <UserName row={row} canManage={controls.canManage} />
                 <span className="@4xl:hidden">
                   <UserRoleBadge role={row.role} />
                 </span>
@@ -98,7 +99,7 @@ export function UsersTable({ rows, now, controls }: UsersTableProps) {
               <UpdatedAt updatedAt={row.updatedAt} now={now} />
             </TableCell>
             <TableCell className="py-4 pr-4 text-right">
-              <UserActionsMenu row={row} onDeactivate={controls.onDeactivate} />
+              <UserActionsMenu row={row} onDeactivate={controls.onDeactivate} canManage={controls.canManage} />
             </TableCell>
           </TableRow>
         ))}

@@ -20,11 +20,13 @@ import type { UserRow } from "@/lib/users/list";
 interface UserActionsMenuProps {
   row: UserRow;
   onDeactivate: (row: UserRow) => void;
+  // Owner or admin of the organization
+  canManage: boolean;
 }
 
 // Edit and Deactivate / Activate. Deactivating asks for confirmation in the section's dialog;
 // activating can be undone, so it runs right away.
-export function UserActionsMenu({ row, onDeactivate }: UserActionsMenuProps) {
+export function UserActionsMenu({ row, onDeactivate, canManage }: UserActionsMenuProps) {
   const t = useTranslations("users");
   const [isPending, startTransition] = useTransition();
 
@@ -38,6 +40,11 @@ export function UserActionsMenu({ row, onDeactivate }: UserActionsMenuProps) {
       toast.success(t("toasts.activated"), { description: row.name });
     });
   }
+
+  // Your own row opens the profile; others are edited by the owner and admins, and the owner by
+  // nobody else. Members have no actions on other people's rows
+  const canEdit = row.isCurrentUser || (canManage && !row.isOwner);
+  if (!canEdit && !canManage) return <span aria-hidden className="size-9 shrink-0" />;
 
   return (
     <DropdownMenu>
@@ -53,14 +60,16 @@ export function UserActionsMenu({ row, onDeactivate }: UserActionsMenuProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-52 rounded-xl">
-        <DropdownMenuItem asChild>
-          <Link href={row.isCurrentUser ? "/profile" : `/users/${row.id}`}>
-            <PencilIcon aria-hidden />
-            {t("actions.edit")}
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        {row.isActive ? (
+        {canEdit && (
+          <DropdownMenuItem asChild>
+            <Link href={row.isCurrentUser ? "/profile" : `/users/${row.id}`}>
+              <PencilIcon aria-hidden />
+              {t("actions.edit")}
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {canEdit && canManage && <DropdownMenuSeparator />}
+        {canManage && (row.isActive ? (
           <DropdownMenuItem
             variant="destructive"
             disabled={row.isCurrentUser || row.isOwner}
@@ -74,8 +83,8 @@ export function UserActionsMenu({ row, onDeactivate }: UserActionsMenuProps) {
             <UserCheckIcon aria-hidden />
             {t("actions.activate")}
           </DropdownMenuItem>
-        )}
-        {(row.isCurrentUser || row.isOwner) && (
+        ))}
+        {canManage && (row.isCurrentUser || row.isOwner) && (
           <DropdownMenuLabel className="pt-0 pl-8 text-xs font-normal text-muted-foreground">
             {row.isCurrentUser ? t("actions.selfHint") : t("actions.ownerHint")}
           </DropdownMenuLabel>

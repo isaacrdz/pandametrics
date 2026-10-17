@@ -31,9 +31,12 @@ interface UserFormModeConfig {
   subtitleKey: "userForm.editSubtitle" | "profile.subtitle";
   // Validation rules on the client (the server action applies its own)
   schemaMode: UserFormSchemaMode;
-  // reset: optional, empty keeps the current one; change: optional, and a new password asks for
-  // the current one; set: optional first password, no current one (Google-only account)
-  passwordVariant: "reset" | "change" | "set";
+  // change: optional, and a new password asks for the current one; set: optional first password,
+  // no current one (Google-only account)
+  // null: no password card (someone else's account: only its owner changes the password)
+  passwordVariant: "change" | "set" | null;
+  // Someone else's account: the email stays with its owner (the server ignores it)
+  emailReadOnly: boolean;
   showStatus: boolean;
   // A user never edits their own role, so the profile has no permissions card
   showPermissions: boolean;
@@ -58,7 +61,8 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
     titleKey: "userForm.editTitle",
     subtitleKey: "userForm.editSubtitle",
     schemaMode: "edit",
-    passwordVariant: "reset",
+    passwordVariant: null,
+    emailReadOnly: true,
     showStatus: true,
     showPermissions: true,
     containerClass: "max-w-5xl",
@@ -78,6 +82,7 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
     subtitleKey: "profile.subtitle",
     schemaMode: "profile",
     passwordVariant: "change",
+    emailReadOnly: false,
     showStatus: false,
     showPermissions: false,
     containerClass: "max-w-6xl",
@@ -89,6 +94,7 @@ export const USER_FORM_MODES: Record<UserFormMode, UserFormModeConfig> = {
     subtitleKey: "profile.subtitle",
     schemaMode: "edit",
     passwordVariant: "set",
+    emailReadOnly: false,
     showStatus: false,
     showPermissions: false,
     containerClass: "max-w-6xl",

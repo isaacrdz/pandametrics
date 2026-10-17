@@ -13,7 +13,13 @@ import type { User, UserAccount } from "@/types/survey";
 // module, to verify the current password, and never returned: every query that leaves it uses
 // USER_PUBLIC_SELECT.
 
-export type UserErrorCode = "NOT_FOUND" | "SELF_DEACTIVATE" | "OWNER_PROTECTED" | "EMAIL_TAKEN" | "WRONG_PASSWORD";
+export type UserErrorCode =
+  | "NOT_FOUND"
+  | "FORBIDDEN"
+  | "SELF_DEACTIVATE"
+  | "OWNER_PROTECTED"
+  | "EMAIL_TAKEN"
+  | "WRONG_PASSWORD";
 
 export class UserServiceError extends Error {
   constructor(readonly code: UserErrorCode) {
@@ -78,6 +84,16 @@ export async function getUserById(id: string): Promise<UserAccount | null> {
 
 type Change = "activate" | "deactivate" | "remove";
 
+// Only the organization's owner and admins (active) manage other people there: deactivate, remove,
+// edit. Members manage nobody
+export async function canManageUsers(db: Prisma.TransactionClient | typeof prisma, scope: UserScope): Promise<boolean> {
+  const membership = await db.membership.findUnique({
+    where: { userId_organizationId: { userId: scope.userId, organizationId: scope.organizationId } },
+    select: { role: true, isActive: true },
+  });
+  return Boolean(membership?.isActive && membership.role !== "MEMBER");
+}
+
 // Checks every id before touching any of them, so a bulk change is all or nothing
 async function assertChangeAllowed(
   tx: Prisma.TransactionClient,
@@ -85,6 +101,7 @@ async function assertChangeAllowed(
   ids: string[],
   change: Change,
 ): Promise<string[]> {
+  if (!(await canManageUsers(tx, scope))) throw new UserServiceError("FORBIDDEN");
   const unique = [...new Set(ids)];
   const found = await tx.membership.count({ where: { userId: { in: unique }, ...listedIn(scope.organizationId) } });
   if (found !== unique.length) throw new UserServiceError("NOT_FOUND");
@@ -116,14 +133,22 @@ export async function setUserActive(scope: UserScope, id: string, isActive: bool
 }
 
 // Removes the users from this organization (their memberships). The accounts stay, so they can still
-// sign in elsewhere, and their surveys keep "created by"
-export async function removeUsers(scope: UserScope, ids: string[]): Promise<number> {
+// sign in elsewhere, and their surveys keep "created by". Each removal is recorded for the owner's
+// email (pending feature), and invitations the removed users sent here stop counting
+// Returns how many left and who had a pending invitation from them (their caches change too)
+export async function removeUsers(scope: UserScope, ids: string[]): Promise<{ count: number; inviteeIds: string[] }> {
   return prisma.$transaction(async (tx) => {
     const targets = await assertChangeAllowed(tx, scope, ids, "remove");
     const { count } = await tx.membership.deleteMany({
       where: { organizationId: scope.organizationId, userId: { in: targets } },
     });
-    return count;
+    await tx.membershipEvent.createMany({
+      data: targets.map((userId) => ({ organizationId: scope.organizationId, userId, type: "REMOVED" as const })),
+    });
+    const sent = { organizationId: scope.organizationId, invitedById: { in: targets }, status: "PENDING" as const };
+    const revoked = await tx.invitation.findMany({ where: sent, select: { userId: true } });
+    await tx.invitation.updateMany({ where: sent, data: { status: "REVOKED", respondedAt: new Date() } });
+    return { count, inviteeIds: revoked.flatMap((invitation) => (invitation.userId ? [invitation.userId] : [])) };
   });
 }
 
@@ -141,30 +166,40 @@ export async function hasPassword(id: string): Promise<boolean> {
   return Boolean(user?.passwordHash);
 }
 
-// Name, email and phone; the password only changes when a new one was sent
+// Your own account: name, email, phone and password (a new one needs the current one). Someone
+// else's, as the organization's owner or an admin: only their name and phone. An account can belong
+// to several organizations, so its email and password stay with its owner: changing them here would
+// hand the account over (a new email can be claimed with Google). The owner is edited by nobody else
 export async function updateUser(scope: UserScope, id: string, input: UserFormValues): Promise<User> {
   const membership = await prisma.membership.findFirst({
     where: { userId: id, ...listedIn(scope.organizationId) },
-    select: { role: true, isActive: true, user: { select: { passwordHash: true } } },
+    select: { role: true, isActive: true, user: { select: { passwordHash: true } }, organization: { select: { ownerId: true } } },
   });
   if (!membership) throw new UserServiceError("NOT_FOUND");
   const { user, role, isActive } = membership;
+  const isSelf = id === scope.userId;
+  if (!isSelf) {
+    if (!(await canManageUsers(prisma, scope))) throw new UserServiceError("FORBIDDEN");
+    if (membership.organization.ownerId === id) throw new UserServiceError("OWNER_PROTECTED");
+  }
   // Your own password always needs the current one, even when the edit comes from the
   // user form instead of the profile (the page redirects, but the action can be called directly).
   // Without one (Google-only), the first password is set without it
-  if (id === scope.userId && input.password && user.passwordHash && !verifyPassword(input.currentPassword, user.passwordHash)) {
+  if (isSelf && input.password && user.passwordHash && !verifyPassword(input.currentPassword, user.passwordHash)) {
     throw new UserServiceError("WRONG_PASSWORD");
   }
 
   try {
     const account = await prisma.user.update({
       where: { id },
-      data: {
-        name: input.name,
-        email: input.email,
-        phone: input.phone,
-        ...(input.password ? { passwordHash: hashPassword(input.password) } : {}),
-      },
+      data: isSelf
+        ? {
+            name: input.name,
+            email: input.email,
+            phone: input.phone,
+            ...(input.password ? { passwordHash: hashPassword(input.password) } : {}),
+          }
+        : { name: input.name, phone: input.phone },
       select: USER_PUBLIC_SELECT,
     });
     return { ...account, role, isActive };

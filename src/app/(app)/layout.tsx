@@ -22,6 +22,7 @@ async function AppContent({ children }: { children: React.ReactNode }) {
     // Each page renders its own AppTopBar (its header) from this shared data
     <AppShellProvider
       value={{
+        userId: user.id,
         userName: user.name,
         organizations,
         currentOrganizationId: organization?.id ?? null,

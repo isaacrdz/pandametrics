@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { WELCOME_PATH } from "@/lib/auth/paths";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, type FieldErrors, type FieldPath, type Resolver } from "react-hook-form";
 import { useTranslations } from "next-intl";
@@ -13,14 +12,15 @@ import { FORM_MODES, type SaveHelpers, type SurveyFormMode } from "@/components/
 import { QuestionsSection } from "@/components/surveys/form/QuestionsSection";
 import { SharePanel } from "@/components/surveys/form/SharePanel";
 import { SurveyDetailsSection } from "@/components/surveys/form/SurveyDetailsSection";
+import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 import { AppTopBar } from "@/components/layout/AppTopBar";
 import { PageHeading } from "@/components/layout/PageHeading";
 import { DeleteIconButton, SubmitButton } from "@/components/layout/top-bar-actions";
 import { UnsavedChangesDialog } from "@/components/form/UnsavedChangesDialog";
 import { useBeforeUnloadWarning } from "@/components/form/form-hooks";
+import { WELCOME_PATH } from "@/lib/auth/paths";
 import type { SurveyFormMeta } from "@/lib/surveys/form-values";
 import { surveyFormSchema, type SurveyFormInput, type SurveyFormValues } from "@/lib/surveys/schema";
-import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 
 // The form edits SurveyFormInput (category may be "" until picked) and submits the parsed values
 const resolver = zodResolver(surveyFormSchema) as unknown as Resolver<SurveyFormInput, unknown, SurveyFormValues>;
@@ -77,7 +77,8 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
       if (error.code === "ACTIVE_LIMIT") {
         form.setError("isActive", { type: "server", message: "ACTIVE_LIMIT" });
       }
-      toast.error(t(`errors.${error.code}`, activeLimit));
+      // The server says which limit was hit; the page's copy may be outdated
+      toast.error(t(`errors.${error.code}`, { ...activeLimit, ...error.activeLimit }));
       // No organization yet (or no longer a member): create one first
       if (error.code === "NO_ORGANIZATION") router.push(WELCOME_PATH);
     });

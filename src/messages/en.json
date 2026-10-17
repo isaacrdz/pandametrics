@@ -31,7 +31,12 @@
     "language": "Language",
     "languageLabel": "Language: {name}",
     "organizationSwitchError": "Couldn't switch the organization. Try again.",
-    "createOrganization": "Create organization"
+    "createOrganization": "Create organization",
+    "leaveOrganization": "Leave {name}",
+    "leaveTitle": "Leave {name}?",
+    "leaveDescription": "You'll lose access to its surveys and metrics. Your surveys stay in the organization. To come back you'll need a new invitation.",
+    "leaveConfirm": "Leave",
+    "leavePending": "Leaving…"
   },
   "greeting": {
     "hello": "{period, select, morning {Good morning} afternoon {Good afternoon} evening {Good evening} other {Hello}}, {name}"
@@ -244,7 +249,8 @@
       "VALIDATION": "Check the selection and try again.",
       "UNKNOWN": "Something went wrong. Try again.",
       "EMAIL_TAKEN": "This email is already used by another user.",
-      "WRONG_PASSWORD": "Your current password is not correct."
+      "WRONG_PASSWORD": "Your current password is not correct.",
+      "FORBIDDEN": "Only the organization's owner and admins can manage other people."
     }
   },
   "userForm": {
@@ -259,10 +265,6 @@
         "description": "Name and contact information."
       },
       "password": {
-        "reset": {
-          "title": "Reset password",
-          "description": "Set a new password for this user. Leave it empty to keep the current one."
-        },
         "change": {
           "title": "Change password",
           "description": "Leave it empty to keep your current password."
@@ -294,7 +296,8 @@
       "showPassword": "Show password",
       "passwordRules": "At least 8 characters, with a letter and a number.",
       "currentPassword": "Current password",
-      "newPassword": "New password"
+      "newPassword": "New password",
+      "emailOwnerOnly": "Only they can change their email, from their profile."
     },
     "statusHint": "Change the status from the user list.",
     "toasts": {
@@ -307,7 +310,8 @@
       "OWNER_PROTECTED": "The organization owner can't be deactivated or removed.",
       "VALIDATION": "Check the highlighted fields.",
       "UNKNOWN": "Something went wrong. Try again.",
-      "WRONG_PASSWORD": "Your current password is not correct."
+      "WRONG_PASSWORD": "Your current password is not correct.",
+      "FORBIDDEN": "Only the organization's owner and admins can manage other people."
     }
   },
   "profile": {
@@ -689,6 +693,68 @@
       "dismiss": "Dismiss"
     }
   },
+  "invitations": {
+    "title": "Invitations",
+    "subtitle": "Organizations that invited you to join.",
+    "menu": "Invitations",
+    "menuCount": "{count, plural, one {# pending invitation} other {# pending invitations}}",
+    "slots": "{used}/{limit}",
+    "proFeature": "Inviting people is a Pro feature.",
+    "proFeatureOwner": "Inviting people is a Pro feature. See your plan.",
+    "proFeatureLabel": "Invite user: Pro feature",
+    "dialog": {
+      "title": "Invite someone",
+      "description": "They join as a member after accepting. {used} of {limit} places used, pending invitations included.",
+      "email": "Email",
+      "hint": "They need a Panda Metrics account. The invitation lasts 14 days.",
+      "cancel": "Cancel",
+      "submit": "Send invitation",
+      "pending": "Sending…"
+    },
+    "pending": {
+      "title": "{count, plural, one {# pending invitation} other {# pending invitations}}",
+      "status": "Invited",
+      "expires": "Expires {date}",
+      "revoke": "Revoke",
+      "revokeLabel": "Revoke the invitation for {email}"
+    },
+    "row": {
+      "invitedBy": "Invited by {name}",
+      "invited": "Invitation",
+      "expires": "expires {date}",
+      "accept": "Accept",
+      "decline": "Decline",
+      "acceptLabel": "Accept the invitation to {organization}",
+      "declineLabel": "Decline the invitation to {organization}"
+    },
+    "welcome": {
+      "title": "{count, plural, one {You have an invitation} other {You have # invitations}}",
+      "description": "Or join an organization that invited you."
+    },
+    "empty": {
+      "title": "No invitations",
+      "description": "When an organization invites you, it shows up here."
+    },
+    "toasts": {
+      "sent": "Invitation sent",
+      "revoked": "Invitation revoked",
+      "declined": "Invitation declined"
+    },
+    "errors": {
+      "FORBIDDEN": "Only the owner and admins can manage invitations.",
+      "PRO_REQUIRED": "Inviting people is a Pro feature. The organization's owner needs an active Pro plan.",
+      "USER_NOT_FOUND": "This person has no Panda Metrics account yet. Invitations by email are coming soon.",
+      "ALREADY_MEMBER": "This person is already in the organization.",
+      "ALREADY_INVITED": "This person already has a pending invitation.",
+      "INVITE_LIMIT": "The organization already has {limit} people besides the owner, counting pending invitations. Remove someone or revoke an invitation first.",
+      "MEMBERSHIP_LIMIT": "This account is already in {max} organizations, the most allowed.",
+      "INVITE_NOT_FOUND": "This invitation is no longer available.",
+      "INVITE_EXPIRED": "This invitation expired. Ask for a new one.",
+      "RATE_LIMITED": "Too many invitations in a short time. Try again later.",
+      "VALIDATION": "Enter a valid email.",
+      "UNKNOWN": "Something went wrong. Try again."
+    }
+  },
   "onboarding": {
     "title": "Welcome, {name}",
     "titleNoName": "Welcome to Panda Metrics",
@@ -708,7 +774,8 @@
       "MEMBERSHIP_LIMIT": "You're already in {max} organizations, the most allowed. Leave one first.",
       "NOT_FOUND": "This organization is no longer available.",
       "VALIDATION": "Check the highlighted fields.",
-      "UNKNOWN": "Something went wrong. Try again."
+      "UNKNOWN": "Something went wrong. Try again.",
+      "OWNER_CANNOT_LEAVE": "You own this organization, so you can't leave it."
     }
   },
   "auth": {

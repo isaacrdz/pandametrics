@@ -8,6 +8,8 @@ import { DEFAULT_AFTER_SIGN_IN } from "@/lib/auth/paths";
 import { organizationSchema, type OrganizationInput } from "@/lib/organizations/schema";
 import * as organizationService from "@/lib/organizations/service";
 import { OrganizationServiceError, type OrganizationErrorCode } from "@/lib/organizations/service";
+import { invitationsTag } from "@/lib/invitations/tags";
+import { usersTag } from "@/lib/users/list";
 import { userTag } from "@/lib/users/tags";
 import { ACTIVE_ORGANIZATION_COOKIE, ACTIVE_ORGANIZATION_COOKIE_OPTIONS } from "@/server/active-organization";
 import { getAccountContext, getAppContext } from "@/server/app-context";
@@ -63,5 +65,27 @@ export async function createOrganization(values: OrganizationInput): Promise<Org
 
   updateTag(userTag(user.id));
   await setActiveOrganization(organizationId);
+  redirect(DEFAULT_AFTER_SIGN_IN);
+}
+
+// The user leaves the organization they are working in (never the one they own). The cookie is
+// cleared, so the next page falls back to their own organization, the oldest one left, or /welcome
+export async function leaveOrganization(): Promise<OrganizationActionResult> {
+  const { user, organization } = await getAppContext();
+  let inviteeIds: string[];
+  try {
+    ({ inviteeIds } = await organizationService.leaveOrganization(user.id, organization.id));
+  } catch (error) {
+    if (error instanceof OrganizationServiceError) return { success: false, error: { code: error.code } };
+    console.error(error);
+    return { success: false, error: { code: "UNKNOWN" } };
+  }
+
+  updateTag(userTag(user.id));
+  updateTag(usersTag(organization.id));
+  updateTag(invitationsTag(organization.id));
+  // Pending invitations the user sent there were revoked
+  for (const id of inviteeIds) updateTag(userTag(id));
+  (await cookies()).delete(ACTIVE_ORGANIZATION_COOKIE);
   redirect(DEFAULT_AFTER_SIGN_IN);
 }

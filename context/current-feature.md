@@ -1,18 +1,31 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Subscriptions Phase 4 — Organization Invitations
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Schema and migration `invitations`: `InvitationStatus` (`PENDING` / `ACCEPTED` / `DECLINED` / `REVOKED`) and `Invitation` (`organizationId`, `invitedById`, `userId?`, `email?`, `token? @unique`, `subscriptionId?`, `status`, `expiresAt`, `respondedAt`; indexes `[userId, status]`, `[organizationId, status]`, `[subscriptionId, status]`); `MembershipEventType` (`LEFT` / `REMOVED`) and `MembershipEvent` (`organizationId`, `userId`, `type`, `notifiedAt?`); relations on `Organization`, `User`, `Subscription`
+- `src/lib/invitations/service.ts` `createInvitation(scope, email)` in one transaction: lock Organization; inviter active `OWNER` / `ADMIN` (`FORBIDDEN`); owner's tier `PRO` (`PRO_REQUIRED`); active non-deleted user by email (`USER_NOT_FOUND`); not already a member / the inviter (`ALREADY_MEMBER`); no pending unexpired invite (`ALREADY_INVITED`); members besides the owner (deactivated included) + pending unexpired invites < 3 (`INVITE_LIMIT`); invitee < 10 memberships (`MEMBERSHIP_LIMIT`, early); `expiresAt = now + 14 days` (`INVITATION_TTL_DAYS`); rate limit 20 per hour per inviter
+- `acceptInvitation`: pending, unexpired, own invitation (`INVITE_NOT_FOUND` / `INVITE_EXPIRED`); lock user then organization; owner still `PRO` (`PRO_REQUIRED`); memberships < 10 (`MEMBERSHIP_LIMIT`); `MEMBER` membership; `ACCEPTED` + `respondedAt`; the action sets `panda-org` to that organization; `declineInvitation` → `DECLINED`; `revokeInvitation` (owner / admin, pending only) → `REVOKED`
+- `leaveOrganization`: membership exists (`NOT_FOUND`), not the owner (`OWNER_CANNOT_LEAVE`), delete membership + `MembershipEvent LEFT`; `removeUsers` also writes `MembershipEvent REMOVED` and revokes pending invitations the removed users sent there
+- Tags: `user:{invitee}` and `org:{id}:users` on every change, new `org:{id}:invitations`; actions in `src/actions/invitations.ts` with the usual result shape and error codes
+- `/users`: `InviteUserButton` real (owner / admin on Pro → invite dialog with "x of 3"; Free or expired → "Pro feature" tooltip, the owner's linking to `/settings/plan`; member → hidden); invite dialog (email, pending, inline errors, `USER_NOT_FOUND` → "Invitations by email are coming soon"); pending invitations as rows above members ("Invited", expiry, Revoke for owner / admin; not selectable; expired hidden); count = members only
+- Invitee: `/invitations` (account level; "Invitations · count", rows with organization, inviter, date, expiry, Accept / Decline, `MEMBERSHIP_LIMIT` message, empty state); "Invitations" item with a count badge in the sidebar user menu; "Pending invitations" card on `/welcome` (accept → `/dashboard` in that organization); proxy matcher adds `/invitations`
+- Leave organization: "Leave {organization}" in `OrganizationSwitcher` for a non-owned active organization, confirmation dialog; afterwards the cookie falls back (owned, oldest, `/welcome`)
+- `invitations` messages namespace and `users.invite*` in en / es; `yarn lint`, `tsc` and `yarn build` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/subscriptions-phase-4-invitations-spec.md`; research: `docs/subscriptions.md` (sections 6, 7.3, 8.5)
+- Only existing accounts can be invited; email invites (token, `/register?invite=`) stay "coming soon" — `email` / `token` columns stay null
+- Business plan invites (`subscriptionId`) come in phase 5; the column exists but is unused here
+- Pending (unexpired) invites and deactivated members count toward the 3; expired invites don't
+- The owner's email about a member leaving is pending (email feature); `MembershipEvent` keeps the record
+- Acme already has 7 members besides Jordan (over the limit): every Acme invite → `INVITE_LIMIT`; test the 3-slot limit on Leyinork promoted to Pro with `set-plan.ts`
+- Phase 3 review leftovers to fold in: survey limit messages should prefer the server's `error.activeLimit`; import order of `useActiveLimitParams`; `docs/subscriptions.md` 4.3 note about `cacheLife("minutes")` on plan rows
+- Restart the dev server on :3000 after the migration (new Prisma client)
 
 ## History
 

@@ -89,8 +89,8 @@ export function UserForm({ mode, defaultValues, meta, aside }: UserFormProps) {
 
   const sections = (
     <>
-      <UserDetailsSection isActive={config.showStatus ? meta?.isActive : undefined} />
-      <PasswordSection variant={config.passwordVariant} />
+      <UserDetailsSection isActive={config.showStatus ? meta?.isActive : undefined} emailReadOnly={config.emailReadOnly} />
+      {config.passwordVariant && <PasswordSection variant={config.passwordVariant} />}
       {config.showPermissions && <PermissionsSection role={meta?.role ?? "MEMBER"} />}
     </>
   );

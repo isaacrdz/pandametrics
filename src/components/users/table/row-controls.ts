@@ -9,4 +9,7 @@ export interface UserRowControls {
   onToggleAll: (checked: boolean) => void;
   // Deactivate asks for confirmation, so the row hands it to the section's dialog
   onDeactivate: (row: UserRow) => void;
+  // The signed-in user is the owner or an admin: they select, edit and deactivate others. Members
+  // only see the list
+  canManage: boolean;
 }

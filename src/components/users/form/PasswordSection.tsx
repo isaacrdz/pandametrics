@@ -10,10 +10,10 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import type { UserFormInput } from "@/lib/users/schema";
 
 interface PasswordSectionProps {
-  // reset: optional, an empty pair keeps the current password.
-  // change (profile): optional, and a new password asks for the current one first.
-  // set (profile of a Google-only user): optional first password, no current one.
-  variant: "reset" | "change" | "set";
+  // Only on the profile: someone else's password is never changed from the user form.
+  // change: optional, and a new password asks for the current one first.
+  // set (Google-only user): optional first password, no current one.
+  variant: "change" | "set";
 }
 
 export function PasswordSection({ variant }: PasswordSectionProps) {

@@ -6,18 +6,21 @@ import { FormSection } from "@/components/form/FormSection";
 import { RequiredMark } from "@/components/form/RequiredMark";
 import { useValidationMessage } from "@/components/form/form-hooks";
 import { UserStatusPill } from "@/components/users/table/UserRowParts";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { USER_LIMITS, type UserFormInput } from "@/lib/users/schema";
+import { cn } from "@/lib/utils";
 
 export const USER_INPUT_CLASS = "h-12 rounded-xl bg-muted/60 px-4 text-[0.95rem]";
 
 interface UserDetailsSectionProps {
   // Edit only: the status is shown, never edited here (it changes from the user list)
   isActive?: boolean;
+  // Someone else's account: the email is shown but only its owner changes it
+  emailReadOnly?: boolean;
 }
 
-export function UserDetailsSection({ isActive }: UserDetailsSectionProps) {
+export function UserDetailsSection({ isActive, emailReadOnly = false }: UserDetailsSectionProps) {
   const t = useTranslations("userForm");
   const validationMessage = useValidationMessage();
   const { control } = useFormContext<UserFormInput>();
@@ -67,13 +70,18 @@ export function UserDetailsSection({ isActive }: UserDetailsSectionProps) {
                   id="user-email"
                   type="email"
                   autoComplete="email"
+                  readOnly={emailReadOnly}
                   aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.invalid ? "user-email-error" : undefined}
-                  className={USER_INPUT_CLASS}
+                  aria-describedby={fieldState.invalid ? "user-email-error" : emailReadOnly ? "user-email-hint" : undefined}
+                  className={cn(USER_INPUT_CLASS, emailReadOnly && "cursor-default bg-muted text-muted-foreground")}
                 />
-                <FieldError id="user-email-error">
-                  {validationMessage(fieldState.error?.message, { max: USER_LIMITS.email })}
-                </FieldError>
+                {emailReadOnly && !fieldState.invalid ? (
+                  <FieldDescription id="user-email-hint">{t("fields.emailOwnerOnly")}</FieldDescription>
+                ) : (
+                  <FieldError id="user-email-error">
+                    {validationMessage(fieldState.error?.message, { max: USER_LIMITS.email })}
+                  </FieldError>
+                )}
               </Field>
             )}
           />

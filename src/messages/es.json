@@ -31,7 +31,12 @@
     "language": "Idioma",
     "languageLabel": "Idioma: {name}",
     "organizationSwitchError": "No se pudo cambiar de organización. Inténtalo de nuevo.",
-    "createOrganization": "Crear organización"
+    "createOrganization": "Crear organización",
+    "leaveOrganization": "Salir de {name}",
+    "leaveTitle": "¿Salir de {name}?",
+    "leaveDescription": "Perderás el acceso a sus encuestas y métricas. Tus encuestas se quedan en la organización. Para volver necesitarás una nueva invitación.",
+    "leaveConfirm": "Salir",
+    "leavePending": "Saliendo…"
   },
   "greeting": {
     "hello": "{period, select, morning {Buenos días} afternoon {Buenas tardes} evening {Buenas noches} other {Hola}}, {name}"
@@ -244,7 +249,8 @@
       "VALIDATION": "Revisa la selección e inténtalo de nuevo.",
       "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
       "EMAIL_TAKEN": "Este email ya lo usa otro usuario.",
-      "WRONG_PASSWORD": "Tu contraseña actual no es correcta."
+      "WRONG_PASSWORD": "Tu contraseña actual no es correcta.",
+      "FORBIDDEN": "Solo el titular y los administradores de la organización pueden gestionar a otras personas."
     }
   },
   "userForm": {
@@ -259,10 +265,6 @@
         "description": "Nombre e información de contacto."
       },
       "password": {
-        "reset": {
-          "title": "Restablecer contraseña",
-          "description": "Define una nueva contraseña para este usuario. Déjala vacía para conservar la actual."
-        },
         "change": {
           "title": "Cambiar contraseña",
           "description": "Déjala vacía para conservar tu contraseña actual."
@@ -294,7 +296,8 @@
       "showPassword": "Mostrar contraseña",
       "passwordRules": "Al menos 8 caracteres, con una letra y un número.",
       "currentPassword": "Contraseña actual",
-      "newPassword": "Nueva contraseña"
+      "newPassword": "Nueva contraseña",
+      "emailOwnerOnly": "Solo esa persona puede cambiar su correo, desde su perfil."
     },
     "statusHint": "Cambia el estado desde la lista de usuarios.",
     "toasts": {
@@ -307,7 +310,8 @@
       "OWNER_PROTECTED": "El propietario de la organización no se puede desactivar ni quitar.",
       "VALIDATION": "Revisa los campos marcados.",
       "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
-      "WRONG_PASSWORD": "Tu contraseña actual no es correcta."
+      "WRONG_PASSWORD": "Tu contraseña actual no es correcta.",
+      "FORBIDDEN": "Solo el titular y los administradores de la organización pueden gestionar a otras personas."
     }
   },
   "profile": {
@@ -689,6 +693,68 @@
       "dismiss": "Cerrar aviso"
     }
   },
+  "invitations": {
+    "title": "Invitaciones",
+    "subtitle": "Organizaciones que te invitaron a unirte.",
+    "menu": "Invitaciones",
+    "menuCount": "{count, plural, one {# invitación pendiente} other {# invitaciones pendientes}}",
+    "slots": "{used}/{limit}",
+    "proFeature": "Invitar personas es una función Pro.",
+    "proFeatureOwner": "Invitar personas es una función Pro. Revisa tu plan.",
+    "proFeatureLabel": "Invitar usuario: función Pro",
+    "dialog": {
+      "title": "Invitar a alguien",
+      "description": "Se une como miembro al aceptar. {used} de {limit} lugares usados, contando las invitaciones pendientes.",
+      "email": "Correo",
+      "hint": "Necesita una cuenta de Panda Metrics. La invitación dura 14 días.",
+      "cancel": "Cancelar",
+      "submit": "Enviar invitación",
+      "pending": "Enviando…"
+    },
+    "pending": {
+      "title": "{count, plural, one {# invitación pendiente} other {# invitaciones pendientes}}",
+      "status": "Invitado",
+      "expires": "Vence el {date}",
+      "revoke": "Revocar",
+      "revokeLabel": "Revocar la invitación de {email}"
+    },
+    "row": {
+      "invitedBy": "Te invitó {name}",
+      "invited": "Invitación",
+      "expires": "vence el {date}",
+      "accept": "Aceptar",
+      "decline": "Rechazar",
+      "acceptLabel": "Aceptar la invitación a {organization}",
+      "declineLabel": "Rechazar la invitación a {organization}"
+    },
+    "welcome": {
+      "title": "{count, plural, one {Tienes una invitación} other {Tienes # invitaciones}}",
+      "description": "O únete a una organización que te invitó."
+    },
+    "empty": {
+      "title": "Sin invitaciones",
+      "description": "Cuando una organización te invite, aparecerá aquí."
+    },
+    "toasts": {
+      "sent": "Invitación enviada",
+      "revoked": "Invitación revocada",
+      "declined": "Invitación rechazada"
+    },
+    "errors": {
+      "FORBIDDEN": "Solo el propietario y los administradores pueden gestionar invitaciones.",
+      "PRO_REQUIRED": "Invitar personas es una función Pro. El titular de la organización necesita un plan Pro activo.",
+      "USER_NOT_FOUND": "Esta persona aún no tiene cuenta en Panda Metrics. Las invitaciones por correo llegarán pronto.",
+      "ALREADY_MEMBER": "Esta persona ya está en la organización.",
+      "ALREADY_INVITED": "Esta persona ya tiene una invitación pendiente.",
+      "INVITE_LIMIT": "La organización ya tiene {limit} personas además del titular, contando las invitaciones pendientes. Quita a alguien o revoca una invitación primero.",
+      "MEMBERSHIP_LIMIT": "Esta cuenta ya está en {max} organizaciones, el máximo permitido.",
+      "INVITE_NOT_FOUND": "Esta invitación ya no está disponible.",
+      "INVITE_EXPIRED": "Esta invitación venció. Pide una nueva.",
+      "RATE_LIMITED": "Demasiadas invitaciones en poco tiempo. Inténtalo más tarde.",
+      "VALIDATION": "Escribe un correo válido.",
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
+    }
+  },
   "onboarding": {
     "title": "Hola, {name}",
     "titleNoName": "Te damos la bienvenida a Panda Metrics",
@@ -708,7 +774,8 @@
       "MEMBERSHIP_LIMIT": "Ya estás en {max} organizaciones, el máximo permitido. Sal de una primero.",
       "NOT_FOUND": "Esta organización ya no está disponible.",
       "VALIDATION": "Revisa los campos marcados.",
-      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
+      "OWNER_CANNOT_LEAVE": "Esta organización es tuya, así que no puedes salir de ella."
     }
   },
   "auth": {

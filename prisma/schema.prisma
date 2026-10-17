@@ -49,6 +49,18 @@ enum SubscriptionStatus {
   INCOMPLETE // first payment never completed: never Pro
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+}
+
+enum MembershipEventType {
+  LEFT
+  REMOVED
+}
+
 model Organization {
   id                String   @id @default(cuid())
   name              String
@@ -58,12 +70,14 @@ model Organization {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  owner       User             @relation("OwnedOrganization", fields: [ownerId], references: [id], onDelete: Restrict)
-  memberships Membership[]
+  owner            User              @relation("OwnedOrganization", fields: [ownerId], references: [id], onDelete: Restrict)
+  memberships      Membership[]
+  invitations      Invitation[]
+  membershipEvents MembershipEvent[]
   // Legacy link, unused since memberships (dropped in docs/subscriptions.md phase 6)
-  users       User[]
-  surveys     Survey[]
-  responses   SurveyResponse[]
+  users            User[]
+  surveys          Survey[]
+  responses        SurveyResponse[]
 }
 
 model User {
@@ -82,14 +96,17 @@ model User {
   organizationId String?
   deletedAt      DateTime?
 
-  organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  ownedOrganization Organization? @relation("OwnedOrganization")
-  memberships       Membership[]
-  subscription      Subscription?
-  seat              SubscriptionSeat?
-  accounts          Account[]
-  sessions          Session[]
-  surveys           Survey[]
+  organization        Organization?     @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  ownedOrganization   Organization?     @relation("OwnedOrganization")
+  memberships         Membership[]
+  subscription        Subscription?
+  seat                SubscriptionSeat?
+  invitationsSent     Invitation[]      @relation("InvitationsSent")
+  invitationsReceived Invitation[]      @relation("InvitationsReceived")
+  membershipEvents    MembershipEvent[]
+  accounts            Account[]
+  sessions            Session[]
+  surveys             Survey[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -121,8 +138,9 @@ model Subscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user  User               @relation(fields: [userId], references: [id], onDelete: Restrict)
-  seats SubscriptionSeat[]
+  user        User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  seats       SubscriptionSeat[]
+  invitations Invitation[]
 }
 
 // A Business plan member: Pro through the owner's subscription. A user holds at most one seat
@@ -136,6 +154,48 @@ model SubscriptionSeat {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([subscriptionId])
+}
+
+// An invitation into an organization (docs/subscriptions.md, section 6). In-app for existing
+// accounts (userId); email and token are for the email invites that come later, subscriptionId for
+// Business plan invites (phase 5). Pending ones past expiresAt count as expired
+model Invitation {
+  id             String           @id @default(cuid())
+  organizationId String
+  invitedById    String
+  userId         String?
+  email          String?
+  token          String?          @unique
+  subscriptionId String?
+  status         InvitationStatus @default(PENDING)
+  expiresAt      DateTime
+  respondedAt    DateTime?
+  createdAt      DateTime         @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User          @relation("InvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  user         User?         @relation("InvitationsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([organizationId, status])
+  @@index([subscriptionId, status])
+}
+
+// Who left an organization or was removed from it, kept for the owner's email (pending feature)
+model MembershipEvent {
+  id             String              @id @default(cuid())
+  organizationId String
+  userId         String
+  type           MembershipEventType
+  // Set once the owner has been told
+  notifiedAt     DateTime?
+  createdAt      DateTime            @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt(sort: Desc)])
 }
 
 // A user in an organization. The owner has one too (role OWNER, the organization's ownerId), so

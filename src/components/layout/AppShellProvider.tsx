@@ -8,6 +8,7 @@ import type { Organization } from "@/types/survey";
 // Global data every page's top bar needs. The layout provides it, so pages render their own
 // AppTopBar without passing the session around.
 export interface AppShellValue {
+  userId: string;
   userName: string | null;
   organizations: Organization[];
   // null without an organization yet (/profile on the way to /welcome): no switcher

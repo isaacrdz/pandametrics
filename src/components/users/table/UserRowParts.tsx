@@ -12,20 +12,28 @@ const EMPTY_VALUE = "—";
 
 // Cell contents shared by the table and the stacked list
 
-export function UserName({ row, className }: { row: UserRow; className?: string }) {
+// The name links where the signed-in user may edit: their own profile, or another person when they
+// are the owner or an admin (never the owner's row). Otherwise it is plain text
+export function UserName({ row, canManage, className }: { row: UserRow; canManage: boolean; className?: string }) {
   const t = useTranslations("users");
+  const href = row.isCurrentUser ? "/profile" : canManage && !row.isOwner ? `/users/${row.id}` : null;
 
   return (
     <span className={cn("flex min-w-0 flex-col gap-0.5", className)}>
       <span className="flex min-w-0 items-center gap-2">
-        <Link
-          // Your own row opens your profile (no permissions or status there)
-          href={row.isCurrentUser ? "/profile" : `/users/${row.id}`}
-          title={row.name}
-          className="truncate rounded-sm font-semibold text-foreground outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
-        >
-          {row.name}
-        </Link>
+        {href ? (
+          <Link
+            href={href}
+            title={row.name}
+            className="truncate rounded-sm font-semibold text-foreground outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+          >
+            {row.name}
+          </Link>
+        ) : (
+          <span title={row.name} className="truncate font-semibold text-foreground">
+            {row.name}
+          </span>
+        )}
         {row.isCurrentUser && (
           <span className="shrink-0 rounded-md border border-card-border px-1.5 py-0.5 text-[0.7rem] font-semibold text-muted-foreground">
             {t("you")}

@@ -29,13 +29,13 @@ export function UsersList({ rows, now, controls }: UsersListProps) {
           <div className="flex items-center gap-3">
             <TableCheckbox
               checked={controls.isSelected(row.id)}
-              disabled={row.isCurrentUser || row.isOwner}
+              disabled={!controls.canManage || row.isCurrentUser || row.isOwner}
               onCheckedChange={(checked) => controls.onToggle(row.id, checked === true)}
               aria-label={row.isCurrentUser ? t("select.self") : row.isOwner ? t("select.owner") : t("select.row", { name: row.name })}
             />
             <UserAvatar image={row.image} initials={row.initials} />
-            <UserName row={row} className="flex-1" />
-            <UserActionsMenu row={row} onDeactivate={controls.onDeactivate} />
+            <UserName row={row} canManage={controls.canManage} className="flex-1" />
+            <UserActionsMenu row={row} onDeactivate={controls.onDeactivate} canManage={controls.canManage} />
           </div>
           <div className="flex flex-wrap items-center gap-2 pr-2 pl-[4.875rem]">
             <UserRoleBadge role={row.role} />

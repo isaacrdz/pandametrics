@@ -9,7 +9,7 @@ import type { Organization } from "@/types/survey";
 // Organizations on Prisma. A user owns at most one (Organization.ownerId is unique) and belongs to at
 // most MAX_MEMBERSHIPS, counting it (docs/subscriptions.md, section 5.3)
 
-export type OrganizationErrorCode = "OWNER_LIMIT" | "MEMBERSHIP_LIMIT";
+export type OrganizationErrorCode = "OWNER_LIMIT" | "MEMBERSHIP_LIMIT" | "NOT_FOUND" | "OWNER_CANNOT_LEAVE";
 
 export class OrganizationServiceError extends Error {
   constructor(readonly code: OrganizationErrorCode) {
@@ -47,4 +47,25 @@ export async function createOrganization(userId: string, input: OrganizationValu
     if (isOwnerTaken(error)) throw new OrganizationServiceError("OWNER_LIMIT");
     throw error;
   }
+}
+
+// The user leaves an organization they belong to (not the one they own). Recorded for the owner's
+// email (pending feature); pending invitations they sent there stop counting
+// Returns who had a pending invitation from the user there
+export async function leaveOrganization(userId: string, organizationId: string): Promise<{ inviteeIds: string[] }> {
+  return prisma.$transaction(async (tx) => {
+    const membership = await tx.membership.findUnique({
+      where: { userId_organizationId: { userId, organizationId } },
+      select: { organization: { select: { ownerId: true } } },
+    });
+    if (!membership) throw new OrganizationServiceError("NOT_FOUND");
+    if (membership.organization.ownerId === userId) throw new OrganizationServiceError("OWNER_CANNOT_LEAVE");
+
+    await tx.membership.delete({ where: { userId_organizationId: { userId, organizationId } } });
+    await tx.membershipEvent.create({ data: { organizationId, userId, type: "LEFT" } });
+    const sent = { organizationId, invitedById: userId, status: "PENDING" as const };
+    const revoked = await tx.invitation.findMany({ where: sent, select: { userId: true } });
+    await tx.invitation.updateMany({ where: sent, data: { status: "REVOKED", respondedAt: new Date() } });
+    return { inviteeIds: revoked.flatMap((invitation) => (invitation.userId ? [invitation.userId] : [])) };
+  });
 }

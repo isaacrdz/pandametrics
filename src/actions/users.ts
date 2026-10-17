@@ -5,6 +5,7 @@ import { refresh, updateTag } from "next/cache";
 import { getAppContext } from "@/server/app-context";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
 import { toUserFormValues, userFormSchema, type UserFormInput, type UserFormSchemaMode, type UserFormValues } from "@/lib/users/schema";
+import { invitationsTag } from "@/lib/invitations/tags";
 import { usersTag } from "@/lib/users/list";
 import { userTag } from "@/lib/users/tags";
 import * as userService from "@/lib/users/service";
@@ -81,8 +82,11 @@ export async function removeUsers(ids: string[]): Promise<UserActionResult<{ cou
   if (!idsSchema.safeParse(ids).success) return VALIDATION_ERROR;
   try {
     const scope = await getScope();
-    const count = await userService.removeUsers(scope, ids);
+    const { count, inviteeIds } = await userService.removeUsers(scope, ids);
     afterChange(scope, ids);
+    // Pending invitations the removed users sent here were revoked
+    updateTag(invitationsTag(scope.organizationId));
+    for (const id of inviteeIds) updateTag(userTag(id));
     return { success: true, data: { count } };
   } catch (error) {
     return toErrorResult(error);

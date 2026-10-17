@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { setSurveyActive } from "@/actions/surveys";
 import { useCopyToClipboard } from "@/components/dashboard/CopyButton";
+import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 
 export interface SurveyActionsTarget {
   id: string;
@@ -68,7 +68,8 @@ export function SurveyActionsMenu<T extends SurveyActionsTarget>({
       // The server is the authority on the limit: the hint below can be outdated
       const result = await setSurveyActive(survey.id, next);
       if (!result.success) {
-        toast.error(tErrors(result.error.code, activeLimit));
+        // The server says which limit was hit; the page's copy may be outdated
+        toast.error(tErrors(result.error.code, { ...activeLimit, ...result.error.activeLimit }));
         return;
       }
       toast.success(t(next ? "toasts.activated" : "toasts.deactivated"), { description: survey.name });

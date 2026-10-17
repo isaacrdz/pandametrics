@@ -24,9 +24,11 @@ import { cn } from "@/lib/utils";
 interface UsersTableSectionProps {
   data: UserListResult;
   params: UserListQuery;
+  // Owner or admin: may select, edit and deactivate others
+  canManage: boolean;
 }
 
-export function UsersTableSection({ data, params }: UsersTableSectionProps) {
+export function UsersTableSection({ data, params, canManage }: UsersTableSectionProps) {
   const t = useTranslations("users");
   const format = useFormatter();
   const router = useRouter();
@@ -58,7 +60,7 @@ export function UsersTableSection({ data, params }: UsersTableSectionProps) {
   // Selection is per list view: changing a filter or the page starts empty, and rows that left
   // the page drop out of it. The signed-in user can never be selected.
   const listKey = buildUsersHref(params);
-  const selectableIds = data.rows.filter((row) => !row.isCurrentUser && !row.isOwner).map((row) => row.id);
+  const selectableIds = canManage ? data.rows.filter((row) => !row.isCurrentUser && !row.isOwner).map((row) => row.id) : [];
   const [selection, setSelection] = useState<{ key: string; ids: ReadonlySet<string> }>({ key: listKey, ids: new Set() });
   const selectedIds = selection.key === listKey ? selectableIds.filter((id) => selection.ids.has(id)) : [];
 
@@ -99,6 +101,7 @@ export function UsersTableSection({ data, params }: UsersTableSectionProps) {
       selectedIds.length === 0 ? false : selectedIds.length === selectableIds.length ? true : "indeterminate",
     onToggleAll: (checked) => updateSelection(checked ? selectableIds : []),
     onDeactivate: askDeactivate,
+    canManage,
   };
 
   // Announcements live in regions that stay mounted: a region that appears together with its text
