@@ -289,7 +289,7 @@ export type SurveyFormValues = z.infer<typeof surveyFormSchema>;
 
 - **Errors are codes, not text.** The server cannot know the language (it lives in `localStorage`), so the client maps `error.code` to `t("surveyForm.errors.<code>")` and `fieldErrors` to `form.setError(path, { message: key })`. No locale needs to be sent.
 - Organization and user come from `getAppContext()` (mock session) inside the action, never from the client.
-- **Publish toggle**: part of the form and saved with "Save" (simpler, one source of truth). The 5-active check runs in `create` / `update` when `isActive` goes from false to true. On `ACTIVE_LIMIT` the toggle shows the error inline ("You already have 5 active surveys. Deactivate one first.") plus a toast.
+- **Publish toggle**: part of the form and saved with "Save" (simpler, one source of truth). On create the switch is read-only: `createSurvey` publishes the new survey when the plan has a free active slot and saves it as a draft otherwise (no error; "created as a draft" toast). On edit the active-limit check runs when `isActive` goes from false to true, and on `ACTIVE_LIMIT` the toggle shows the error inline ("You already have 5 active surveys. Deactivate one first.") plus a toast.
 - **Refreshing under Cache Components** (Next 16 docs):
   - `refresh()` (from `next/cache`, Server Actions only) refreshes the client router so the edit page shows the saved data;
   - `revalidatePath("/dashboard")` drops the dashboard from the router cache so the next visit shows the change;

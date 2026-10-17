@@ -1,18 +1,23 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Publish Survey on Create
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- On `/surveys/new` the "Publish" switch (`PublishToggle`) starts off, as today (`EMPTY_SURVEY_VALUES.isActive: false`); on create it is read-only (disabled, no Active / Draft badge) with its own hint: "It's published when you create it, if your plan has a free active slot; otherwise it's saved as a draft." (`publishOnCreate` in `FORM_MODES`)
+- Clicking "Create survey" publishes the new survey when the organization has a free active slot (Free 1 / Pro 5, the owner's plan), whatever the switch says; the edit page it lands on shows the switch on
+- At the limit the survey is created as a draft instead of failing with `ACTIVE_LIMIT`, with its own toast ("created as a draft: your plan's active survey limit is reached"); otherwise "Survey created and published"
+- Edit mode unchanged: `/surveys/[id]` saves the switch as set, with the existing `ACTIVE_LIMIT` rule
 
 ## Notes
 
-<!-- Any extra notes -->
+- Changed on request after a first take (switch on by default + streamed slot check), which was reverted
+- Server side, in the create transaction: `claimActiveSlots` (the guarded `activeSurveyCount` UPDATE, reporting instead of throwing) used by `createSurvey`; `changeActiveCount` throws on top of it for edits and bulk activation, so races stay handled
+- `createSurvey` action returns `{ id, isActive }`; `FORM_MODES.create` picks the `created` / `createdAsDraft` toast
+- `docs/survey-form.md` publish toggle note updated for create vs edit
+- Check: Jordan (Pro, 4 active) → created active; at 5 active → draft + toast; Miguel (Free, 0 active) → active; Valeria (expired, 2 active) → draft; en / es
 
 ## History
 
