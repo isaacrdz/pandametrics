@@ -9,10 +9,10 @@ import type {
   ReactionValue,
   ResponseItem,
   ResponseSource,
+  Role,
   Survey,
   SurveyCategory,
   SurveyResponse,
-  User,
   UserAccount,
 } from "@/types/survey";
 
@@ -112,53 +112,73 @@ export function buildOrganizations(now: Date): Organization[] {
 }
 
 interface UserSeed {
-  fields: Pick<User, "name" | "email" | "role"> & Partial<Pick<User, "phone" | "image" | "isActive">>;
+  fields: Pick<UserAccount, "name" | "email"> & Partial<Pick<UserAccount, "phone" | "image">>;
+  // Their membership in Acme: role and status live only there
+  membership: Pick<SeedMembership, "role"> & Partial<Pick<SeedMembership, "isActive">>;
   createdDaysAgo: number;
   updatedDaysAgo: number;
 }
 
-// A seeded account and its membership: role and isActive belong to the membership in organizationId
-export interface SeedMember extends User {
+// A seeded membership: the user's role and status in one organization
+export interface SeedMembership {
+  userId: string;
   organizationId: string;
+  role: Role;
+  isActive: boolean;
+  createdAt: Date;
 }
 
 // Acme's team with every state the user list has to show
 const USER_SEEDS: UserSeed[] = [
-  { fields: { name: "Jordan Davis", email: "jordan@acme.co", role: "OWNER", phone: "+525512345678" }, createdDaysAgo: 180, updatedDaysAgo: 1 },
-  { fields: { name: "Ana López", email: "ana@acme.co", role: "ADMIN" }, createdDaysAgo: 120, updatedDaysAgo: 10 },
-  { fields: { name: "Sofía Ramírez", email: "sofia@acme.co", role: "ADMIN", phone: "+525598765432", image: "/avatars/sofia.svg" }, createdDaysAgo: 90, updatedDaysAgo: 0 },
-  { fields: { name: "Marco Silva", email: "marco@acme.co", role: "MEMBER", image: "/avatars/missing.jpg" }, createdDaysAgo: 75, updatedDaysAgo: 3 },
-  { fields: { name: "Lucía Fernández", email: "lucia@acme.co", role: "MEMBER", phone: "+523312344321" }, createdDaysAgo: 60, updatedDaysAgo: 6 },
-  { fields: { name: "Diego Herrera", email: "diego@acme.co", role: "MEMBER", isActive: false }, createdDaysAgo: 50, updatedDaysAgo: 20 },
-  { fields: { name: "Emily Chen", email: "emily@acme.co", role: "MEMBER", phone: "+14155550134" }, createdDaysAgo: 30, updatedDaysAgo: 2 },
-  { fields: { name: "Tomás Ortega", email: "tomas@acme.co", role: "MEMBER", isActive: false }, createdDaysAgo: 20, updatedDaysAgo: 15 },
+  { fields: { name: "Jordan Davis", email: "jordan@acme.co", phone: "+525512345678" }, membership: { role: "OWNER" }, createdDaysAgo: 180, updatedDaysAgo: 1 },
+  { fields: { name: "Ana López", email: "ana@acme.co" }, membership: { role: "ADMIN" }, createdDaysAgo: 120, updatedDaysAgo: 10 },
+  { fields: { name: "Sofía Ramírez", email: "sofia@acme.co", phone: "+525598765432", image: "/avatars/sofia.svg" }, membership: { role: "ADMIN" }, createdDaysAgo: 90, updatedDaysAgo: 0 },
+  { fields: { name: "Marco Silva", email: "marco@acme.co", image: "/avatars/missing.jpg" }, membership: { role: "MEMBER" }, createdDaysAgo: 75, updatedDaysAgo: 3 },
+  { fields: { name: "Lucía Fernández", email: "lucia@acme.co", phone: "+523312344321" }, membership: { role: "MEMBER" }, createdDaysAgo: 60, updatedDaysAgo: 6 },
+  { fields: { name: "Diego Herrera", email: "diego@acme.co" }, membership: { role: "MEMBER", isActive: false }, createdDaysAgo: 50, updatedDaysAgo: 20 },
+  { fields: { name: "Emily Chen", email: "emily@acme.co", phone: "+14155550134" }, membership: { role: "MEMBER" }, createdDaysAgo: 30, updatedDaysAgo: 2 },
+  { fields: { name: "Tomás Ortega", email: "tomas@acme.co" }, membership: { role: "MEMBER", isActive: false }, createdDaysAgo: 20, updatedDaysAgo: 15 },
 ];
 
-// Acme's team, then Panda Labs' only member, its owner
-export function buildUsers(now: Date): SeedMember[] {
+// The accounts of Acme's team, then Panda Labs' owner. Accounts only: roles live in buildMemberships
+export function buildUsers(now: Date): UserAccount[] {
   const acme = USER_SEEDS.map(({ fields, createdDaysAgo, updatedDaysAgo }, i) => ({
     id: objectId(ID_KIND.user, i + 1),
     image: null,
     phone: null,
-    isActive: true,
-    organizationId: ACME_ID,
     deletedAt: null,
     createdAt: daysAgo(now, createdDaysAgo),
     updatedAt: daysAgo(now, updatedDaysAgo),
     ...fields,
   }));
-  const valeria: SeedMember = {
+  const valeria: UserAccount = {
     id: VALERIA_ID,
     name: "Valeria Cruz",
     email: "valeria@pandalabs.dev",
     image: null,
     phone: null,
-    role: "OWNER",
-    isActive: true,
-    organizationId: PANDA_LABS_ID,
     deletedAt: null,
     createdAt: daysAgo(now, 40),
     updatedAt: daysAgo(now, 40),
+  };
+  return [...acme, valeria];
+}
+
+// One membership per account from buildUsers, created with the account
+export function buildMemberships(now: Date): SeedMembership[] {
+  const acme = USER_SEEDS.map(({ membership, createdDaysAgo }, i) => ({
+    userId: objectId(ID_KIND.user, i + 1),
+    organizationId: ACME_ID,
+    isActive: true,
+    createdAt: daysAgo(now, createdDaysAgo),
+    ...membership,
+  }));
+  const valeria: SeedMembership = {
+    userId: VALERIA_ID,
+    organizationId: PANDA_LABS_ID,
+    role: "OWNER",
+    isActive: true,
+    createdAt: daysAgo(now, 40),
   };
   return [...acme, valeria];
 }

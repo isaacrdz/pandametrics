@@ -12,15 +12,16 @@ import "dotenv/config";
 import { randomBytes, scryptSync } from "node:crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
+import type { UserAccount } from "../src/types/survey";
 import {
   ID_KIND,
   buildAccounts,
   buildAllResponses,
+  buildMemberships,
   buildOrganizations,
   buildSurveys,
   buildUsers,
   daysAgo,
-  type SeedMember,
   objectId,
 } from "../src/lib/seed-data";
 
@@ -76,6 +77,7 @@ async function main() {
   const surveys = buildSurveys(now);
   const responses = buildAllResponses(surveys, now);
   const users = buildUsers(now);
+  const memberships = buildMemberships(now);
   const accounts = buildAccounts(now);
   // The active-survey counter must match the active surveys the seed creates
   const organizations = buildOrganizations(now).map((organization) => ({
@@ -125,15 +127,8 @@ async function main() {
 
       await tx.organization.createMany({ data: organizations });
 
-      await tx.membership.createMany({
-        data: users.map((user) => ({
-          userId: user.id,
-          organizationId: user.organizationId,
-          role: user.role,
-          isActive: user.isActive,
-          createdAt: user.createdAt,
-        })),
-      });
+      // Roles and status live only here
+      await tx.membership.createMany({ data: memberships });
 
       await seedPlans(tx, users, now);
 
@@ -224,7 +219,7 @@ async function main() {
 // Plans to try every state (docs/subscriptions.md, section 9): Jordan pays a Business plan that seats
 // Ana and Sofía; Valeria's Individual plan expired 3 days ago (Panda Labs falls back to the Free
 // limit with 2 surveys still active); everyone else is on Free
-async function seedPlans(tx: Prisma.TransactionClient, users: SeedMember[], now: Date) {
+async function seedPlans(tx: Prisma.TransactionClient, users: UserAccount[], now: Date) {
   const id = (email: string) => {
     const user = users.find((candidate) => candidate.email === email);
     if (!user) throw new Error(`Seed user ${email} not found`);

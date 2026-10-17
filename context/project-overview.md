@@ -299,7 +299,7 @@ erDiagram
 
 ## 5. Prisma ORM 7 schema (PostgreSQL on Neon)
 
-The following is a proposed baseline, including the models needed by the Auth.js Prisma adapter. It is designed for organization-scoped data: a user belongs to organizations through memberships (up to 10, at most one owned), and plans live in subscriptions. Full research in `docs/subscriptions.md`. This is the target schema: `User.organizationId` and `User.role` are still in the database until the last phase of that research moves every query to `Membership`.
+The following is a proposed baseline, including the models needed by the Auth.js Prisma adapter. It is designed for organization-scoped data: a user belongs to organizations through memberships (up to 10, at most one owned), and plans live in subscriptions. Full research in `docs/subscriptions.md`. A user's organizations and roles live only in `Membership`.
 
 File: `prisma/schema.prisma`
 

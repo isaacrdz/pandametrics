@@ -74,29 +74,22 @@ model Organization {
   memberships      Membership[]
   invitations      Invitation[]
   membershipEvents MembershipEvent[]
-  // Legacy link, unused since memberships (dropped in docs/subscriptions.md phase 6)
-  users            User[]
   surveys          Survey[]
   responses        SurveyResponse[]
 }
 
 model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String?   @unique
-  emailVerified  DateTime?
-  image          String?
-  phone          String?
-  passwordHash   String?
-  // Legacy: the role lives in Membership; nothing reads or writes it (dropped in phase 6)
-  role           Role      @default(MEMBER)
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  passwordHash  String?
   // The account: an inactive or deleted user cannot sign in. Per organization: Membership.isActive
-  isActive       Boolean   @default(true)
-  // Legacy: organizations come from Membership; nothing reads or writes it (dropped in phase 6)
-  organizationId String?
-  deletedAt      DateTime?
+  isActive      Boolean   @default(true)
+  deletedAt     DateTime?
 
-  organization        Organization?     @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   ownedOrganization   Organization?     @relation("OwnedOrganization")
   memberships         Membership[]
   subscription        Subscription?
@@ -110,9 +103,6 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([organizationId])
-  @@index([organizationId, isActive])
 }
 
 // A paid plan, one per paying user (the plan owner), updated in place on renewal. isPro is never

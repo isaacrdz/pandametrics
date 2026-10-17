@@ -1,18 +1,27 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Subscriptions Phase 6 — Drop User.organizationId and User.role
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- No code reads or writes a user's `organizationId` / `role`: `grep -rn "organizationId" src` shows only `Survey`, `SurveyResponse`, `Membership`, `Invitation` and scope uses; `\.role\b` only on memberships and the `User` type's display field; leftovers fixed first
+- `prisma/schema.prisma`: remove `User.role`, `User.organizationId`, the `User.organization` relation, `Organization.users` and the `User` indexes `@@index([organizationId])` / `@@index([organizationId, isActive])`; `Role` stays (used by `Membership`)
+- Migration `drop_user_organization` that only drops those columns and indexes (reviewed), applied on the `developer` branch; `prisma migrate status` clean
+- `src/types/survey.ts`: `User` loses `organizationId`; `role` stays documented as "role in the current organization, filled from the membership", or moves to `UserRow` / the context if only the users list needs it
+- Leftovers removed: the `app-context` literal tag (if any), comments saying "a user belongs to one organization" (`app-context.ts`, `auth-users.ts`, `OrganizationSwitcher`), `createUserWithOrganization` (if still around)
+- Seed: `buildUsers` no longer returns `organizationId` / `role` (roles only in the seeded memberships); `seedOwner` stops writing them; seed runs with the same counts
+- `context/project-overview.md` section 5: remove the note that the two columns are still in the database
+- Full pass behaves as at the end of phase 5: Jordan, Ana, Valeria, Nora, Miguel sign in; switch organizations; users list, deactivate / remove; invite and accept, plan seats; create and activate surveys within plan limits; `yarn lint`, `tsc` and `next build` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/subscriptions-phase-6-cleanup-spec.md`; research: `docs/subscriptions.md` (sections 3.4, 3.5 and 10)
+- Contract step of the memberships change: no visible change
+- Stale values are expected (not updated since phase 1); they carry nothing memberships lack, so they are dropped as they are; every check uses `Membership`
+- `prisma migrate dev` refuses to run non-interactively: write the migration from `prisma migrate diff` and apply it with `prisma migrate deploy` (as in phases 1, 3 and 4); production has no tables yet
+- Restart the dev server on :3000 after the migration (new Prisma client)
 
 ## History
 
