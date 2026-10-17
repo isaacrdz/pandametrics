@@ -2,8 +2,10 @@ import { Suspense, type CSSProperties } from "react";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppContentSkeleton, NavUserSkeleton } from "@/components/layout/AppShellSkeleton";
 import { AppShellProvider } from "@/components/layout/AppShellProvider";
+import { PlanExpiredBanner } from "@/components/plans/PlanExpiredBanner";
 import { SidebarUser } from "@/components/layout/SidebarUser";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { PLAN_LIMITS } from "@/lib/plans/limits";
 import { getAccountContext } from "@/server/app-context";
 
 // Collapsed rail wide enough for the 40px logo, nav buttons and avatar used when expanded
@@ -14,13 +16,22 @@ const SIDEBAR_STYLE = { "--sidebar-width-icon": "4rem" } as CSSProperties;
 async function AppContent({ children }: { children: React.ReactNode }) {
   // The account level: /profile works without an organization; the organization pages call
   // getAppContext themselves, which sends a user without one to /welcome
-  const { user, organization, organizations, ownsOrganization } = await getAccountContext();
+  const { user, organization, organizations, ownsOrganization, plan, organizationPlan, limits } = await getAccountContext();
 
   return (
     // Each page renders its own AppTopBar (its header) from this shared data
     <AppShellProvider
-      value={{ userName: user.name, organizations, currentOrganizationId: organization?.id ?? null, ownsOrganization }}
+      value={{
+        userName: user.name,
+        organizations,
+        currentOrganizationId: organization?.id ?? null,
+        ownsOrganization,
+        plan,
+        organizationPlan,
+        limits: limits ?? PLAN_LIMITS.FREE,
+      }}
     >
+      <PlanExpiredBanner />
       <div className="flex-1">{children}</div>
     </AppShellProvider>
   );

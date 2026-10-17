@@ -417,7 +417,7 @@
     },
     "errors": {
       "VALIDATION": "Revisa los campos marcados.",
-      "ACTIVE_LIMIT": "Ya tienes {limit} encuestas activas. Desactiva una primero.",
+      "ACTIVE_LIMIT": "{tier, select, PRO {Ya tienes {limit} encuestas activas. Desactiva una primero.} other {Tu plan permite {limit} encuesta activa. Desactívala primero o cambia a Pro para tener hasta {proLimit}.}}",
       "NOT_FOUND": "Esta encuesta ya no existe.",
       "CATEGORY_LOCKED": "La categoría no se puede cambiar porque esta encuesta ya tiene respuestas.",
       "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
@@ -622,6 +622,71 @@
         "notSurvey": "Este QR no es de una encuesta de Panda Metrics."
       },
       "close": "Cerrar"
+    }
+  },
+  "plan": {
+    "title": "Plan",
+    "subtitle": "Tu plan, sus límites y la facturación.",
+    "badge": {
+      "FREE": "Gratis",
+      "PRO": "Pro",
+      "EXPIRED": "Vencido"
+    },
+    "types": {
+      "INDIVIDUAL": "Individual",
+      "BUSINESS": "Business"
+    },
+    "intervals": {
+      "MONTHLY": "Mensual",
+      "YEARLY": "Anual"
+    },
+    "name": "Plan {type}",
+    "current": "Plan actual",
+    "renew": "Renovar plan",
+    "free": {
+      "title": "Plan gratis",
+      "description": "Empieza gratis. Cambia a Pro cuando necesites más encuestas activas o un equipo."
+    },
+    "owner": {
+      "description": "Tú pagas este plan. La facturación se administrará aquí cuando los pagos estén disponibles.",
+      "expired": "Este plan venció. Las funciones Pro están pausadas hasta que lo renueves; no se borró nada."
+    },
+    "member": {
+      "description": "Estás en el plan Business de {owner}. Solo su titular administra la facturación.",
+      "descriptionNoName": "Estás en un plan Business. Solo su titular administra la facturación."
+    },
+    "details": {
+      "interval": "Facturación",
+      "lastPayment": "Último pago",
+      "renewsOn": "Se renueva el",
+      "endsOn": "Termina el",
+      "expiredOn": "Venció el",
+      "none": "—"
+    },
+    "limits": {
+      "title": "Qué incluye",
+      "activeSurveys": "{count, plural, one {# encuesta activa} other {Hasta # encuestas activas}}",
+      "invites": "{count, plural, =0 {Sin invitaciones: solo tú} one {Invita a # persona a tu organización} other {Invita hasta # personas a tu organización}}",
+      "seats": "Pro para ti y hasta {count} personas más"
+    },
+    "upgrade": {
+      "title": "Cambia a Pro",
+      "action": "Cambiar a Pro",
+      "INDIVIDUAL": {
+        "title": "Pro Individual",
+        "description": "Pro para ti, con pago mensual o anual."
+      },
+      "BUSINESS": {
+        "title": "Pro Business",
+        "description": "Pro para ti y tu equipo, con pago mensual o anual."
+      }
+    },
+    "banner": {
+      "owner": "Tu plan {type} venció el {date}. Las funciones Pro están pausadas hasta que lo renueves.",
+      "member": "El plan Business de {owner} venció el {date}. Las funciones Pro están pausadas hasta que se renueve.",
+      "memberNoName": "Tu plan Business venció el {date}. Las funciones Pro están pausadas hasta que se renueve.",
+      "renew": "Renovar plan",
+      "dismiss": "Cerrar aviso"
     }
   },
   "onboarding": {

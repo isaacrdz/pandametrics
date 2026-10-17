@@ -1,7 +1,8 @@
 // Fills the Neon development branch with the demo data (src/lib/seed-data.ts): 2 organizations,
 // 9 users with their memberships (Acme's 8, Panda Labs' owner Valeria), Nora without an organization,
-// 5 surveys and their responses, with fixed ids and seeded counts. Then the owner account: Miguel
-// Rayon, owner and only member of Leyinork.
+// their plans (Jordan's Business plan seating Ana and Sofía, Valeria's expired Individual plan), 7
+// surveys and their responses, with fixed ids and seeded counts. Then the owner account: Miguel
+// Rayon, owner and only member of Leyinork, on Free.
 //
 //   npx prisma db seed
 //
@@ -10,7 +11,7 @@
 import "dotenv/config";
 import { randomBytes, scryptSync } from "node:crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
 import {
   ID_KIND,
   buildAccounts,
@@ -18,6 +19,8 @@ import {
   buildOrganizations,
   buildSurveys,
   buildUsers,
+  daysAgo,
+  type SeedMember,
   objectId,
 } from "../src/lib/seed-data";
 
@@ -99,6 +102,8 @@ async function main() {
       await tx.survey.deleteMany({ where: inSeededOrganizations });
       // Organizations before their owners (ownerId is Restrict); their memberships cascade
       await tx.organization.deleteMany({ where: { id: { in: previous.map((organization) => organization.id) } } });
+      // Subscriptions are Restrict on their owner; seats cascade with their user
+      await tx.subscription.deleteMany({ where: { user: { email: { in: emails } } } });
       await tx.user.deleteMany({ where: { email: { in: emails } } });
 
       // The account only: role and status live in the membership
@@ -129,6 +134,8 @@ async function main() {
           createdAt: user.createdAt,
         })),
       });
+
+      await seedPlans(tx, users, now);
 
       for (const survey of surveys) {
         await tx.survey.create({
@@ -196,6 +203,8 @@ async function main() {
     options: await prisma.answerOption.count({ where: { question: { survey: { organizationId: { in: organizationIds } } } } }),
     responses: await prisma.surveyResponse.count({ where: { organizationId: { in: organizationIds } } }),
     items: await prisma.responseItem.count({ where: { response: { organizationId: { in: organizationIds } } } }),
+    subscriptions: await prisma.subscription.count({ where: { user: { email: { in: users.map((user) => user.email ?? "") } } } }),
+    seats: await prisma.subscriptionSeat.count({ where: { user: { email: { in: users.map((user) => user.email ?? "") } } } }),
   };
   await seedOwner(now);
   const owned = await prisma.organization.findUnique({
@@ -204,11 +213,54 @@ async function main() {
   });
   console.log(
     `${counts.organizations} organizations, ${counts.memberships} memberships, ${counts.surveys} surveys, ${counts.questions} questions, ` +
-      `${counts.options} options, ${counts.responses} responses, ${counts.items} items`,
+      `${counts.options} options, ${counts.responses} responses, ${counts.items} items, ` +
+      `${counts.subscriptions} subscriptions, ${counts.seats} seats`,
   );
   console.log(
     `1 owner organization (${owned?.name}, ${owned?._count.memberships} member), 1 owner (${owned?.owner.email})`,
   );
+}
+
+// Plans to try every state (docs/subscriptions.md, section 9): Jordan pays a Business plan that seats
+// Ana and Sofía; Valeria's Individual plan expired 3 days ago (Panda Labs falls back to the Free
+// limit with 2 surveys still active); everyone else is on Free
+async function seedPlans(tx: Prisma.TransactionClient, users: SeedMember[], now: Date) {
+  const id = (email: string) => {
+    const user = users.find((candidate) => candidate.email === email);
+    if (!user) throw new Error(`Seed user ${email} not found`);
+    return user.id;
+  };
+
+  const businessStart = daysAgo(now, 10);
+  const business = await tx.subscription.create({
+    data: {
+      userId: id("jordan@acme.co"),
+      planType: "BUSINESS",
+      billingInterval: "MONTHLY",
+      status: "ACTIVE",
+      paidAt: businessStart,
+      currentPeriodStart: businessStart,
+      currentPeriodEnd: daysAgo(now, -20),
+    },
+  });
+  await tx.subscriptionSeat.createMany({
+    data: ["ana@acme.co", "sofia@acme.co"].map((email) => ({ subscriptionId: business.id, userId: id(email) })),
+  });
+
+  const expiredEnd = daysAgo(now, 3);
+  const expiredStart = new Date(expiredEnd);
+  expiredStart.setUTCFullYear(expiredStart.getUTCFullYear() - 1);
+  await tx.subscription.create({
+    data: {
+      userId: id("valeria@pandalabs.dev"),
+      planType: "INDIVIDUAL",
+      billingInterval: "YEARLY",
+      status: "ACTIVE",
+      paidAt: expiredStart,
+      currentPeriodStart: expiredStart,
+      currentPeriodEnd: expiredEnd,
+    },
+  });
 }
 
 // Upserted, not deleted and recreated: Leyinork is a real account, so a re-seed keeps whatever its

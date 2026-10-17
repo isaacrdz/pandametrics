@@ -9,7 +9,10 @@ import { auth } from "@/auth";
 import { SIGN_IN_PATH, WELCOME_PATH } from "@/lib/auth/paths";
 import { userTag } from "@/lib/users/tags";
 import { USER_PUBLIC_SELECT } from "@/lib/users/service";
+import { limitsFor, type PlanLimits } from "@/lib/plans/limits";
+import { resolvePlan, type PlanState } from "@/lib/plans/plan";
 import { ACTIVE_ORGANIZATION_COOKIE, pickActiveMembership, sortMemberships } from "@/server/active-organization";
+import { loadPlanRows } from "@/server/plans";
 import { prisma } from "@/server/prisma";
 import type { Organization, OrganizationMembership, Role, User, UserAccount } from "@/types/survey";
 
@@ -29,6 +32,11 @@ export interface AccountContext {
   // The organization the user is working in, null without any active membership
   organization: Organization | null;
   role: Role | null;
+  // The user's own plan (badge, Settings → Plan, expired notice), computed for this request
+  plan: PlanState;
+  // The active organization owner's plan, which sets its limits; null without an organization
+  organizationPlan: PlanState | null;
+  limits: PlanLimits | null;
 }
 
 export interface AppContext extends AccountContext {
@@ -36,6 +44,8 @@ export interface AppContext extends AccountContext {
   user: User;
   organization: Organization;
   role: Role;
+  organizationPlan: PlanState;
+  limits: PlanLimits;
 }
 
 interface Account {
@@ -85,6 +95,11 @@ export const getSessionAccount = cache(async (): Promise<AccountContext | null> 
   const cookieOrganizationId = (await cookies()).get(ACTIVE_ORGANIZATION_COOKIE)?.value;
   const active = pickActiveMembership(account.memberships, userId, cookieOrganizationId);
   const memberships = sortMemberships(account.memberships, userId);
+  // The plans come from cached rows, but the tier is decided here, with this request's time
+  const now = new Date();
+  const plan = resolvePlan(await loadPlanRows(userId), now);
+  const ownerId = active?.organization.ownerId;
+  const organizationPlan = !ownerId ? null : ownerId === userId ? plan : resolvePlan(await loadPlanRows(ownerId), now);
   return {
     user: account.user,
     memberships,
@@ -92,6 +107,9 @@ export const getSessionAccount = cache(async (): Promise<AccountContext | null> 
     ownsOrganization: account.ownsOrganization,
     organization: active?.organization ?? null,
     role: active?.role ?? null,
+    plan,
+    organizationPlan,
+    limits: organizationPlan && limitsFor(organizationPlan.tier),
   };
 });
 
@@ -101,9 +119,9 @@ export type SessionAppContext =
   | { status: "ok"; context: AppContext };
 
 function toAppContext(account: AccountContext): AppContext | null {
-  const { organization, role } = account;
-  if (!organization || !role) return null;
-  return { ...account, user: { ...account.user, role, isActive: true }, organization, role };
+  const { organization, role, organizationPlan, limits } = account;
+  if (!organization || !role || !organizationPlan || !limits) return null;
+  return { ...account, user: { ...account.user, role, isActive: true }, organization, role, organizationPlan, limits };
 }
 
 // For Server Actions, which answer with an error code instead of redirecting

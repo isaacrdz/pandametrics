@@ -2,20 +2,33 @@ import "server-only";
 
 import { randomBytes, randomInt } from "node:crypto";
 import { Prisma } from "@/generated/prisma/client";
-import { ACTIVE_SURVEY_LIMIT, RATING_COLOR, RATING_VALUES } from "@/lib/surveys/constants";
+import { limitsFor } from "@/lib/plans/limits";
+import type { PlanTier } from "@/lib/plans/plan";
+import { RATING_COLOR, RATING_VALUES } from "@/lib/surveys/constants";
 import type { SurveyFormValues } from "@/lib/surveys/schema";
+import { organizationTier } from "@/server/plans";
 import { prisma } from "@/server/prisma";
 import { containsPattern } from "@/server/search";
 import type { AnswerOption, AnswerType, Question, Survey, SurveyCategory } from "@/types/survey";
 
 // Surveys service on Prisma (Neon). Questions and options are archived, never deleted, once they
-// may have answers; the active-survey limit is an atomic counter on the organization (backed by the
-// CHECK constraint of the init migration). See the overview, "Important schema notes".
+// may have answers; the active-survey limit (the organization owner's plan: 1 on Free, 5 on Pro) is
+// an atomic counter on the organization (backed by the CHECK constraint of the init migration). See
+// the overview, "Important schema notes".
 
 export type SurveyErrorCode = "NOT_FOUND" | "ACTIVE_LIMIT" | "CATEGORY_LOCKED" | "NO_ORGANIZATION";
 
+// ACTIVE_LIMIT says which limit was hit (the organization owner's plan), for the message
+export interface ActiveLimitDetails {
+  limit: number;
+  tier: PlanTier;
+}
+
 export class SurveyServiceError extends Error {
-  constructor(readonly code: SurveyErrorCode) {
+  constructor(
+    readonly code: SurveyErrorCode,
+    readonly details?: ActiveLimitDetails,
+  ) {
     super(code);
   }
 }
@@ -317,11 +330,16 @@ async function changeActiveCount(tx: Prisma.TransactionClient, organizationId: s
     await tx.organization.update({ where: { id: organizationId }, data: { activeSurveyCount: { decrement: -delta } } });
     return;
   }
+  // The limit is the owner's plan, read in this transaction: 1 on Free or expired, 5 on Pro. Only
+  // growing is checked, so an organization above its limit after a downgrade can still edit and
+  // deactivate (the CHECK of the init migration caps the counter at 5, the Pro maximum)
+  const tier = await organizationTier(tx, organizationId, new Date());
+  const { activeSurveys: limit } = limitsFor(tier);
   const { count } = await tx.organization.updateMany({
-    where: { id: organizationId, activeSurveyCount: { lte: ACTIVE_SURVEY_LIMIT - delta } },
+    where: { id: organizationId, activeSurveyCount: { lte: limit - delta } },
     data: { activeSurveyCount: { increment: delta } },
   });
-  if (count === 0) throw new SurveyServiceError("ACTIVE_LIMIT");
+  if (count === 0) throw new SurveyServiceError("ACTIVE_LIMIT", { limit, tier });
 }
 
 // ---------------------------------------------------------------------------

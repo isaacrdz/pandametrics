@@ -417,7 +417,7 @@
     },
     "errors": {
       "VALIDATION": "Check the highlighted fields.",
-      "ACTIVE_LIMIT": "You already have {limit} active surveys. Deactivate one first.",
+      "ACTIVE_LIMIT": "{tier, select, PRO {You already have {limit} active surveys. Deactivate one first.} other {Your plan allows {limit} active survey. Deactivate it first, or upgrade to Pro for up to {proLimit}.}}",
       "NOT_FOUND": "This survey no longer exists.",
       "CATEGORY_LOCKED": "The category can't change because this survey already has responses.",
       "UNKNOWN": "Something went wrong. Try again.",
@@ -622,6 +622,71 @@
         "notSurvey": "This QR is not a Panda Metrics survey."
       },
       "close": "Close"
+    }
+  },
+  "plan": {
+    "title": "Plan",
+    "subtitle": "Your plan, its limits and billing.",
+    "badge": {
+      "FREE": "Free",
+      "PRO": "Pro",
+      "EXPIRED": "Expired"
+    },
+    "types": {
+      "INDIVIDUAL": "Individual",
+      "BUSINESS": "Business"
+    },
+    "intervals": {
+      "MONTHLY": "Monthly",
+      "YEARLY": "Yearly"
+    },
+    "name": "{type} plan",
+    "current": "Current plan",
+    "renew": "Renew plan",
+    "free": {
+      "title": "Free plan",
+      "description": "Start for free. Upgrade to Pro when you need more active surveys or a team."
+    },
+    "owner": {
+      "description": "You pay for this plan. Billing will be managed here once payments are available.",
+      "expired": "This plan expired. Pro features are paused until you renew it; nothing was deleted."
+    },
+    "member": {
+      "description": "You're on {owner}'s Business plan. Only its owner manages billing.",
+      "descriptionNoName": "You're on a Business plan. Only its owner manages billing."
+    },
+    "details": {
+      "interval": "Billing",
+      "lastPayment": "Last payment",
+      "renewsOn": "Renews on",
+      "endsOn": "Ends on",
+      "expiredOn": "Expired on",
+      "none": "—"
+    },
+    "limits": {
+      "title": "What's included",
+      "activeSurveys": "{count, plural, one {# active survey} other {Up to # active surveys}}",
+      "invites": "{count, plural, =0 {No invitations: just you} one {Invite # person to your organization} other {Invite up to # people to your organization}}",
+      "seats": "Pro for you and up to {count} more people"
+    },
+    "upgrade": {
+      "title": "Upgrade to Pro",
+      "action": "Upgrade",
+      "INDIVIDUAL": {
+        "title": "Pro Individual",
+        "description": "Pro for you, billed monthly or yearly."
+      },
+      "BUSINESS": {
+        "title": "Pro Business",
+        "description": "Pro for you and your team, billed monthly or yearly."
+      }
+    },
+    "banner": {
+      "owner": "Your {type} plan expired on {date}. Pro features are paused until you renew it.",
+      "member": "{owner}'s Business plan expired on {date}. Pro features are paused until it's renewed.",
+      "memberNoName": "Your Business plan expired on {date}. Pro features are paused until it's renewed.",
+      "renew": "Renew plan",
+      "dismiss": "Dismiss"
     }
   },
   "onboarding": {

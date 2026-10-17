@@ -24,8 +24,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ACTIVE_SURVEY_LIMIT } from "@/lib/surveys/constants";
 import { cn } from "@/lib/utils";
+import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 
 export interface SurveyActionsTarget {
   id: string;
@@ -56,6 +56,7 @@ export function SurveyActionsMenu<T extends SurveyActionsTarget>({
 }: SurveyActionsMenuProps<T>) {
   const t = useTranslations("surveys");
   const tErrors = useTranslations("surveyForm.errors");
+  const activeLimit = useActiveLimitParams();
   const tCard = useTranslations("surveyCard");
   const tResults = useTranslations("results");
   const copy = useCopyToClipboard();
@@ -67,7 +68,7 @@ export function SurveyActionsMenu<T extends SurveyActionsTarget>({
       // The server is the authority on the limit: the hint below can be outdated
       const result = await setSurveyActive(survey.id, next);
       if (!result.success) {
-        toast.error(tErrors(result.error.code, { limit: ACTIVE_SURVEY_LIMIT }));
+        toast.error(tErrors(result.error.code, activeLimit));
         return;
       }
       toast.success(t(next ? "toasts.activated" : "toasts.deactivated"), { description: survey.name });
@@ -113,7 +114,7 @@ export function SurveyActionsMenu<T extends SurveyActionsTarget>({
         </DropdownMenuItem>
         {!survey.isActive && (
           <DropdownMenuLabel className="pt-0 pl-8 text-xs font-normal text-muted-foreground">
-            {t("actions.activeCount", { count: activeCount, limit: ACTIVE_SURVEY_LIMIT })}
+            {t("actions.activeCount", { count: activeCount, limit: activeLimit.limit })}
           </DropdownMenuLabel>
         )}
         <DropdownMenuSeparator />

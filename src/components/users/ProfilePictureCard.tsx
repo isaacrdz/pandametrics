@@ -8,6 +8,8 @@ import { UserAvatar } from "@/components/users/UserAvatar";
 import { UserRoleBadge } from "@/components/users/table/UserRowParts";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { PlanBadge } from "@/components/plans/PlanBadge";
+import type { PlanState } from "@/lib/plans/plan";
 import type { Role } from "@/types/survey";
 
 interface ProfilePictureCardProps {
@@ -15,13 +17,15 @@ interface ProfilePictureCardProps {
   email: string;
   // In the active organization; null without one
   role: Role | null;
+  plan: PlanState;
   image: string | null;
   initials: string;
 }
 
 // Coming soon: shows the avatar (or the initials) with a disabled "Change photo" button. Then
 // "Sign out". Rendered inside the profile <form>, but nothing here submits it: plain buttons.
-export function ProfilePictureCard({ name, email, role, image, initials }: ProfilePictureCardProps) {
+export function ProfilePictureCard({ name, email, role, plan, image, initials }: ProfilePictureCardProps) {
+  const tPlan = useTranslations("plan");
   const t = useTranslations("profile.picture");
   const tForm = useTranslations("form");
   const tMenu = useTranslations("userMenu");
@@ -55,7 +59,13 @@ export function ProfilePictureCard({ name, email, role, image, initials }: Profi
         <div className="flex min-w-0 flex-col gap-1.5 @4xl/profile:items-center">
           <p className="truncate text-lg font-semibold text-foreground">{name}</p>
           <p className="truncate text-sm text-muted-foreground">{email}</p>
-          {role && <UserRoleBadge role={role} />}
+          <div className="flex flex-wrap items-center gap-2 @4xl/profile:justify-center">
+            {role && <UserRoleBadge role={role} />}
+            <PlanBadge tier={plan.tier} />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {plan.planType ? tPlan("name", { type: tPlan(`types.${plan.planType}`) }) : tPlan("free.title")}
+          </p>
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { ChevronsUpDownIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon } from
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { signOutAction } from "@/actions/auth";
+import { PlanBadge } from "@/components/plans/PlanBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -22,14 +23,16 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { getInitials } from "@/lib/format";
+import type { PlanTier } from "@/lib/plans/plan";
 
 interface NavUserProps {
   name: string | null;
   email: string | null;
   image: string | null;
+  planTier: PlanTier;
 }
 
-export function NavUser({ name, email, image }: NavUserProps) {
+export function NavUser({ name, email, image, planTier }: NavUserProps) {
   const t = useTranslations("userMenu");
   const { isMobile } = useSidebar();
   const { resolvedTheme, setTheme } = useTheme();
@@ -52,7 +55,10 @@ export function NavUser({ name, email, image }: NavUserProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:sr-only">
-                <span className="truncate font-semibold text-foreground">{name}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate font-semibold text-foreground">{name}</span>
+                  <PlanBadge tier={planTier} className="px-1.5 text-[0.65rem]" />
+                </span>
                 <span className="truncate text-xs text-muted-foreground">{email}</span>
               </span>
               <ChevronsUpDownIcon aria-hidden className="ml-auto text-muted-foreground group-data-[collapsible=icon]:hidden" />

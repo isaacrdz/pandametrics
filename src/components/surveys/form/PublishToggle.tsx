@@ -5,12 +5,13 @@ import { Controller, useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { ACTIVE_SURVEY_LIMIT } from "@/lib/surveys/constants";
 import type { SurveyFormInput } from "@/lib/surveys/schema";
 import { cn } from "@/lib/utils";
+import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 
 export function PublishToggle() {
   const t = useTranslations("surveyForm");
+  const activeLimit = useActiveLimitParams();
   const { control } = useFormContext<SurveyFormInput>();
 
   return (
@@ -50,7 +51,7 @@ export function PublishToggle() {
             </p>
             {fieldState.error?.message === "ACTIVE_LIMIT" && (
               <p role="alert" className="mt-2 text-sm font-medium text-destructive">
-                {t("errors.ACTIVE_LIMIT", { limit: ACTIVE_SURVEY_LIMIT })}
+                {t("errors.ACTIVE_LIMIT", activeLimit)}
               </p>
             )}
           </div>

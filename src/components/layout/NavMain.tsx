@@ -48,7 +48,7 @@ const NAV_GROUPS: NavGroup[] = [
     key: "manage",
     items: [
       { key: "users", href: "/users", icon: UsersIcon, enabled: true },
-      { key: "settings", href: "/settings", icon: SlidersHorizontalIcon, enabled: false },
+      { key: "settings", href: "/settings", icon: SlidersHorizontalIcon, enabled: true },
     ],
   },
 ];

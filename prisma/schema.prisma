@@ -32,6 +32,23 @@ enum ResponseSource {
   QR
 }
 
+enum PlanType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE // paid, renews
+  CANCELED // auto-renew off: Pro until currentPeriodEnd
+  PAST_DUE // renewal failed, provider retrying: Pro until currentPeriodEnd
+  INCOMPLETE // first payment never completed: never Pro
+}
+
 model Organization {
   id                String   @id @default(cuid())
   name              String
@@ -68,6 +85,8 @@ model User {
   organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   ownedOrganization Organization? @relation("OwnedOrganization")
   memberships       Membership[]
+  subscription      Subscription?
+  seat              SubscriptionSeat?
   accounts          Account[]
   sessions          Session[]
   surveys           Survey[]
@@ -77,6 +96,46 @@ model User {
 
   @@index([organizationId])
   @@index([organizationId, isActive])
+}
+
+// A paid plan, one per paying user (the plan owner), updated in place on renewal. isPro is never
+// stored: a subscription is live while it is not INCOMPLETE and currentPeriodEnd has not passed
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  planType           PlanType
+  billingInterval    BillingInterval
+  status             SubscriptionStatus @default(ACTIVE)
+  // Last successful payment
+  paidAt             DateTime?
+  currentPeriodStart DateTime
+  // Expiration: Pro until this instant
+  currentPeriodEnd   DateTime
+  canceledAt         DateTime?
+
+  // Payment provider (none yet): optional, so a provider can be added without a reshape
+  provider               String?
+  providerCustomerId     String?
+  providerSubscriptionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  seats SubscriptionSeat[]
+}
+
+// A Business plan member: Pro through the owner's subscription. A user holds at most one seat
+model SubscriptionSeat {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  userId         String   @unique
+  createdAt      DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
 }
 
 // A user in an organization. The owner has one too (role OWNER, the organization's ownerId), so

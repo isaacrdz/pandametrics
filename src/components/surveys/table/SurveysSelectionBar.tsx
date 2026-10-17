@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { BAR_BUTTON_CLASS, SelectionBar } from "@/components/table/SelectionBar";
 import { Button } from "@/components/ui/button";
-import { ACTIVE_SURVEY_LIMIT } from "@/lib/surveys/constants";
+import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 
 type SuccessKey = "toasts.bulkActivated" | "toasts.bulkDeactivated" | "toasts.bulkDeleted";
 
@@ -30,6 +30,7 @@ interface SurveysSelectionBarProps {
 export function SurveysSelectionBar({ ids, onDone }: SurveysSelectionBarProps) {
   const t = useTranslations("surveys");
   const tErrors = useTranslations("surveyForm.errors");
+  const activeLimit = useActiveLimitParams();
   const [isPending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const count = ids.length;
@@ -39,7 +40,7 @@ export function SurveysSelectionBar({ ids, onDone }: SurveysSelectionBarProps) {
       const result = await action();
       setConfirmOpen(false);
       if (!result.success) {
-        toast.error(tErrors(result.error.code, { limit: ACTIVE_SURVEY_LIMIT }));
+        toast.error(tErrors(result.error.code, activeLimit));
         return;
       }
       toast.success(t(successKey, { count: result.data.count }));

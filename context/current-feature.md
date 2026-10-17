@@ -1,18 +1,32 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Subscriptions Phase 3 — Subscriptions and Plan Limits
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Schema and migration `subscriptions`: enums `PlanType`, `BillingInterval`, `SubscriptionStatus` (`ACTIVE` / `CANCELED` / `PAST_DUE` / `INCOMPLETE`); `Subscription` (`userId @unique`, plan type, interval, status, `paidAt`, `currentPeriodStart` / `currentPeriodEnd`, `canceledAt`, optional provider columns) and `SubscriptionSeat` (`userId @unique`, `subscriptionId`); relations `User.subscription` / `User.seat`; hand-added `CHECK ("currentPeriodEnd" > "currentPeriodStart")`; no backfill (everyone starts on Free)
+- `src/lib/plans/limits.ts`: `PLAN_LIMITS` (Free 1 active survey / 0 invites, Pro 5 / 3), `BUSINESS_SEATS = 3`, `limitsFor(tier)`; `src/lib/plans/plan.ts` (pure, shared): `PlanTier`, `PlanState` (`tier`, `planType`, `source` OWN / SEAT, `isPlanOwner`, `currentPeriodEnd`, `subscriptionId`, `ownerName`), `subscriptionIsLive` (not `INCOMPLETE` and `currentPeriodEnd > now`), `resolvePlan({ own, seat }, now)` with the seat winning over an own subscription
+- `src/server/plans.ts`: `loadPlanRows(userId)` cached with `user:<id>` and `subscription:<id>`; `organizationTier(tx, organizationId, now)` read inside transactions, never cached; tier computed per request outside the cache, so a period end flips Pro → Expired with no invalidation
+- Contexts: `AccountContext.plan`, `AppContext.organizationPlan` (the owner's plan) and `limits`; `AppShellProvider` gets `plan`, `organizationPlan`, `limits`
+- Active-survey limit per plan: `changeActiveCount` reads the owner's tier inside the transaction (1 Free / expired, 5 Pro), delta ≤ 0 always passes, `ACTIVE_LIMIT` carries `limit` and `tier`; `ACTIVE_SURVEY_LIMIT` removed; messages by plan in `PublishToggle`, `SurveyForm`, `SurveysSelectionBar`, `SurveyActionsMenu` toast and the "x of N active" label (`limits.activeSurveys`)
+- Plan badge (Pro / Free / Expired) in the sidebar user block and `ProfilePictureCard` (with the plan name)
+- `PlanExpiredBanner` at the top of `SidebarInset`: member variant (owner's Business plan expired, no action), plan owner variant with a muted "Renew plan" (coming soon); dismissible per session (`sessionStorage`, try / catch), `role="status"`, dates via `useFormatter`
+- Settings → Plan: `settings` enabled in `NavMain`, `/settings` → `/settings/plan` (account level, works without an organization): Free (limits + Individual / Business cards, "Upgrade — coming soon"), plan owner (plan, interval, last payment, renews / ends / expired date, Renew when expired or canceled), Business member (read-only); proxy matcher adds `/settings/:path*`
+- `scripts/data/set-plan.ts` (`--email`, `--type`, `--interval`, `--status`, `--expired`, `--remove`, development guard unless `--production`)
+- Seed: Jordan Business monthly active (ends in 20 days) with Ana and Sofía seated; Valeria Individual yearly expired 3 days ago with 2 active surveys in Panda Labs; Nora and Miguel Free; delete order includes seats and subscriptions
+- `plan` messages namespace in en / es; `yarn lint`, `tsc` and `yarn build` pass; `grep ACTIVE_SURVEY_LIMIT src` empty
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/subscriptions-phase-3-plans-spec.md`; research: `docs/subscriptions.md` (sections 2, 4, 7.2, 8.1, 8.3, 8.6)
+- No payment provider and no prices: plans only through `set-plan.ts` and the seed; Upgrade / Renew stay "coming soon"
+- Seats are created only by the seed in this phase; plan invites, the members card and the renewal rules (`SEATS_IN_USE`, `IN_BUSINESS_PLAN`) come in phase 5
+- Expired plan blocks only activation above the Free limit in this phase (invites do not exist yet); surveys already active stay active and keep collecting responses
+- Survey service checks always read the database inside the transaction, never the cached context
+- Testing: Free 1 active (parallel activations → one wins), Pro 5, expired Valeria keeps 2 active but can't activate more, a period ending in 1 minute flips the banner and the limit with no cache flush, renewal unlocks Jordan, Ana and Sofía at once, badges and `/settings/plan` variants for Nora, Valeria, Jordan and Ana
+- Restart the dev server on :3000 after the migration (new Prisma client)
 
 ## History
 

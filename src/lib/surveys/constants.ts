@@ -27,8 +27,6 @@ export const RATING_COLOR = "#f59e0b";
 
 export const POLL_FALLBACK_COLORS = ["#7c4dff", "#00acc1", "#8d6e63", "#546e7a", "#ec407a"];
 
-export const ACTIVE_SURVEY_LIMIT = 5;
-
 export const OPTION_LIMITS = {
   SATISFACTION: { min: 1, max: 5 },
   POLL: { min: 2, max: 5 },

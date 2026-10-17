@@ -203,6 +203,8 @@ export interface SurveySeed {
   category: SurveyCategory;
   isActive: boolean;
   createdById: string;
+  // Acme when left out
+  organizationId?: string;
   createdDaysAgo: number;
   // Responses are spread between these days ago (newest, oldest)
   responseWindow: [number, number];
@@ -347,6 +349,32 @@ export const SURVEY_SEEDS: SurveySeed[] = [
       },
     ],
   },
+  // Panda Labs: Valeria's expired Individual plan leaves it on the Free limit (1 active) with these 2
+  // still active, so the "keep what is active, activate no more" rule can be tried
+  {
+    code: "LABS01",
+    name: "Workshop feedback",
+    description: "How did today's workshop go?",
+    category: "RATING",
+    isActive: true,
+    createdById: VALERIA_ID,
+    organizationId: PANDA_LABS_ID,
+    createdDaysAgo: 35,
+    responseWindow: [0, 30],
+    questions: [{ text: "¿Cómo calificarías el taller?", options: rating([1, 2, 5, 9, 13]) }],
+  },
+  {
+    code: "LABS02",
+    name: "Lab visit",
+    description: "First impressions of the lab.",
+    category: "SATISFACTION",
+    isActive: true,
+    createdById: VALERIA_ID,
+    organizationId: PANDA_LABS_ID,
+    createdDaysAgo: 20,
+    responseWindow: [0, 15],
+    questions: [{ text: "¿Cómo te sentiste en tu visita?", options: reaction([0, 1, 3, 6, 4]) }],
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -371,7 +399,7 @@ export function buildSurvey(seed: SurveySeed, surveyNumber: number, now: Date): 
 
   return {
     id: objectId(ID_KIND.survey, surveyNumber),
-    organizationId: ACME_ID,
+    organizationId: seed.organizationId ?? ACME_ID,
     createdById: seed.createdById,
     code: seed.code,
     name: seed.name,

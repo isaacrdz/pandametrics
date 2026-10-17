@@ -8,7 +8,7 @@ import { surveysTag, surveyTag } from "@/lib/surveys/list";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
 import { surveyFormSchema, type SurveyFormInput, type SurveyFormValues } from "@/lib/surveys/schema";
 import * as surveyService from "@/lib/surveys/service";
-import { SurveyServiceError, type SurveyErrorCode } from "@/lib/surveys/service";
+import { SurveyServiceError, type ActiveLimitDetails, type SurveyErrorCode } from "@/lib/surveys/service";
 
 // Errors are codes, never text: the language lives in the browser, so the client translates them
 
@@ -21,7 +21,7 @@ export interface FieldErrorItem {
 
 export type ActionResult<T> =
   | { success: true; data: T }
-  | { success: false; error: { code: SurveyActionErrorCode; fieldErrors?: FieldErrorItem[] } };
+  | { success: false; error: { code: SurveyActionErrorCode; fieldErrors?: FieldErrorItem[]; activeLimit?: ActiveLimitDetails } };
 
 async function getScope(): Promise<surveyService.SurveyScope> {
   // From the session: the organization and user never come from the client
@@ -37,7 +37,9 @@ function afterChange(scope: surveyService.SurveyScope, ids: string[] = []) {
 }
 
 function toErrorResult(error: unknown): ActionResult<never> {
-  if (error instanceof SurveyServiceError) return { success: false, error: { code: error.code } };
+  if (error instanceof SurveyServiceError) {
+    return { success: false, error: error.details ? { code: error.code, activeLimit: error.details } : { code: error.code } };
+  }
   console.error(error);
   return { success: false, error: { code: "UNKNOWN" } };
 }

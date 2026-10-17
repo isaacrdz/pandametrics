@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 // request data, so it is read inside Suspense: a navigation shows the skeleton at once
 async function ProfileContent() {
   // Works without an organization too (a new account on its way to /welcome)
-  const { user, role } = await getAccountContext();
+  const { user, role, plan } = await getAccountContext();
   // Google-only accounts set a first password instead of changing one
   const mode = (await hasPassword(user.id)) ? "profile" : "profileSetPassword";
 
@@ -32,6 +32,7 @@ async function ProfileContent() {
           name={user.name ?? user.email ?? ""}
           email={user.email ?? ""}
           role={role}
+          plan={plan}
           image={user.image}
           initials={getInitials(user.name)}
         />
