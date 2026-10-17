@@ -32,6 +32,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      // Autofill and password managers send keydown events without a key
+      if (typeof event.key !== "string") return;
       if (event.key.toLowerCase() !== "k" || !(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return;
       if (event.isComposing) return;
       // Browsers use Ctrl K / ⌘K for their own search bar

@@ -25,12 +25,13 @@ interface SignInFormProps {
   // ?error= from Auth.js (a Google sign-in that failed) or a previous attempt
   initialError: string | null;
   // Coming from /register
-  registered: boolean;
+  // After registering, or after deleting the account (both end on this page)
+  notice: "registered" | "accountDeleted" | null;
 }
 
 type SignInInput = { email: string; password: string };
 
-export function SignInForm({ callbackUrl, initialError, registered }: SignInFormProps) {
+export function SignInForm({ callbackUrl, initialError, notice }: SignInFormProps) {
   const t = useTranslations("auth");
   const validationMessage = useValidationMessage();
   const [error, setError] = useState<AuthErrorCode | null>(() => toAuthErrorCode(initialError));
@@ -61,7 +62,7 @@ export function SignInForm({ callbackUrl, initialError, registered }: SignInForm
       {error ? (
         <AuthAlert tone="error">{t(`errors.${error}`)}</AuthAlert>
       ) : (
-        registered && <AuthAlert tone="success">{t("signIn.registered")}</AuthAlert>
+        notice && <AuthAlert tone="success">{t(`signIn.${notice}`)}</AuthAlert>
       )}
 
       <GoogleButton callbackUrl={callbackUrl} />

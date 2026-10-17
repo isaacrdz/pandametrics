@@ -3,6 +3,7 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { FormSection } from "@/components/form/FormSection";
+import { PhoneInput } from "@/components/form/PhoneInput";
 import { RequiredMark } from "@/components/form/RequiredMark";
 import { useValidationMessage } from "@/components/form/form-hooks";
 import { UserStatusPill } from "@/components/users/table/UserRowParts";
@@ -32,6 +33,7 @@ export function UserDetailsSection({ isActive, emailReadOnly = false }: UserDeta
       title={t("sections.details.title")}
       description={t("sections.details.description")}
     >
+      {/* One field per row, the usual order for contact details: name, email, phone */}
       <FieldGroup className="gap-6">
         <Controller
           name="name"
@@ -56,60 +58,54 @@ export function UserDetailsSection({ isActive, emailReadOnly = false }: UserDeta
           )}
         />
 
-        <div className="grid gap-6 @lg:grid-cols-2">
-          <Controller
-            name="email"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="user-email" className="font-semibold text-muted-foreground">
-                  {t("fields.email")} <RequiredMark />
-                </FieldLabel>
-                <Input
-                  {...field}
-                  id="user-email"
-                  type="email"
-                  autoComplete="email"
-                  readOnly={emailReadOnly}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.invalid ? "user-email-error" : emailReadOnly ? "user-email-hint" : undefined}
-                  className={cn(USER_INPUT_CLASS, emailReadOnly && "cursor-default bg-muted text-muted-foreground")}
-                />
-                {emailReadOnly && !fieldState.invalid ? (
-                  <FieldDescription id="user-email-hint">{t("fields.emailOwnerOnly")}</FieldDescription>
-                ) : (
-                  <FieldError id="user-email-error">
-                    {validationMessage(fieldState.error?.message, { max: USER_LIMITS.email })}
-                  </FieldError>
-                )}
-              </Field>
-            )}
-          />
+        <Controller
+          name="email"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="user-email" className="font-semibold text-muted-foreground">
+                {t("fields.email")} <RequiredMark />
+              </FieldLabel>
+              <Input
+                {...field}
+                id="user-email"
+                type="email"
+                autoComplete="email"
+                readOnly={emailReadOnly}
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? "user-email-error" : emailReadOnly ? "user-email-hint" : undefined}
+                className={cn(USER_INPUT_CLASS, emailReadOnly && "cursor-default bg-muted text-muted-foreground")}
+              />
+              {emailReadOnly && !fieldState.invalid ? (
+                <FieldDescription id="user-email-hint">{t("fields.emailOwnerOnly")}</FieldDescription>
+              ) : (
+                <FieldError id="user-email-error">
+                  {validationMessage(fieldState.error?.message, { max: USER_LIMITS.email })}
+                </FieldError>
+              )}
+            </Field>
+          )}
+        />
 
-          <Controller
-            name="phone"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="user-phone" className="font-semibold text-muted-foreground">
-                  {t("fields.phone")}
-                </FieldLabel>
-                <Input
-                  {...field}
-                  id="user-phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder={t("fields.phonePlaceholder")}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.invalid ? "user-phone-error" : undefined}
-                  className={USER_INPUT_CLASS}
-                />
-                <FieldError id="user-phone-error">{validationMessage(fieldState.error?.message)}</FieldError>
-              </Field>
-            )}
-          />
-        </div>
+        <Controller
+          name="phone"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="user-phone" className="font-semibold text-muted-foreground">
+                {t("fields.phone")}
+              </FieldLabel>
+              <PhoneInput
+                {...field}
+                id="user-phone"
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? "user-phone-error" : undefined}
+                controlClassName={USER_INPUT_CLASS}
+              />
+              <FieldError id="user-phone-error">{validationMessage(fieldState.error?.message)}</FieldError>
+            </Field>
+          )}
+        />
 
         {isActive !== undefined && (
           <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

@@ -130,8 +130,8 @@ export async function updateUser(id: string, values: UserFormInput): Promise<Use
 
 // Always the signed-in user (from the session), never an id sent by the client
 export async function updateProfile(values: UserFormInput): Promise<UserActionResult<{ values: UserFormInput }>> {
-  // The edit rules (an optional pair): the service asks for the current password only when the
-  // user has one, so a Google-only user can set a first password
+  // The edit rules (an optional pair): the service changes the password only when the account
+  // has one (with the current one); a Google sign-up has none and gets none here
   const validation = validate(values, "edit");
   if (!validation.ok) return validation.result;
   try {

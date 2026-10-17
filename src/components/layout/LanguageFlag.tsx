@@ -2,7 +2,7 @@ import type { AppLocale } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
 // Simplified flags drawn as SVG: emoji flags do not render on Windows
-function UnitedStatesFlag() {
+export function UnitedStatesFlag() {
   return (
     <svg viewBox="0 0 24 16" className="size-full">
       <rect width="24" height="16" fill="#ffffff" />
@@ -14,7 +14,7 @@ function UnitedStatesFlag() {
   );
 }
 
-function MexicoFlag() {
+export function MexicoFlag() {
   return (
     <svg viewBox="0 0 24 16" className="size-full">
       <rect width="8" height="16" fill="#006847" />
@@ -24,6 +24,9 @@ function MexicoFlag() {
     </svg>
   );
 }
+
+// The flag's frame, shared with the phone field's country picker
+export const FLAG_FRAME_CLASS = "inline-flex h-4 w-6 shrink-0 overflow-hidden rounded-[3px] ring-1 ring-black/10";
 
 const FLAGS: Record<AppLocale, () => React.JSX.Element> = {
   en: UnitedStatesFlag,
@@ -39,10 +42,7 @@ export function LanguageFlag({ locale, className }: LanguageFlagProps) {
   const Flag = FLAGS[locale];
 
   return (
-    <span
-      aria-hidden
-      className={cn("inline-flex h-4 w-6 shrink-0 overflow-hidden rounded-[3px] ring-1 ring-black/10", className)}
-    >
+    <span aria-hidden className={cn(FLAG_FRAME_CLASS, className)}>
       <Flag />
     </span>
   );

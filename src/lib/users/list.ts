@@ -137,7 +137,7 @@ export async function listUsers(organizationId: string, currentUserId: string, p
       email: user.email ?? "",
       phone: user.phone,
       image: user.image,
-      initials: getInitials(user.name),
+      initials: getInitials(user.name, user.email),
       role: user.role,
       isActive: user.isActive,
       isCurrentUser: user.id === currentUserId,

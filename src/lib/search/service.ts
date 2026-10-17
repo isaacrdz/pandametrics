@@ -121,7 +121,7 @@ export async function searchOrganization(organizationId: string, currentUserId: 
         name: person.name ?? person.email ?? "",
         email: person.email ?? "",
         image: person.image,
-        initials: getInitials(person.name),
+        initials: getInitials(person.name, person.email),
         role: person.role,
         isActive: person.isActive,
         isCurrentUser: person.id === currentUserId,

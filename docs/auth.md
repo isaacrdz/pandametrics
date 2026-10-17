@@ -161,7 +161,7 @@ Keep **scrypt** (`verifyPassword` / `hashPassword` in `password.ts`) and drop bc
 They have `passwordHash = null`:
 
 - Credentials sign-in fails for them, as it should.
-- In `/profile`, "change password" becomes **"Set a password"** (no current one) when the user has none. This needs a `hasPassword` flag in the profile data, never the hash.
+- In `/profile`, the "Change password" card only shows for accounts that have one (signed up with email and password); Google sign-ups see no password card and the server never sets one for them (superseded the earlier "Set a password" variant). This needs a `hasPassword` flag in the profile data, never the hash.
 
 ### 4.5 Deactivated or deleted users with a live session
 
@@ -286,7 +286,7 @@ export async function getAppContext(): Promise<AppContext> {
 3. **Custom UI** (`auth-phase-3-spec.md`):
    - `/sign-in` (email / password + "Continue with Google", error messages, `callbackUrl`) and `/register` (with organization name);
    - `LANDING_LINKS`;
-   - "Set a password" for Google-only users;
+   - "Set a password" for Google-only users (later removed: Google sign-ups get no password card);
    - "Invite user" coming soon, with the create flow removed;
    - en / es copy, responsive and dark mode checks.
 

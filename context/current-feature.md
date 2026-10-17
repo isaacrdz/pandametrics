@@ -1,18 +1,36 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Avatar Logic
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Every avatar shows the user's Google photo (`User.image`, set from OAuth) when there is one, and initials otherwise
+- Initials come from the name when there is one, otherwise from the email's local part (`ana.lopez@…` → `AL`, `nora@…` → `N`); `?` only when both are missing
+- `getInitials` handles extra whitespace, accented letters (`Ángel` → `Á`), surrogate pairs and emoji (first grapheme, never half a character), lowercase names, and names with one word
+- One shared avatar component everywhere: `NavUser` and `AccountMenu` (which build `Avatar` / `AvatarFallback` by hand today) move to `UserAvatar`, so the `referrerPolicy="no-referrer"` image, the fallback while loading / on error and the styling are the same in the sidebar, onboarding menu, profile card, users table and list, plan members card and command palette
+- Callers pass the email where they have it (users list, search people, plan members, profile, sidebar, account menu) so accounts without a name still get letters
+- Unit tests for `getInitials` (name, email fallback, edge cases above)
 
 ## Notes
 
-<!-- Any extra notes -->
+- Already in place: Google photo synced on every Google sign-in (`syncGooglePhoto` only replaces an empty or earlier `googleusercontent.com` photo); `UserAvatar` in `src/components/users/UserAvatar.tsx` (decorative, `aria-hidden`, Radix keeps the fallback until the image loads); `getInitials(name)` in `src/lib/format.ts` (first letters of the first two words, `?` without a name)
+- Current callers of `getInitials`: `profile/page.tsx`, `PlanMembersCard`, `NavUser`, `AccountMenu`, `lib/search/service.ts`, `lib/users/list.ts`
+- Credentials sign-ups have a name from the register form; accounts created in other ways (seed, Google without a name) may only have an email
+- Keep the public columns rule: no new data beyond what each list already selects (email is already public there)
+- No visual redesign: same sizes and colors (`bg-accent` / `text-accent-foreground`)
+- Added on request: the profile's "Change password" card only for accounts with a password (email / password sign-up); Google sign-ups get `profileNoPassword` (no card) instead of "Set a password", and `updateUser` ignores a password sent for an account without one. `PasswordSection` has no variants; `userForm.sections.password.set` and `userForm.fields.password` removed; `docs/auth.md` updated
+- Added on request: "Delete account" card at the bottom of `/profile` (`DeleteAccountSection` through a `UserForm` `footer` slot) with a typed confirmation dialog. Decisions: an owner can delete only while nobody else is in their organization (`ORGANIZATION_HAS_MEMBERS`, card explains and disables the button), and the organization, its surveys and responses go with the account; the account is scrubbed and the email freed. `src/lib/users/delete-account.ts` (`deleteAccount` in one transaction: user → plan → organization locks, Restrict-order organization delete, leave other organizations with `LEFT` events and seats ended, sent invitations revoked / received declined, live plan `CANCELED`, Google links and sessions removed, personal columns nulled + `deletedAt`; `getAccountDeletionInfo` cached with `user:` / `org:<id>:users`), `deleteAccount` action in `src/actions/account.ts` (session user only, expires tags, clears `panda-org`, signs out to `/sign-in?deleted=1` with an "account deleted" notice). Shared `TypedConfirmDialog` in `src/components/form` (stops its submit bubbling into an outer form) now also used by `DeleteSurveyDialog`; word / label / cancel messages moved to `form.typedConfirm`. 7 unit tests; checked against the Neon developer branch with throwaway rows (blocked owner untouched, solo owner's organization with survey + response deleted, other organization's survey kept, invites, plan, Google link, email reusable, second delete `NOT_FOUND`; cleaned up)
+- Added on request: `ProfilePictureCard` shows the "Change photo" button and its "Coming soon" badge only for accounts with a password (`canChangePhoto` from `hasPassword`; Google sign-ups get `profile.picture.descriptionGoogle`), the active organization's name instead of the email (hidden without one), and no plan name line (the `PlanBadge` stays); name and organization grouped tightly (2px) with the badges 12px below, checked in Chrome at 1280 / 375
+- Fix: `CommandPaletteProvider`'s ⌘K listener called `event.key.toLowerCase()` on keydown events without a key (Chrome autofill, password managers), throwing "Cannot read properties of undefined (reading 'toLowerCase')"; it now ignores them (reproduced with a keyless keydown before, clean after, ⌘K still opens the palette)
+- Added on request: phone formatting for Mexico and the US. `src/lib/phone.ts` (pure, 17 tests): `formatNational` (MX `55 1234 5678` / `222 123 4567` by area code, US `(415) 555-0134`, partial while typing), `readPhoneInput` (pasted `+52` / `+1` / `52…` / `1…` numbers switch country and drop the code; leading 0 / 1 prefixes dropped; other `+` codes → Other, spaces kept), `parsePhone` (10 digits for MX, NANP rules for US, 7–15 digits with `+` otherwise → E.164; `invalidPhoneMx` / `invalidPhoneUs` / `invalidPhone`), `formatPhone` for display. `PhoneInput` in `src/components/form` (country picker with the language switcher's SVG flags, Mexico default, United States, Other; caret kept by digit count, backspace over separators deletes the digit; focus to the number after a pick; react-hook-form ref merged) replaces the phone `Input` in `UserDetailsSection`; the schema validates with `parsePhone`; `UserPhone` (users table and list) shows formatted numbers. Storage unchanged (E.164), so search by digits still works. `normalizePhone` and the phone digit limits removed; placeholders per country in `form.phone`. Checked in Chrome on `/profile` (typing, mid-number and separator backspace, pasting, `+52 1` typed key by key, keyboard and mouse picks, error message, 48px picker and box, no overflow at 1280 / 375) and `/users`
+- Added on request: shorter copy in the delete account card and dialog (en / es); checked at 1280 / 375
+- Added on request: `/profile` in one column with the picture card on top (the 4 / 8 grid and `@container/profile` removed, `max-w-5xl` like the user edit page); the card is its own container (`@container/picture`): avatar + details on the left and "Change photo" / "Sign out" on the right from 42rem, stacked below; `ProfileFormSkeleton` matches. Checked at 1440 / 768 / 375 without overflow
+- Added on request: the picture card restyled as the profile header: tinted cover band (`from-primary/20 via-accent to-primary/5`), larger avatar overlapping it with a `ring-card` cutout, the name as the card's `h2` ("Profile picture" title and `profile.picture.title` removed), organization and badges below, outlined "Change photo" / "Sign out" bottom right from `@xl`, one short note at the bottom (`profile.picture.description` shortened); skeleton matches. Checked at 1440 / 768 / 375 in light and 1440 in dark
+- Added on request: "Sign out" removed from the profile header card (still in the sidebar user menu); the card keeps only "Change photo" for password accounts
+- Added on request: `UserDetailsSection` with one field per row (name, email, phone) instead of email and phone side by side, which left the phone box ~150px; edit and profile skeletons follow (`SectionSkeleton` `columns={1}`). Checked at 1440 / 768 / 375
+- Tests (`/feature test`): `src/lib/users/service.test.ts` (own-profile password rules: change with the current one, `WRONG_PASSWORD` writes nothing, a Google sign-up never gets a password even when sent — fails against `main`, empty fields keep it), `src/lib/users/schema.test.ts` (phone in `userFormSchema`: E.164 output, empty → null, per-country message keys), `src/actions/account.test.ts` (session user only, every touched tag expired, `panda-org` cleared, sign-out to `/sign-in?deleted=1`; service codes and `UNKNOWN` returned without signing out). 124 tests
 
 ## History
 

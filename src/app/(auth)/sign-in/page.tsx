@@ -24,7 +24,7 @@ async function SignInContent({ searchParams }: Pick<PageProps<"/sign-in">, "sear
     <SignInForm
       callbackUrl={callbackUrl}
       initialError={typeof params.error === "string" ? params.error : null}
-      registered={params.registered === "1"}
+      notice={params.deleted === "1" ? "accountDeleted" : params.registered === "1" ? "registered" : null}
     />
   );
 }
