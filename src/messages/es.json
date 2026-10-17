@@ -876,5 +876,34 @@
       "VALIDATION": "Revisa los campos marcados.",
       "default": "Algo salió mal. Inténtalo de nuevo."
     }
+  },
+  "search": {
+    "trigger": "Buscar…",
+    "triggerLabel": "Buscar",
+    "shortcutMac": "⌘K",
+    "shortcutOther": "Ctrl K",
+    "placeholder": "Busca encuestas, personas, páginas…",
+    "title": "Buscar",
+    "description": "Encuentra encuestas y personas, ve a una página o ejecuta una acción. Usa las flechas para moverte y Enter para abrir.",
+    "groups": {
+      "recent": "Encuestas recientes",
+      "surveys": "Encuestas",
+      "people": "Personas",
+      "pages": "Ir a",
+      "actions": "Acciones"
+    },
+    "seeAll": "{count, plural, one {Ver # resultado} other {Ver los # resultados}}",
+    "currentPage": "Página actual",
+    "noResults": "No hay resultados para “{query}”",
+    "newSurveyNamed": "Nueva encuesta llamada “{query}”",
+    "unavailable": "La búsqueda no está disponible en este momento.",
+    "loading": "Buscando…",
+    "results": "{count, plural, =0 {Sin resultados} one {# resultado} other {# resultados}}",
+    "inactive": "Inactivo",
+    "actions": {
+      "switchTo": "Cambiar a {name}",
+      "openKiosk": "Abrir kiosco",
+      "language": "Idioma: {name}"
+    }
   }
 }

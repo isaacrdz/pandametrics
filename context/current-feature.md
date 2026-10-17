@@ -1,18 +1,36 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Global Search / Command Palette
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- ⌘K / Ctrl K toggles a command palette on every `(app)` page (also `/profile` and `/settings/plan` without an organization), with `preventDefault`; ignored while another modal is open; focus returns to the trigger
+- `SearchButton` in `AppTopBar` before the organization switcher: input look with a platform `<kbd>` hint (⌘K / Ctrl K, set after mount) from `@3xl`, icon button with tooltip below; hidden with the switchers on narrow form bars
+- `CommandPalette` (shadcn `command` / `CommandDialog`, `shouldFilter={false}`): empty query → Recent surveys (5), Go to, Actions; with a query → Surveys, People, Go to, Actions, empty groups hidden, "See all N results" to `/surveys?q=` / `/users?q=` when more than 5
+- Survey rows (color dot, highlighted name, code, category icon, Active / Draft) open `/surveys/[id]`; people rows (avatar, name + "You", email, role, Inactive) open the same destination as the `/users` row (`/users/[id]` for owner / admin, `/profile` for yourself, `/users?q=<email>` for members)
+- Go to: Dashboard, Surveys, Users, Invitations (pending count), My profile, Plan, with a "Current page" pill
+- Actions with their visibility rules: New survey, Invite user (`/users?invite=1` opens the dialog once), Switch to {organization}, Create organization, Dark / Light mode, English / Español, Open kiosk (new tab), Sign out
+- Nothing found: "No results for …" plus "New survey named …" → `/surveys/new?name=` prefilled
+- `searchWorkspace(query)` Server Action: Zod (trimmed, 1–100), `getSessionAppContext`, 60 calls / user / minute, plain data only; no organization → empty groups
+- `searchOrganization` service (`"use cache"`, `surveysTag` + `usersTag`, `cacheLife("minutes")`): two parallel `$queryRaw` with bound parameters reusing `f_unaccent` / `containsPattern` / `digitsPattern`; surveys ranked exact code → name prefix → contains → `updatedAt DESC`; people from the organization's memberships by name / email / phone digits, public columns only; `LIMIT 5` + `COUNT(*) OVER()`
+- Client: 200 ms debounce, latest response wins, loading row keeps previous results, error message leaves Go to / Actions working, polite live region with the count
+- `src/lib/search/match.ts` (`normalize`, `matchScore`: accent / case insensitive, label start > word start > anywhere, every word must match, en / es keywords) with Vitest unit tests
+- `search.*` messages in en / es; `yarn lint`, `yarn test` and `tsc` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/global-search-spec.md`
+- Decision: surveys and people are searched in Postgres (one debounced Server Action, cached with the existing organization tags so survey / user actions keep it fresh); pages and actions are filtered on the client. No pre-fetch on app load
+- No migration, no new top-level route; no typo tolerance (`pg_trgm` out of scope)
+- Scoped to the active organization from the session (`panda-org`), non-deleted surveys, that organization's memberships; never ids from the client
+- Small changes to existing pages: `/users?invite=1` opens the invite dialog, `/surveys/new?name=` prefills the name
+- Shadcn `command` component is not installed yet (`npx shadcn add command`, adds `cmdk`)
+- Out of scope: searching questions / responses, metrics page, row actions in the palette, recent searches history, cross-organization search
+- Verify as Jordan (Pro owner), Ana (member with two organizations), Nora (no organization); 375 / 768 / 1280, light / dark, en / es
+- Use Node 22 (`nvm use 22`): Prisma 7 needs it
+- Implementation notes: Invite user shows for owner / admin on Pro; a full organization gets the "Every place is taken…" toast on `/users?invite=1` instead of a silent landing. `digitsPattern` now skips queries with letters (fixes "store7" matching phones in the palette and on `/users`). Radix focuses the dialog trigger on close and the palette has none, so the provider remembers the focused element and `CommandDialog` forwards `onCloseAutoFocus`. Shadcn `command` + `input-group` added (`cmdk` 1.1.1). Switching organizations from the palette was not checked live (no seeded user with two memberships)
 
 ## History
 

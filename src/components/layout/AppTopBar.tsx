@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useAppShell } from "@/components/layout/AppShellProvider";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { OrganizationSwitcher } from "@/components/layout/OrganizationSwitcher";
+import { SearchButton } from "@/components/search/SearchButton";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +13,8 @@ interface AppTopBarProps {
   heading: ReactNode;
   // Right side, after the global switchers: the view's primary action
   actions?: ReactNode;
-  // Forms: on narrow bars (below 36rem) the switchers make room for the back button, the title
-  // and the save button (they stay on every other view)
+  // Forms: on narrow bars (below 36rem) the search button and the switchers make room for the back
+  // button, the title and the save button (they stay on every other view; ⌘K always works)
   hideSwitchersWhenNarrow?: boolean;
 }
 
@@ -30,6 +31,7 @@ export function AppTopBar({ heading, actions, hideSwitchersWhenNarrow = false }:
       <div className="flex min-w-0 flex-1 items-center">{heading}</div>
       <div className="flex shrink-0 items-center gap-2 @3xl:gap-3">
         <div className={cn("items-center gap-2 @3xl:gap-3", hideSwitchersWhenNarrow ? "hidden @xl:flex" : "flex")}>
+          <SearchButton />
           {currentOrganizationId && (
             <OrganizationSwitcher
               organizations={organizations}

@@ -876,5 +876,34 @@
       "VALIDATION": "Check the highlighted fields.",
       "default": "Something went wrong. Try again."
     }
+  },
+  "search": {
+    "trigger": "Search…",
+    "triggerLabel": "Search",
+    "shortcutMac": "⌘K",
+    "shortcutOther": "Ctrl K",
+    "placeholder": "Search surveys, people, pages…",
+    "title": "Search",
+    "description": "Find surveys and people, go to a page or run an action. Use the arrow keys to move and Enter to open.",
+    "groups": {
+      "recent": "Recent surveys",
+      "surveys": "Surveys",
+      "people": "People",
+      "pages": "Go to",
+      "actions": "Actions"
+    },
+    "seeAll": "{count, plural, one {See # result} other {See all # results}}",
+    "currentPage": "Current page",
+    "noResults": "No results for “{query}”",
+    "newSurveyNamed": "New survey named “{query}”",
+    "unavailable": "Search is unavailable right now.",
+    "loading": "Searching…",
+    "results": "{count, plural, =0 {No results} one {# result} other {# results}}",
+    "inactive": "Inactive",
+    "actions": {
+      "switchTo": "Switch to {name}",
+      "openKiosk": "Open kiosk",
+      "language": "Language: {name}"
+    }
   }
 }

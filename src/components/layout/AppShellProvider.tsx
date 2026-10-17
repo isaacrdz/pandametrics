@@ -3,7 +3,7 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { PLAN_LIMITS, type PlanLimits } from "@/lib/plans/limits";
 import type { PlanState } from "@/lib/plans/plan";
-import type { Organization } from "@/types/survey";
+import type { Organization, Role } from "@/types/survey";
 
 // Global data every page's top bar needs. The layout provides it, so pages render their own
 // AppTopBar without passing the session around.
@@ -13,8 +13,12 @@ export interface AppShellValue {
   organizations: Organization[];
   // null without an organization yet (/profile on the way to /welcome): no switcher
   currentOrganizationId: string | null;
+  // Role in the active organization, null without one (who may manage people, invite)
+  role: Role | null;
   // false: the switcher offers "Create organization"
   ownsOrganization: boolean;
+  // Invitations waiting for this user (the command palette's Invitations count)
+  pendingInvitations: number;
   // The user's own plan (badge, expired notice)
   plan: PlanState;
   // The active organization owner's plan and the limits it gives (Free limits without one)

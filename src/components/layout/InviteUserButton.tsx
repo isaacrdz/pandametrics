@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Suspense, useState, useTransition } from "react";
 import Link from "next/link";
 import { Loader2Icon, SparklesIcon, UserPlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -18,6 +18,7 @@ import {
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useConsumeSearchParam } from "@/hooks/use-consume-search-param";
 import { MAX_MEMBERSHIPS } from "@/lib/plans/limits";
 import { cn } from "@/lib/utils";
 
@@ -102,6 +103,16 @@ export function InviteUserButton({ invite }: { invite: InviteState }) {
 
   return (
     <>
+      {/* /users?invite=1 (the command palette's "Invite user") opens the dialog, or explains why it can't */}
+      <Suspense fallback={null}>
+        <OpenFromUrl
+          onOpen={() => {
+            // Every place taken: say why instead of landing on the page with nothing happening
+            if (full) toast.info(tInvite("full", { limit }));
+            else setOpen(true);
+          }}
+        />
+      </Suspense>
       {full ? (
         // Every place is taken: still focusable (aria-disabled), so the tooltip explains the limit
         // to keyboard and screen reader users too
@@ -173,4 +184,10 @@ export function InviteUserButton({ invite }: { invite: InviteState }) {
       </Dialog>
     </>
   );
+}
+
+// Reads the URL, so it renders inside its own Suspense and nothing else waits for it
+function OpenFromUrl({ onOpen }: { onOpen: () => void }) {
+  useConsumeSearchParam("invite", onOpen);
+  return null;
 }

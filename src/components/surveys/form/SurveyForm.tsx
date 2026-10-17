@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Suspense, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, type FieldErrors, type FieldPath, type Resolver } from "react-hook-form";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { CategoryPicker } from "@/components/surveys/form/CategoryPicker";
 import { DeleteSurveyDialog } from "@/components/surveys/form/DeleteSurveyDialog";
 import { FORM_MODES, type SaveHelpers, type SurveyFormMode } from "@/components/surveys/form/form-modes";
+import { PrefillNameFromUrl } from "@/components/surveys/form/PrefillNameFromUrl";
 import { QuestionsSection } from "@/components/surveys/form/QuestionsSection";
 import { SharePanel } from "@/components/surveys/form/SharePanel";
 import { SurveyDetailsSection } from "@/components/surveys/form/SurveyDetailsSection";
@@ -94,6 +95,12 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
 
   return (
     <FormProvider {...form}>
+      {mode === "create" && (
+        // Reads the URL: in its own Suspense so the form stays in the static shell
+        <Suspense fallback={null}>
+          <PrefillNameFromUrl />
+        </Suspense>
+      )}
       {/* The top bar lives inside the form: its submit button is a real type="submit" */}
       <form onSubmit={form.handleSubmit(onValid, onInvalid)} noValidate className="flex flex-col">
         <AppTopBar

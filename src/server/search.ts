@@ -14,8 +14,11 @@ export function containsPattern(value: string): string {
   return `%${escapeLike(value.trim())}%`;
 }
 
-// Phone search compares digits only, so "+52 55 1234" finds "+525512345678"
+// Phone search compares digits only, so "+52 55 1234" finds "+525512345678". Only for queries that
+// look like a phone number: a word with digits ("store7") is not one, or its "7" would match every
+// phone with a 7 in it
 export function digitsPattern(value: string): string | null {
+  if (/\p{L}/u.test(value)) return null;
   const digits = value.replace(/\D/g, "");
   return digits ? `%${digits}%` : null;
 }
