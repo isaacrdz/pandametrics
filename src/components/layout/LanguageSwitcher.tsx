@@ -28,22 +28,28 @@ export function LanguageSwitcher({ fullWidth = false }: LanguageSwitcherProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          aria-label={t("languageLabel", { name: tLanguages(locale) })}
-          className={cn(
-            "h-11 gap-2 rounded-full bg-card px-3 text-[0.95rem] font-normal shadow-xs sm:px-4",
-            fullWidth && "w-full justify-start rounded-xl px-4",
-          )}
-        >
-          <LanguagesIcon aria-hidden className="text-muted-foreground" />
-          {fullWidth ? (
+        {fullWidth ? (
+          <Button
+            variant="outline"
+            aria-label={t("languageLabel", { name: tLanguages(locale) })}
+            className="h-11 w-full justify-start gap-2 rounded-xl bg-card px-4 text-[0.95rem] font-normal shadow-xs"
+          >
+            <LanguagesIcon aria-hidden className="text-muted-foreground" />
             <span className="font-medium">{tLanguages(locale)}</span>
-          ) : (
-            <span className="hidden font-medium uppercase sm:inline">{locale}</span>
-          )}
-          <ChevronDownIcon aria-hidden className={cn("text-muted-foreground", fullWidth ? "ml-auto" : "hidden sm:inline")} />
-        </Button>
+            <ChevronDownIcon aria-hidden className="ml-auto text-muted-foreground" />
+          </Button>
+        ) : (
+          // Compact: a 44px circle with the language code, the same height as the bar's other buttons
+          <Button
+            variant="outline"
+            aria-label={t("languageLabel", { name: tLanguages(locale) })}
+            className="size-11 rounded-full bg-card p-0 text-sm font-semibold shadow-xs"
+          >
+            <span aria-hidden lang={locale} className="uppercase">
+              {locale}
+            </span>
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className={cn("min-w-48 rounded-xl", fullWidth && "w-(--radix-dropdown-menu-trigger-width)")}>
         <DropdownMenuLabel>{t("language")}</DropdownMenuLabel>

@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
-import { ChevronsUpDownIcon, LogOutIcon, MailIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
+import { useState, useTransition } from "react";
+import { ChevronsUpDownIcon, Loader2Icon, LogOutIcon, MailIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 import { signOutAction } from "@/actions/auth";
+import { leaveOrganization, switchOrganization } from "@/actions/organizations";
+import { LeaveOrganizationDialog, OrganizationMenuItems, type OrganizationMenuData } from "@/components/layout/OrganizationMenu";
 import { PlanBadge } from "@/components/plans/PlanBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -22,6 +25,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { getInitials } from "@/lib/format";
+import { MAX_MEMBERSHIPS } from "@/lib/plans/limits";
 import type { PlanTier } from "@/lib/plans/plan";
 
 interface NavUserProps {
@@ -31,14 +35,40 @@ interface NavUserProps {
   planTier: PlanTier;
   // Pending invitations: a count on the menu item and a dot on the avatar
   invitationCount: number;
+  // The user's organizations: the active one names the card, the menu switches, creates and leaves
+  organizationMenu: OrganizationMenuData;
 }
 
-export function NavUser({ name, email, image, planTier, invitationCount }: NavUserProps) {
+export function NavUser({ name, email, image, planTier, invitationCount, organizationMenu }: NavUserProps) {
   const t = useTranslations("userMenu");
   const tInvitations = useTranslations("invitations");
+  const tOrganizations = useTranslations("organizations");
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [signingOut, startSignOut] = useTransition();
+  const [switching, startSwitch] = useTransition();
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [leaving, startLeave] = useTransition();
+  // The second line: the organization the user is working in, or their email before they have one
+  const organizationName = organizationMenu.organizations.find((organization) => organization.id === organizationMenu.currentId)?.name;
+  const subtitle = organizationName ?? email;
+
+  // Saved on the server (cookie); the page re-renders with the new organization's data
+  function selectOrganization(id: string) {
+    startSwitch(async () => {
+      const result = await switchOrganization(id);
+      if (!result.success) toast.error(tOrganizations("menu.switchError"));
+    });
+  }
+
+  // Leaving redirects to the next organization (or /welcome); only errors come back
+  function leave() {
+    startLeave(async () => {
+      const result = await leaveOrganization();
+      setLeaveOpen(false);
+      if (!result.success) toast.error(tOrganizations(`errors.${result.error.code}`, { max: MAX_MEMBERSHIPS }));
+    });
+  }
 
   return (
     <SidebarMenu>
@@ -47,6 +77,7 @@ export function NavUser({ name, email, image, planTier, invitationCount }: NavUs
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
+              aria-busy={switching}
               className="h-auto gap-3 rounded-2xl bg-muted/70 p-3 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:bg-transparent"
             >
               <span className="relative shrink-0">
@@ -62,13 +93,16 @@ export function NavUser({ name, email, image, planTier, invitationCount }: NavUs
               </span>
               {invitationCount > 0 && <span className="sr-only">{tInvitations("menuCount", { count: invitationCount })}</span>}
               <span className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:sr-only">
-                <span className="flex min-w-0 items-center gap-2">
-                  <span className="truncate font-semibold text-foreground">{name}</span>
-                  <PlanBadge tier={planTier} className="px-1.5 text-[0.65rem]" />
+                <span className="truncate font-semibold text-foreground">{name}</span>
+                <span title={subtitle ?? undefined} className="truncate text-xs text-muted-foreground">
+                  {subtitle}
                 </span>
-                <span className="truncate text-xs text-muted-foreground">{email}</span>
               </span>
-              <ChevronsUpDownIcon aria-hidden className="ml-auto text-muted-foreground group-data-[collapsible=icon]:hidden" />
+              {switching ? (
+                <Loader2Icon aria-hidden className="ml-auto animate-spin text-muted-foreground group-data-[collapsible=icon]:hidden" />
+              ) : (
+                <ChevronsUpDownIcon aria-hidden className="ml-auto text-muted-foreground group-data-[collapsible=icon]:hidden" />
+              )}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -76,7 +110,11 @@ export function NavUser({ name, email, image, planTier, invitationCount }: NavUs
             align="start"
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-xl"
           >
-            <DropdownMenuLabel>{t("account")}</DropdownMenuLabel>
+            {/* The plan sits next to the account heading instead of on the card */}
+            <DropdownMenuLabel className="flex items-center justify-between gap-2">
+              {t("account")}
+              <PlanBadge tier={planTier} className="px-1.5 text-[0.65rem]" />
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/profile">
@@ -99,6 +137,7 @@ export function NavUser({ name, email, image, planTier, invitationCount }: NavUs
               {isDark ? <SunIcon aria-hidden /> : <MoonIcon aria-hidden />}
               {isDark ? t("lightMode") : t("darkMode")}
             </DropdownMenuItem>
+            <OrganizationMenuItems data={organizationMenu} onSelect={selectOrganization} onLeave={() => setLeaveOpen(true)} />
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled={signingOut} onSelect={() => startSignOut(() => signOutAction())}>
               <LogOutIcon aria-hidden />
@@ -106,6 +145,13 @@ export function NavUser({ name, email, image, planTier, invitationCount }: NavUs
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <LeaveOrganizationDialog
+          data={organizationMenu}
+          open={leaveOpen}
+          onOpenChange={setLeaveOpen}
+          isPending={leaving}
+          onConfirm={leave}
+        />
       </SidebarMenuItem>
     </SidebarMenu>
   );

@@ -104,7 +104,7 @@ async function queryPage(organizationId: string, params: SurveyListQuery, page: 
     LIMIT ${params.pageSize} OFFSET ${(page - 1) * params.pageSize}`;
 }
 
-// Active and total counts of the organization's surveys (the top bar and the active-limit hints)
+// Active and total counts of the organization's surveys (the table's totals and the active-limit hints)
 async function countSurveys(organizationId: string) {
   const groups = await prisma.survey.groupBy({
     by: ["isActive"],
@@ -113,13 +113,6 @@ async function countSurveys(organizationId: string) {
   });
   const count = (isActive: boolean) => groups.find((group) => group.isActive === isActive)?._count._all ?? 0;
   return { total: count(true) + count(false), active: count(true) };
-}
-
-// Count of the organization's surveys, for the top bar (part of the static shell)
-export async function countListedSurveys(organizationId: string): Promise<number> {
-  "use cache";
-  cacheTag(surveysTag(organizationId));
-  return (await countSurveys(organizationId)).total;
 }
 
 export async function listSurveys(organizationId: string, params: SurveyListQuery): Promise<SurveyListResult> {

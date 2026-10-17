@@ -26,18 +26,8 @@
   },
   "topBar": {
     "newSurvey": "New survey",
-    "organizations": "Organizations",
-    "organizationLabel": "Organization: {name}",
     "language": "Language",
-    "languageLabel": "Language: {name}",
-    "organizationSwitchError": "Couldn't switch the organization. Try again.",
-    "createOrganization": "Create organization",
-    "leaveOrganization": "Leave {name}",
-    "leaveTitle": "Leave {name}?",
-    "leaveDescription": "You'll lose access to its surveys and metrics. Your surveys stay in the organization. To come back you'll need a new invitation.",
-    "leaveConfirm": "Leave",
-    "leavePending": "Leaving…",
-    "leavePlanNote": "You'll also leave {owner}'s Business plan and lose Pro."
+    "languageLabel": "Language: {name}"
   },
   "greeting": {
     "hello": "{period, select, morning {Good morning} afternoon {Good afternoon} evening {Good evening} other {Hello}}, {name}"
@@ -99,7 +89,7 @@
   },
   "surveys": {
     "title": "All surveys",
-    "subtitle": "Manage your surveys and keep track of every response.",
+    "subtitle": "Manage all your surveys",
     "caption": "All surveys",
     "toolbar": {
       "range": "Date range",
@@ -482,7 +472,13 @@
       "description": "Its responses are kept, but its link and QR code stop working.",
       "confirm": "Delete survey",
       "deleting": "Deleting…",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "word": "delete",
+      "typeLabel": "Type <strong>{word}</strong> to confirm"
+    },
+    "danger": {
+      "title": "Delete survey",
+      "description": "It stops collecting answers: its link and QR code stop working. The responses it already has are kept."
     }
   },
   "categories": {
@@ -842,6 +838,17 @@
     }
   },
   "organizations": {
+    "menu": {
+      "title": "Organizations",
+      "switchError": "Couldn't switch the organization. Try again.",
+      "create": "Create organization",
+      "leave": "Leave {name}",
+      "leaveTitle": "Leave {name}?",
+      "leaveDescription": "You'll lose access to its surveys and metrics. Your surveys stay in the organization. To come back you'll need a new invitation.",
+      "leaveConfirm": "Leave",
+      "leavePending": "Leaving…",
+      "leavePlanNote": "You'll also leave {owner}'s Business plan and lose Pro."
+    },
     "errors": {
       "OWNER_LIMIT": "You already own an organization. Each account can own only one.",
       "MEMBERSHIP_LIMIT": "You're already in {max} organizations, the most allowed. Leave one first.",

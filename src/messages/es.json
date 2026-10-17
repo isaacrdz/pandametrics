@@ -26,18 +26,8 @@
   },
   "topBar": {
     "newSurvey": "Nueva encuesta",
-    "organizations": "Organizaciones",
-    "organizationLabel": "Organización: {name}",
     "language": "Idioma",
-    "languageLabel": "Idioma: {name}",
-    "organizationSwitchError": "No se pudo cambiar de organización. Inténtalo de nuevo.",
-    "createOrganization": "Crear organización",
-    "leaveOrganization": "Salir de {name}",
-    "leaveTitle": "¿Salir de {name}?",
-    "leaveDescription": "Perderás el acceso a sus encuestas y métricas. Tus encuestas se quedan en la organización. Para volver necesitarás una nueva invitación.",
-    "leaveConfirm": "Salir",
-    "leavePending": "Saliendo…",
-    "leavePlanNote": "También saldrás del plan Business de {owner} y perderás Pro."
+    "languageLabel": "Idioma: {name}"
   },
   "greeting": {
     "hello": "{period, select, morning {Buenos días} afternoon {Buenas tardes} evening {Buenas noches} other {Hola}}, {name}"
@@ -99,7 +89,7 @@
   },
   "surveys": {
     "title": "Todas las encuestas",
-    "subtitle": "Administra tus encuestas y sigue cada respuesta.",
+    "subtitle": "Administra todas tus encuestas",
     "caption": "Todas las encuestas",
     "toolbar": {
       "range": "Rango de fechas",
@@ -482,7 +472,13 @@
       "description": "Sus respuestas se conservan, pero su enlace y su código QR dejan de funcionar.",
       "confirm": "Borrar encuesta",
       "deleting": "Borrando…",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "word": "borrar",
+      "typeLabel": "Escribe <strong>{word}</strong> para confirmar"
+    },
+    "danger": {
+      "title": "Eliminar encuesta",
+      "description": "Deja de recibir respuestas: su enlace y su código QR dejan de funcionar. Las respuestas que ya tiene se conservan."
     }
   },
   "categories": {
@@ -842,6 +838,17 @@
     }
   },
   "organizations": {
+    "menu": {
+      "title": "Organizaciones",
+      "switchError": "No se pudo cambiar de organización. Inténtalo de nuevo.",
+      "create": "Crear organización",
+      "leave": "Salir de {name}",
+      "leaveTitle": "¿Salir de {name}?",
+      "leaveDescription": "Perderás el acceso a sus encuestas y métricas. Tus encuestas se quedan en la organización. Para volver necesitarás una nueva invitación.",
+      "leaveConfirm": "Salir",
+      "leavePending": "Saliendo…",
+      "leavePlanNote": "También saldrás del plan Business de {owner} y perderás Pro."
+    },
     "errors": {
       "OWNER_LIMIT": "Ya tienes una organización propia. Cada cuenta puede tener solo una.",
       "MEMBERSHIP_LIMIT": "Ya estás en {max} organizaciones, el máximo permitido. Sal de una primero.",

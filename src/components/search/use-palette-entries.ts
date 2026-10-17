@@ -79,6 +79,7 @@ export function usePaletteEntries(query: string): { pages: PaletteEntry[]; actio
   const tNav = useTranslations("nav");
   const tUserMenu = useTranslations("userMenu");
   const tTopBar = useTranslations("topBar");
+  const tOrganizations = useTranslations("organizations.menu");
   const tUsers = useTranslations("users");
   const tInvitations = useTranslations("invitations");
   const tPlan = useTranslations("plan");
@@ -144,14 +145,14 @@ export function usePaletteEntries(query: string): { pages: PaletteEntry[]; actio
       run: () =>
         startTransition(async () => {
           const result = await switchOrganization(organization.id);
-          if (!result.success) toast.error(tTopBar("organizationSwitchError"));
+          if (!result.success) toast.error(tOrganizations("switchError"));
         }),
     });
   }
   if (!ownsOrganization) {
     actions.push({
       id: "action:create-organization",
-      label: tTopBar("createOrganization"),
+      label: tOrganizations("create"),
       keywords: ["organization", "organización", "crear", "new"],
       icon: BuildingIcon,
       run: () => router.push(WELCOME_PATH),

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useTransition } from "react";
+import { Suspense, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, type FieldErrors, type FieldPath, type Resolver } from "react-hook-form";
@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { CategoryPicker } from "@/components/surveys/form/CategoryPicker";
 import { DeleteSurveyDialog } from "@/components/surveys/form/DeleteSurveyDialog";
+import { DeleteSurveySection } from "@/components/surveys/form/DeleteSurveySection";
 import { FORM_MODES, type SaveHelpers, type SurveyFormMode } from "@/components/surveys/form/form-modes";
 import { PrefillNameFromUrl } from "@/components/surveys/form/PrefillNameFromUrl";
 import { QuestionsSection } from "@/components/surveys/form/QuestionsSection";
@@ -16,7 +17,7 @@ import { SurveyDetailsSection } from "@/components/surveys/form/SurveyDetailsSec
 import { useActiveLimitParams } from "@/components/layout/AppShellProvider";
 import { AppTopBar } from "@/components/layout/AppTopBar";
 import { PageHeading } from "@/components/layout/PageHeading";
-import { DeleteIconButton, SubmitButton } from "@/components/layout/top-bar-actions";
+import { SubmitButton } from "@/components/layout/top-bar-actions";
 import { UnsavedChangesDialog } from "@/components/form/UnsavedChangesDialog";
 import { useBeforeUnloadWarning } from "@/components/form/form-hooks";
 import { WELCOME_PATH } from "@/lib/auth/paths";
@@ -41,6 +42,7 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const form = useForm<SurveyFormInput, unknown, SurveyFormValues>({
     resolver,
@@ -109,16 +111,7 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
             <PageHeading back={{ onClick: goBack }} title={t(config.titleKey)} subtitle={t(config.subtitleKey)} />
           }
           actions={
-            <>
-              {config.showDelete && meta && (
-                <DeleteIconButton label={t("actions.deleteSurvey")} onClick={() => setDeleteOpen(true)} />
-              )}
-              <SubmitButton
-                label={t(`actions.${config.submitKey}`)}
-                pendingLabel={tForm("saving")}
-                pending={isPending}
-              />
-            </>
+            <SubmitButton label={t(`actions.${config.submitKey}`)} pendingLabel={tForm("saving")} pending={isPending} />
           }
         />
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-8 md:py-10">
@@ -128,6 +121,7 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
           {config.showShare && meta && (
             <SharePanel code={meta.code} publicUrl={meta.publicUrl} createdAt={meta.createdAt} createdBy={meta.createdBy} />
           )}
+          {config.showDelete && meta && <DeleteSurveySection onDelete={() => setDeleteOpen(true)} buttonRef={deleteButtonRef} />}
         </div>
       </form>
       <UnsavedChangesDialog
@@ -141,6 +135,7 @@ export function SurveyForm({ mode, defaultValues, meta }: SurveyFormProps) {
           surveyName={form.getValues("name")}
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
+          returnFocusRef={deleteButtonRef}
         />
       )}
     </FormProvider>

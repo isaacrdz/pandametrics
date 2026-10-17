@@ -5,13 +5,13 @@ import { AppTopBar } from "@/components/layout/AppTopBar";
 import { NewSurveyButton } from "@/components/layout/NewSurveyButton";
 import { PageHeading } from "@/components/layout/PageHeading";
 
-// count is left out while it loads (the page streams it in), so the bar shows right away
-export function SurveysTopBar({ count }: { count?: number }) {
+// Title and subtitle only (no count), so the bar is part of the static shell
+export function SurveysTopBar() {
   const t = useTranslations("surveys");
 
   return (
     <AppTopBar
-      heading={<PageHeading title={t("title")} count={count} subtitle={t("subtitle")} />}
+      heading={<PageHeading title={t("title")} subtitle={t("subtitle")} />}
       actions={<NewSurveyButton />}
     />
   );

@@ -1,18 +1,27 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Organization in the Sidebar User Card
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `OrganizationSwitcher` removed from `AppTopBar` on every page (dashboard, lists, forms, settings, invitations); the top bar keeps the search button, the language switcher and the page's primary action
+- The sidebar user card (`NavUser`) shows the active organization's name where the email was (truncated, with the full name in a `title`); without an organization (`/profile`, `/settings/plan` on the way to `/welcome`) it falls back to the email
+- Nothing the switcher did is lost: switching organization, "Create organization" (owns none) and "Leave {organization}" (members only, with the existing confirmation and the Business plan note) move into the sidebar user menu as an "Organizations" section (current one checked, pending spinner, error toast)
+- The collapsed rail keeps the avatar only; the organization name stays available to screen readers (sr-only like the name today)
+- Organization switches, renames and leaving update the card right away (the name comes from the same session context the switcher used)
+- Messages reuse the existing `topBar` organization keys where possible (move them if they no longer belong to the top bar); `yarn lint`, `yarn test`, `tsc` and `yarn build` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Inline request (no spec file): "remove organization component from topbar and replace email with organization name"
+- Assumption: "email" is the second line of the sidebar user card (`NavUser`: name + plan badge, then email); the email stays visible in My profile and in the user menu's label if useful
+- Assumption: the switcher's actions move to the sidebar user menu so multi-organization users can still switch, create and leave; the command palette's "Switch to {organization}" and "Create organization" actions keep working unchanged
+- Narrow form bars hid the switchers below 36rem (`hideSwitchersWhenNarrow`); check that the search button and language switcher still follow that rule once the organization switcher is gone
+- Verify as Jordan (owner, one organization), Marco (member: Leave available), Nora (no organization: email fallback, Create organization), and a user with two memberships if one can be set up without touching real accounts; 375 / 768 / 1280, sidebar open and collapsed, light / dark, en / es
+- Use Node 22 (`nvm use 22`)
+- Implementation notes: `OrganizationSwitcher` deleted; `OrganizationMenuItems` / `LeaveOrganizationDialog` in `src/components/layout/OrganizationMenu.tsx`, data computed in `SidebarUser` from `getAccountContext` (`organizationMenu` prop on `NavUser`); spinner replaces the chevron while switching (`aria-busy`). Messages moved from `topBar.*` to `organizations.menu.*` (`topBar.organizationLabel` dropped; the palette uses the new keys). Switching checked with a temporary Panda Labs membership for Marco, removed afterwards
 
 ## History
 

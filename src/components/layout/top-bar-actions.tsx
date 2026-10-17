@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, Loader2Icon, Trash2Icon } from "lucide-react";
+import { CheckIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -39,31 +39,6 @@ export function SubmitButton({ label, pendingLabel, pending, disabled = false }:
       {/* Rendered in a portal, outside the bar's container, so it cannot follow the label's
           container query: it shows at every width (redundant, but harmless, when the label shows) */}
       <TooltipContent>{text}</TooltipContent>
-    </Tooltip>
-  );
-}
-
-interface DeleteIconButtonProps {
-  label: string;
-  onClick: () => void;
-}
-
-export function DeleteIconButton({ label, onClick }: DeleteIconButtonProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label={label}
-          onClick={onClick}
-          className="size-11 shrink-0 rounded-full border-destructive/40 bg-card text-destructive hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Trash2Icon aria-hidden className="size-5" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   );
 }

@@ -4,7 +4,7 @@ import { SurveysTableSection } from "@/components/surveys/table/SurveysTableSect
 import { SurveysTableSkeleton } from "@/components/surveys/table/SurveysTableSkeleton";
 import { SurveysTopBar } from "@/components/surveys/table/SurveysTopBar";
 import { getAppContext } from "@/server/app-context";
-import { countListedSurveys, listSurveys } from "@/lib/surveys/list";
+import { listSurveys } from "@/lib/surveys/list";
 import { parseSurveyListParams } from "@/lib/surveys/list-params";
 
 export const metadata: Metadata = {
@@ -20,20 +20,11 @@ async function SurveysContent({ searchParams }: Pick<PageProps<"/surveys">, "sea
   return <SurveysTableSection data={data} params={params} />;
 }
 
-// The count needs the signed-in user's organization (the session, request data). Inside its own
-// Suspense, so a navigation shows the bar at once and the number streams in; cached and tagged, so
-// it refreshes after survey actions
-async function SurveysTopBarWithCount() {
-  const { organization } = await getAppContext();
-  return <SurveysTopBar count={await countListedSurveys(organization.id)} />;
-}
-
 export default function SurveysPage({ searchParams }: PageProps<"/surveys">) {
   return (
     <>
-      <Suspense fallback={<SurveysTopBar />}>
-        <SurveysTopBarWithCount />
-      </Suspense>
+      {/* Outside Suspense: no request data, so it is part of the static shell */}
+      <SurveysTopBar />
       <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8 md:py-10">
         <Suspense fallback={<SurveysTableSkeleton />}>
           <SurveysContent searchParams={searchParams} />
