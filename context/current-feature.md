@@ -1,18 +1,32 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Hero Survey Preview
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- The hero's right side on `/` (`HeroVisual`: panda illustration on the brand pink + "Responses this month" stat card) is replaced by a survey component filled with fake data, so visitors see what the product shows
+- The preview looks like the real dashboard survey card (`SurveyCard` design: survey name, code · Active status, "Question X of Y · N responses", `OptionList` rows with faces, count and percentage, best option first) and reuses `SurveyResults` / `OptionList` / `ReactionFace` instead of copying them; no "…" actions menu (it needs Server Actions and an organization)
+- Fake data lives in one constant next to the component (e.g. a Satisfaction survey "Store experience" with 2 questions and realistic counts); no database or session read, the landing stays static
+- Question / option labels translated in en / es (option labels come from the existing reaction label messages; survey and question text from new `landing.hero.preview.*` messages)
+- Accessible: the preview is marked as an example (e.g. a visible "Example" badge plus an accessible label), the question pager stays keyboard usable or the preview is static and hidden from tab order — no focusable controls that do nothing
+- Layout: same column and max width as today (capped while stacked below `lg`), keeps the soft brand shadow / ring frame; no overflow at 375 / 768 / 1280, light and dark, en / es
+- Cleanup: `statLabel` / `statDescription` messages and anything only the old visual used are removed; `panda-hero.webp` is kept only if something else still uses it (today only `HeroVisual` and `scripts/brand-assets.mjs` reference it)
+- Added on request: no frames and no pink glow around the preview — just the card (white frame, `bg-brand/15` panel and the brand-tinted shadow removed); the width cap stays
+- Added on request: the soft pink radial glow behind the hero (top left of the `(marketing)` layout) removed; the landing background is the plain page color
+- Added on request: no glow on the hero buttons (the primary-colored shadow under "Start for free" removed; "Learn more" had none)
+- Added on request: a share bar under each option label, filled in the option's color (face color for Satisfaction, star yellow for Rating, the option color for Poll), in the landing preview and the dashboard cards (`OptionList`); `aria-hidden`, the percentage carries the value
+- Review fixes: example code `PANDA1` (reserved token, never generated; `STORE7` was a seeded survey), `DashboardSkeleton` rows with a share bar placeholder, `docs/landing.md` / `docs/survey-card.md` updated
+- Added on request (same branch): live dashboard without reload. `GET /api/v1/dashboard/version` (session + organization, 120 calls / user / minute, `no-store`) returns `getDashboardVersion` (`src/server/dashboard-version.ts`: newest `SurveyResponse.createdAt` + newest `Survey.updatedAt` for the organization, both indexed); `useLiveDashboard` in `DashboardSection` polls it every 5 s while the tab is visible (catches up on return, aborts overlapping requests) and calls `router.refresh()` in a transition when it changes, so cards update in place; kiosk answers and survey actions already expire the cached dashboard data (`updateTag`)
 
 ## Notes
 
-<!-- Any extra notes -->
+- Inline request, no spec ("update right image in home route for a survey component with fake data in hero section"). Current component: `src/components/landing/HeroVisual.tsx`, rendered by `Hero.tsx` in the second grid column
+- Interpreted as the dashboard results card; if the kiosk answering screen (faces to tap, as in `/s`) was meant instead, say so before `start`
+- `SurveyResults` takes `{ category, metrics }` (`SurveyMetrics` with `questions[].options[]` as `OptionMetrics`); build the fake metrics in that shape so the shared components render unchanged
+- The hero image was the LCP element (`fetchPriority="high"`); the preview is HTML, so the page gets lighter
+- Check: `/` at 375 / 768 / 1280, light / dark, en / es; pager keys if kept; `yarn build` still shows `/` partially prerendered
 
 ## History
 

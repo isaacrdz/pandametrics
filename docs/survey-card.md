@@ -78,6 +78,8 @@ Removed: the nested panel, the description, "Resumen de respuestas", the questio
   - Implement as `sortOptionsForList(category, options)` in `charts.ts` next to `sortOptions`.
 - Zero answers: rows still show `0` and `0%` so the options are visible. No questions: the existing `results.noQuestions` text.
 
+> Update (2026-10-17): `OptionList` rows now carry a thin share bar under the label, filled in the option's color (no `MetricBar` / `Progress`; a plain `aria-hidden` span, the percentage carries the value).
+
 One shared component replaces the three charts on the card: `OptionList` (`src/components/dashboard/OptionList.tsx`) with a `category` prop choosing the icon column. The three chart files and `MetricBar` become unused on the dashboard: check with `grep` and delete them if nothing else imports them (today only `SurveyResults` does).
 
 ### 2.3 Pager

@@ -14,7 +14,7 @@ Two visual changes:
 | `src/app/icon.png` (favicon) | 512×512, panda head on the flat pink background | crop of `design/logo-source.png` (`scripts/brand-assets.mjs`) |
 | `src/app/apple-icon.png` | 180×180, same crop | same |
 | `src/assets/brand/logo-icon.webp` | 128×128, same crop; used by `Logo` | same |
-| `src/assets/brand/panda-hero.webp` | landing hero illustration | crop of `logo-source.png` |
+| ~~`src/assets/brand/panda-hero.webp`~~ | removed 2026-10-17 (hero shows a survey preview) | — |
 | `opengraph-image.png`, `twitter-image.png` | 1200×630, full logo on pink | `logo-source.png` |
 
 `Logo` (`src/components/brand/Logo.tsx`), used by the sidebar (`AppSidebar`) and the landing nav (`LandingNav`): a rounded tile (`size-10`, `bg-brand` pink, pink shadow) with the webp inside, and the "Panda Metrics" wordmark next to it. The sidebar keeps the tile at `size-10` in the collapsed rail; the wordmark becomes `sr-only` when collapsed.

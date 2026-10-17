@@ -28,7 +28,6 @@ const SQUARE_VIEW_BOX = "-35 40 1968 1968";
 const APPLE_ICON = { size: 180, padding: 22, background: "#db8396" };
 
 // Panda with hood and paws, cut just above the "PANDA" letters (hero illustration)
-const HERO = { left: 1706, top: 92, width: 2092, height: 1813 };
 
 const OG_ALT = "Panda Metrics logo: a panda in a hoodie on a pink background";
 
@@ -63,7 +62,6 @@ const appleInfo = await sharp({ create: { width: size, height: size, channels: 3
 log("src/app/apple-icon.png", appleInfo.width, appleInfo.height, appleInfo.size);
 
 const ASSETS = [
-  { file: "src/assets/brand/panda-hero.webp", build: (img) => img.extract(HERO).resize({ width: 1200 }).webp({ quality: 82 }) },
   { file: "src/app/opengraph-image.png", build: (img) => img.resize(1200, 630, { fit: "cover" }).png({ compressionLevel: 9, palette: true }) },
   { file: "src/app/twitter-image.png", build: (img) => img.resize(1200, 630, { fit: "cover" }).png({ compressionLevel: 9, palette: true }) },
 ];

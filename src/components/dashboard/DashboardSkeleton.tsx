@@ -18,7 +18,11 @@ function SurveyCardSkeleton() {
         {Array.from({ length: 5 }, (_, i) => (
           <div key={i} className="flex items-center gap-3 py-2">
             <Skeleton className="size-7 rounded-full" />
-            <Skeleton className="h-4 flex-1" />
+            {/* Label and its share bar, as in OptionList */}
+            <div className="flex flex-1 flex-col gap-1.5">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-1.5 w-full rounded-full" />
+            </div>
             <Skeleton className="h-4 w-10" />
           </div>
         ))}

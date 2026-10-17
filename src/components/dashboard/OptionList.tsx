@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useFormatter } from "next-intl";
 import { sortOptionsForList, useOptionLabel } from "@/components/dashboard/charts";
 import { ReactionFace } from "@/components/surveys/ReactionFace";
@@ -48,13 +49,17 @@ export function OptionList({ category, question }: OptionListProps) {
             )}
           >
             <OptionIcon category={category} option={option} />
-            <span
-              className={cn(
-                "min-w-0 text-foreground",
-                category === "POLL" ? "line-clamp-2" : "truncate",
-              )}
-            >
-              {showLabel && getOptionLabel(option)}
+            <span className="flex min-w-0 flex-col gap-1.5">
+              <span className={cn("min-w-0 text-foreground", category === "POLL" ? "line-clamp-2" : "truncate")}>
+                {showLabel && getOptionLabel(option)}
+              </span>
+              {/* Share bar in the option's color; the percentage next to it says the same */}
+              <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-muted">
+                <span
+                  className="block h-full w-(--share) rounded-full bg-(--color)"
+                  style={{ "--share": `${option.share * 100}%`, "--color": option.color } as CSSProperties}
+                />
+              </span>
             </span>
             <span className="text-right font-semibold text-foreground tabular-nums">
               {format.number(option.count)}

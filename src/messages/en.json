@@ -542,8 +542,15 @@
       "secondaryCta": "Learn more",
       "noCard": "No credit card",
       "quickSetup": "Set up in minutes",
-      "statLabel": "Responses this month",
-      "statDescription": "Example: {count} responses this month, up {growth}"
+      "preview": {
+        "label": "Example survey results",
+        "badge": "Example",
+        "name": "Store experience",
+        "questions": {
+          "visit": "How was your visit today?",
+          "staff": "How was our staff's service?"
+        }
+      }
     },
     "features": {
       "eyebrow": "Everything you need",
