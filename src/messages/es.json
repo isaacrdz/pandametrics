@@ -36,7 +36,8 @@
     "leaveTitle": "¿Salir de {name}?",
     "leaveDescription": "Perderás el acceso a sus encuestas y métricas. Tus encuestas se quedan en la organización. Para volver necesitarás una nueva invitación.",
     "leaveConfirm": "Salir",
-    "leavePending": "Saliendo…"
+    "leavePending": "Saliendo…",
+    "leavePlanNote": "También saldrás del plan Business de {owner} y perderás Pro."
   },
   "greeting": {
     "hello": "{period, select, morning {Buenos días} afternoon {Buenas tardes} evening {Buenas noches} other {Hola}}, {name}"
@@ -233,7 +234,8 @@
       "title": "¿Quitar {count, plural, one {# usuario} other {# usuarios}} de esta organización?",
       "description": "Perderán el acceso a las encuestas y métricas de esta organización. Sus cuentas no se eliminan, y sus encuestas y respuestas se quedan aquí.",
       "confirm": "Quitar",
-      "pending": "Quitando…"
+      "pending": "Quitando…",
+      "seatNote": "Quienes están en el plan Business del titular también pierden su lugar."
     },
     "toasts": {
       "activated": "Usuario activado",
@@ -653,11 +655,14 @@
     },
     "owner": {
       "description": "Tú pagas este plan. La facturación se administrará aquí cuando los pagos estén disponibles.",
-      "expired": "Este plan venció. Las funciones Pro están pausadas hasta que lo renueves; no se borró nada."
+      "expired": "Este plan venció. Las funciones Pro están pausadas hasta que lo renueves; no se borró nada.",
+      "canceled": "Tu plan está cancelado y termina el {date}. Renuévalo para seguir usando las funciones Pro después de esa fecha."
     },
     "member": {
       "description": "Estás en el plan Business de {owner}. Solo su titular administra la facturación.",
-      "descriptionNoName": "Estás en un plan Business. Solo su titular administra la facturación."
+      "descriptionNoName": "Estás en un plan Business. Solo su titular administra la facturación.",
+      "ownPlan": "Para tener un plan propio, primero sal del plan Business de {owner}.",
+      "ownPlanNoName": "Para tener un plan propio, primero sal de este plan Business."
     },
     "details": {
       "interval": "Facturación",
@@ -690,7 +695,44 @@
       "member": "El plan Business de {owner} venció el {date}. Las funciones Pro están pausadas hasta que se renueve.",
       "memberNoName": "Tu plan Business venció el {date}. Las funciones Pro están pausadas hasta que se renueve.",
       "renew": "Renovar plan",
-      "dismiss": "Cerrar aviso"
+      "dismiss": "Cerrar aviso",
+      "canceled": "Tu plan Individual está cancelado y termina el {date}. Renuévalo para seguir usando las funciones Pro."
+    },
+    "members": {
+      "title": "Miembros del plan",
+      "seats": "{used} de {seats} lugares",
+      "empty": "Comparte Pro con hasta {seats} personas. También se unen a tu organización.",
+      "joined": "Se unió el {date}",
+      "remove": "Quitar",
+      "removeLabel": "Quitar a {name} del plan",
+      "removeTitle": "¿Quitar a {name} de tu plan?",
+      "removeDescription": "Pierde Pro y sale de tu organización. Sus encuestas se quedan ahí.",
+      "removing": "Quitando…",
+      "invited": "Invitado",
+      "expires": "Vence el {date}",
+      "revoke": "Revocar",
+      "revokeLabel": "Revocar la invitación de {email}",
+      "blocked": {
+        "expired": "Tu plan venció: renuévalo para volver a invitar. Aún puedes quitar miembros.",
+        "full": "No quedan lugares ({seats}, contando las invitaciones pendientes). Revoca una invitación o quita a un miembro para volver a invitar.",
+        "noOrganization": "Los miembros del plan se unen a tu organización, y todavía no tienes una."
+      },
+      "createOrganization": "Crea tu organización",
+      "inviteLabel": "Invitar por correo",
+      "invite": "Invitar",
+      "inviteHint": "Necesita una cuenta de Panda Metrics y no tener un plan Business propio. La invitación dura 14 días.",
+      "emailSoon": "Invitar por correo a personas sin cuenta llegará pronto.",
+      "toasts": {
+        "invited": "Invitación enviada",
+        "revoked": "Invitación revocada",
+        "removed": "Quitado del plan"
+      }
+    },
+    "renewal": {
+      "title": "Opciones del plan",
+      "renewBusiness": "Renovar Business",
+      "switchIndividual": "Cambiar a Individual",
+      "seatsInUse": "{count, plural, one {Libera el lugar ocupado (un miembro o una invitación pendiente)} other {Libera los # lugares ocupados (miembros e invitaciones pendientes)}} para cambiar a Individual."
     }
   },
   "invitations": {
@@ -699,6 +741,7 @@
     "menu": "Invitaciones",
     "menuCount": "{count, plural, one {# invitación pendiente} other {# invitaciones pendientes}}",
     "slots": "{used}/{limit}",
+    "full": "No quedan lugares: el titular y {limit} personas más, contando las invitaciones pendientes. Revoca una invitación o quita a alguien para volver a invitar.",
     "proFeature": "Invitar personas es una función Pro.",
     "proFeatureOwner": "Invitar personas es una función Pro. Revisa tu plan.",
     "proFeatureLabel": "Invitar usuario: función Pro",
@@ -752,7 +795,25 @@
       "INVITE_EXPIRED": "Esta invitación venció. Pide una nueva.",
       "RATE_LIMITED": "Demasiadas invitaciones en poco tiempo. Inténtalo más tarde.",
       "VALIDATION": "Escribe un correo válido.",
-      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo.",
+      "BUSINESS_REQUIRED": "Solo el titular de un plan Business puede invitar personas a él.",
+      "OWNER_HAS_NO_ORGANIZATION": "Primero crea tu organización: los miembros del plan se unen a ella.",
+      "SEAT_LIMIT": "Todos los lugares de tu plan Business están ocupados ({seats}, contando las invitaciones pendientes). Revoca una invitación o quita a un miembro primero.",
+      "ALREADY_SUBSCRIBED": "Esta persona ya está en un plan Business (como miembro o titular) y no puede unirse a otro.",
+      "INDIVIDUAL_CANCEL_REQUIRED": "Aceptar cancela tu plan Individual. Confírmalo para unirte.",
+      "NOT_FOUND": "Esta persona ya no está en tu plan."
+    },
+    "plan": {
+      "label": "Plan Business + {organization}",
+      "cancelTitle": "¿Cancelar tu plan Individual?",
+      "cancelLive": "Tu plan Individual ({interval}, hasta el {date}) se cancelará y no se renovará. Usarás Pro a través del plan Business de {owner}.",
+      "cancelExpired": "Tu plan Individual vencido se cancelará. Usarás Pro a través del plan Business.",
+      "cancelConfirm": "Cancelarlo y unirme",
+      "cancelPending": "Uniéndote…",
+      "intervals": {
+        "MONTHLY": "mensual",
+        "YEARLY": "anual"
+      }
     }
   },
   "onboarding": {

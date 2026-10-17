@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { PlanSettings } from "@/components/plans/PlanSettings";
 import { PlanSettingsSkeleton } from "@/components/plans/PlanSettingsSkeleton";
 import { PlanTopBar } from "@/components/plans/PlanTopBar";
+import { listPlanMembers } from "@/lib/plans/seats";
 import { getAccountContext } from "@/server/app-context";
 
 export const metadata: Metadata = {
@@ -12,8 +13,9 @@ export const metadata: Metadata = {
 // The account level: works without an organization too. The session is request data, so the plan
 // streams in under the static top bar
 async function PlanContent() {
-  const { plan } = await getAccountContext();
-  return <PlanSettings plan={plan} />;
+  const { user, plan, ownsOrganization } = await getAccountContext();
+  const members = plan.isPlanOwner && plan.planType === "BUSINESS" ? await listPlanMembers(user.id) : null;
+  return <PlanSettings plan={plan} members={members} ownsOrganization={ownsOrganization} />;
 }
 
 export default function PlanPage() {

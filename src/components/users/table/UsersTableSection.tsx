@@ -135,6 +135,7 @@ export function UsersTableSection({ data, params, canManage }: UsersTableSection
           commitSearch={commit}
           onNavigate={navigate}
           selectedIds={selectedIds}
+          selectionHasSeats={data.rows.some((row) => row.hasBusinessSeat && selectedIds.includes(row.id))}
           onClearSelection={() => updateSelection([])}
         />
         {data.total === 0 ? (

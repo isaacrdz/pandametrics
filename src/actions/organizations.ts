@@ -9,6 +9,7 @@ import { organizationSchema, type OrganizationInput } from "@/lib/organizations/
 import * as organizationService from "@/lib/organizations/service";
 import { OrganizationServiceError, type OrganizationErrorCode } from "@/lib/organizations/service";
 import { invitationsTag } from "@/lib/invitations/tags";
+import { subscriptionTag } from "@/lib/plans/tags";
 import { usersTag } from "@/lib/users/list";
 import { userTag } from "@/lib/users/tags";
 import { ACTIVE_ORGANIZATION_COOKIE, ACTIVE_ORGANIZATION_COOKIE_OPTIONS } from "@/server/active-organization";
@@ -73,8 +74,9 @@ export async function createOrganization(values: OrganizationInput): Promise<Org
 export async function leaveOrganization(): Promise<OrganizationActionResult> {
   const { user, organization } = await getAppContext();
   let inviteeIds: string[];
+  let subscriptionId: string | null;
   try {
-    ({ inviteeIds } = await organizationService.leaveOrganization(user.id, organization.id));
+    ({ inviteeIds, subscriptionId } = await organizationService.leaveOrganization(user.id, organization.id));
   } catch (error) {
     if (error instanceof OrganizationServiceError) return { success: false, error: { code: error.code } };
     console.error(error);
@@ -84,6 +86,8 @@ export async function leaveOrganization(): Promise<OrganizationActionResult> {
   updateTag(userTag(user.id));
   updateTag(usersTag(organization.id));
   updateTag(invitationsTag(organization.id));
+  // Leaving the owner's organization ended the seat in their Business plan
+  if (subscriptionId) updateTag(subscriptionTag(subscriptionId));
   // Pending invitations the user sent there were revoked
   for (const id of inviteeIds) updateTag(userTag(id));
   (await cookies()).delete(ACTIVE_ORGANIZATION_COOKIE);

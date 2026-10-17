@@ -23,7 +23,7 @@ const SUBSCRIPTION_SELECT = {
 
 const PLAN_ROWS_SELECT = {
   subscription: { select: SUBSCRIPTION_SELECT },
-  seat: { select: { subscription: { select: { ...SUBSCRIPTION_SELECT, user: { select: { name: true } } } } } },
+  seat: { select: { subscription: { select: { ...SUBSCRIPTION_SELECT, user: { select: { id: true, name: true } } } } } },
 } satisfies Prisma.UserSelect;
 
 type PlanRowsPayload = Prisma.UserGetPayload<{ select: typeof PLAN_ROWS_SELECT }> | null;
@@ -33,7 +33,7 @@ function toPlanRows(row: PlanRowsPayload): PlanRows {
   const seat = row.seat?.subscription;
   return {
     own: row.subscription,
-    seat: seat ? { subscription: seat, ownerName: seat.user.name } : null,
+    seat: seat ? { subscription: seat, ownerId: seat.user.id, ownerName: seat.user.name } : null,
   };
 }
 

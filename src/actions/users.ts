@@ -6,6 +6,7 @@ import { getAppContext } from "@/server/app-context";
 import { MAX_PAGE_SIZE } from "@/lib/table/pagination";
 import { toUserFormValues, userFormSchema, type UserFormInput, type UserFormSchemaMode, type UserFormValues } from "@/lib/users/schema";
 import { invitationsTag } from "@/lib/invitations/tags";
+import { subscriptionTag } from "@/lib/plans/tags";
 import { usersTag } from "@/lib/users/list";
 import { userTag } from "@/lib/users/tags";
 import * as userService from "@/lib/users/service";
@@ -82,7 +83,9 @@ export async function removeUsers(ids: string[]): Promise<UserActionResult<{ cou
   if (!idsSchema.safeParse(ids).success) return VALIDATION_ERROR;
   try {
     const scope = await getScope();
-    const { count, inviteeIds } = await userService.removeUsers(scope, ids);
+    const { count, subscriptionId, inviteeIds } = await userService.removeUsers(scope, ids);
+    // Their seats in the owner's Business plan ended too
+    if (subscriptionId) updateTag(subscriptionTag(subscriptionId));
     afterChange(scope, ids);
     // Pending invitations the removed users sent here were revoked
     updateTag(invitationsTag(scope.organizationId));

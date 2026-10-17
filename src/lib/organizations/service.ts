@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@/generated/prisma/client";
 import type { OrganizationValues } from "@/lib/organizations/schema";
 import { MAX_MEMBERSHIPS } from "@/lib/plans/limits";
+import { endSeatsInOrganization } from "@/lib/plans/seats";
 import { prisma } from "@/server/prisma";
 import type { Organization } from "@/types/survey";
 
@@ -52,7 +53,7 @@ export async function createOrganization(userId: string, input: OrganizationValu
 // The user leaves an organization they belong to (not the one they own). Recorded for the owner's
 // email (pending feature); pending invitations they sent there stop counting
 // Returns who had a pending invitation from the user there
-export async function leaveOrganization(userId: string, organizationId: string): Promise<{ inviteeIds: string[] }> {
+export async function leaveOrganization(userId: string, organizationId: string): Promise<{ subscriptionId: string | null; inviteeIds: string[] }> {
   return prisma.$transaction(async (tx) => {
     const membership = await tx.membership.findUnique({
       where: { userId_organizationId: { userId, organizationId } },
@@ -62,10 +63,12 @@ export async function leaveOrganization(userId: string, organizationId: string):
     if (membership.organization.ownerId === userId) throw new OrganizationServiceError("OWNER_CANNOT_LEAVE");
 
     await tx.membership.delete({ where: { userId_organizationId: { userId, organizationId } } });
+    // Leaving the Business owner's organization also leaves the plan
+    const subscriptionId = await endSeatsInOrganization(tx, organizationId, [userId]);
     await tx.membershipEvent.create({ data: { organizationId, userId, type: "LEFT" } });
     const sent = { organizationId, invitedById: userId, status: "PENDING" as const };
     const revoked = await tx.invitation.findMany({ where: sent, select: { userId: true } });
     await tx.invitation.updateMany({ where: sent, data: { status: "REVOKED", respondedAt: new Date() } });
-    return { inviteeIds: revoked.flatMap((invitation) => (invitation.userId ? [invitation.userId] : [])) };
+    return { subscriptionId, inviteeIds: revoked.flatMap((invitation) => (invitation.userId ? [invitation.userId] : [])) };
   });
 }

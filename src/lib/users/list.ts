@@ -24,6 +24,8 @@ export interface UserRow {
   isCurrentUser: boolean;
   // The organization's owner: never deactivated or removed
   isOwner: boolean;
+  // A seat in the owner's Business plan: removing them from here ends it too
+  hasBusinessSeat: boolean;
   updatedAt: string;
 }
 
@@ -43,6 +45,7 @@ export interface UserListResult {
 
 interface UserListRow {
   id: string;
+  hasBusinessSeat: boolean;
   name: string | null;
   email: string | null;
   phone: string | null;
@@ -81,6 +84,12 @@ function statusCondition(status: UserListQuery["status"]): Prisma.Sql {
 async function queryPage(organizationId: string, params: UserListQuery, page: number): Promise<UserListRow[]> {
   return prisma.$queryRaw<UserListRow[]>`
     SELECT u.id, u.name, u.email, u.phone, u.image, m.role::text AS role, m."isActive", u."updatedAt",
+           EXISTS (
+             SELECT 1 FROM "SubscriptionSeat" ss
+             JOIN "Subscription" s ON s.id = ss."subscriptionId"
+             JOIN "Organization" o ON o."ownerId" = s."userId"
+             WHERE ss."userId" = u.id AND o.id = m."organizationId"
+           ) AS "hasBusinessSeat",
            COUNT(*) OVER()::int AS total
     FROM "Membership" m
     JOIN "User" u ON u.id = m."userId"
@@ -133,6 +142,7 @@ export async function listUsers(organizationId: string, currentUserId: string, p
       isActive: user.isActive,
       isCurrentUser: user.id === currentUserId,
       isOwner: user.role === "OWNER",
+      hasBusinessSeat: user.hasBusinessSeat,
       updatedAt: user.updatedAt.toISOString(),
     })),
     total,

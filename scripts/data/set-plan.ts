@@ -8,11 +8,14 @@
 //
 // Options: --status ACTIVE|CANCELED|PAST_DUE|INCOMPLETE (default ACTIVE), --expired (the period
 // ended yesterday), --ends-in-minutes N (to try an expiry live), --remove (back to Free; a Business
-// plan's seats go with it). Development branch only, unless --production is passed explicitly.
+// plan's seats go with it), --force (skip the renewal rules: a seat holder can't get a plan of their
+// own, a Business owner with members can't switch to Individual). Development branch only, unless
+// --production is passed explicitly.
 import "dotenv/config";
 import { parseArgs } from "node:util";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../../src/generated/prisma/client";
+import { RenewalError, assertCanRenew } from "../../src/lib/plans/renewal";
 
 const PLAN_TYPES = ["INDIVIDUAL", "BUSINESS"] as const;
 const INTERVALS = ["MONTHLY", "YEARLY"] as const;
@@ -29,6 +32,7 @@ const { values } = parseArgs({
     "ends-in-minutes": { type: "string" },
     remove: { type: "boolean", default: false },
     production: { type: "boolean", default: false },
+    force: { type: "boolean", default: false },
   },
 });
 
@@ -79,6 +83,14 @@ async function main() {
     const planType = oneOf("type", values.type, PLAN_TYPES);
     const billingInterval = oneOf("interval", values.interval, INTERVALS);
     const status = oneOf("status", values.status, STATUSES);
+    if (!values.force) {
+      try {
+        await assertCanRenew(prisma, user.id, planType);
+      } catch (error) {
+        if (error instanceof RenewalError) throw new Error(`${email}: refused (${error.code}). Pass --force to skip the renewal rules.`);
+        throw error;
+      }
+    }
 
     const now = new Date();
     let currentPeriodStart = now;

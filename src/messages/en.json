@@ -36,7 +36,8 @@
     "leaveTitle": "Leave {name}?",
     "leaveDescription": "You'll lose access to its surveys and metrics. Your surveys stay in the organization. To come back you'll need a new invitation.",
     "leaveConfirm": "Leave",
-    "leavePending": "Leaving…"
+    "leavePending": "Leaving…",
+    "leavePlanNote": "You'll also leave {owner}'s Business plan and lose Pro."
   },
   "greeting": {
     "hello": "{period, select, morning {Good morning} afternoon {Good afternoon} evening {Good evening} other {Hello}}, {name}"
@@ -233,7 +234,8 @@
       "title": "Remove {count, plural, one {# user} other {# users}} from this organization?",
       "description": "They will lose access to this organization's surveys and metrics. Their accounts are not deleted, and their surveys and responses stay here.",
       "confirm": "Remove",
-      "pending": "Removing…"
+      "pending": "Removing…",
+      "seatNote": "Those on the owner's Business plan also lose their seat."
     },
     "toasts": {
       "activated": "User activated",
@@ -653,11 +655,14 @@
     },
     "owner": {
       "description": "You pay for this plan. Billing will be managed here once payments are available.",
-      "expired": "This plan expired. Pro features are paused until you renew it; nothing was deleted."
+      "expired": "This plan expired. Pro features are paused until you renew it; nothing was deleted.",
+      "canceled": "Your plan is canceled and ends on {date}. Renew it to keep using Pro features after that."
     },
     "member": {
       "description": "You're on {owner}'s Business plan. Only its owner manages billing.",
-      "descriptionNoName": "You're on a Business plan. Only its owner manages billing."
+      "descriptionNoName": "You're on a Business plan. Only its owner manages billing.",
+      "ownPlan": "To get a plan of your own, leave {owner}'s Business plan first.",
+      "ownPlanNoName": "To get a plan of your own, leave this Business plan first."
     },
     "details": {
       "interval": "Billing",
@@ -690,7 +695,44 @@
       "member": "{owner}'s Business plan expired on {date}. Pro features are paused until it's renewed.",
       "memberNoName": "Your Business plan expired on {date}. Pro features are paused until it's renewed.",
       "renew": "Renew plan",
-      "dismiss": "Dismiss"
+      "dismiss": "Dismiss",
+      "canceled": "Your Individual plan is canceled and ends on {date}. Renew it to keep using Pro features."
+    },
+    "members": {
+      "title": "Plan members",
+      "seats": "{used} of {seats} seats",
+      "empty": "Share Pro with up to {seats} people. They join your organization too.",
+      "joined": "Joined {date}",
+      "remove": "Remove",
+      "removeLabel": "Remove {name} from the plan",
+      "removeTitle": "Remove {name} from your plan?",
+      "removeDescription": "They lose Pro and leave your organization. Their surveys stay there.",
+      "removing": "Removing…",
+      "invited": "Invited",
+      "expires": "Expires {date}",
+      "revoke": "Revoke",
+      "revokeLabel": "Revoke the invitation for {email}",
+      "blocked": {
+        "expired": "Your plan expired: renew it to invite people again. You can still remove members.",
+        "full": "Every seat is taken ({seats}, pending invitations included). Revoke an invitation or remove a member to invite again.",
+        "noOrganization": "Plan members join your organization, and you don't have one yet."
+      },
+      "createOrganization": "Create your organization",
+      "inviteLabel": "Invite by email",
+      "invite": "Invite",
+      "inviteHint": "They need a Panda Metrics account and no Business plan of their own. The invitation lasts 14 days.",
+      "emailSoon": "Inviting people without an account by email is coming soon.",
+      "toasts": {
+        "invited": "Invitation sent",
+        "revoked": "Invitation revoked",
+        "removed": "Removed from the plan"
+      }
+    },
+    "renewal": {
+      "title": "Plan options",
+      "renewBusiness": "Renew Business",
+      "switchIndividual": "Switch to Individual",
+      "seatsInUse": "{count, plural, one {Free the seat in use (a member or a pending invitation)} other {Free the # seats in use (members and pending invitations)}} to switch to Individual."
     }
   },
   "invitations": {
@@ -699,6 +741,7 @@
     "menu": "Invitations",
     "menuCount": "{count, plural, one {# pending invitation} other {# pending invitations}}",
     "slots": "{used}/{limit}",
+    "full": "Every place is taken: the owner plus {limit} people, pending invitations included. Revoke an invitation or remove someone to invite again.",
     "proFeature": "Inviting people is a Pro feature.",
     "proFeatureOwner": "Inviting people is a Pro feature. See your plan.",
     "proFeatureLabel": "Invite user: Pro feature",
@@ -752,7 +795,25 @@
       "INVITE_EXPIRED": "This invitation expired. Ask for a new one.",
       "RATE_LIMITED": "Too many invitations in a short time. Try again later.",
       "VALIDATION": "Enter a valid email.",
-      "UNKNOWN": "Something went wrong. Try again."
+      "UNKNOWN": "Something went wrong. Try again.",
+      "BUSINESS_REQUIRED": "Only the owner of a Business plan can invite people into it.",
+      "OWNER_HAS_NO_ORGANIZATION": "Create your organization first: plan members join it.",
+      "SEAT_LIMIT": "Every seat in your Business plan is taken ({seats}, pending invitations included). Revoke an invitation or remove a member first.",
+      "ALREADY_SUBSCRIBED": "This person is already in a Business plan (as a member or its owner) and can't join another.",
+      "INDIVIDUAL_CANCEL_REQUIRED": "Accepting cancels your Individual plan. Confirm it to join.",
+      "NOT_FOUND": "This member is no longer in your plan."
+    },
+    "plan": {
+      "label": "Business plan + {organization}",
+      "cancelTitle": "Cancel your Individual plan?",
+      "cancelLive": "Your Individual plan ({interval}, until {date}) will be canceled and won't renew. You'll use Pro through {owner}'s Business plan.",
+      "cancelExpired": "Your expired Individual plan will be canceled. You'll use Pro through the Business plan.",
+      "cancelConfirm": "Cancel it and join",
+      "cancelPending": "Joining…",
+      "intervals": {
+        "MONTHLY": "monthly",
+        "YEARLY": "yearly"
+      }
     }
   },
   "onboarding": {

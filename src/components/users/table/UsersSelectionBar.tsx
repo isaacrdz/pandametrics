@@ -13,11 +13,13 @@ type SuccessKey = "toasts.bulkActivated" | "toasts.bulkDeactivated" | "toasts.bu
 
 interface UsersSelectionBarProps {
   ids: string[];
+  // Removing ends their seats in the owner's Business plan too: the dialog says so
+  hasSeats: boolean;
   onDone: () => void;
 }
 
 // Activate runs right away; Deactivate and Remove ask first. Every action is all or nothing.
-export function UsersSelectionBar({ ids, onDone }: UsersSelectionBarProps) {
+export function UsersSelectionBar({ ids, hasSeats, onDone }: UsersSelectionBarProps) {
   const t = useTranslations("users");
   const [isPending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState<"deactivate" | "remove" | null>(null);
@@ -75,7 +77,7 @@ export function UsersSelectionBar({ ids, onDone }: UsersSelectionBarProps) {
         open={confirm === "remove"}
         onOpenChange={(open) => !open && setConfirm(null)}
         title={t("remove.title", { count })}
-        description={t("remove.description", { count })}
+        description={hasSeats ? `${t("remove.description", { count })} ${t("remove.seatNote")}` : t("remove.description", { count })}
         confirmLabel={t("remove.confirm")}
         pendingLabel={t("remove.pending")}
         isPending={isPending}

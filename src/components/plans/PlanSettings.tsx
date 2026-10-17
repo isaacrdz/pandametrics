@@ -5,8 +5,10 @@ import { CheckIcon, RefreshCwIcon, SparklesIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { ComingSoonButton } from "@/components/plans/ComingSoonButton";
 import { PlanBadge } from "@/components/plans/PlanBadge";
+import { PlanMembersCard } from "@/components/plans/PlanMembersCard";
 import { BUSINESS_SEATS, PLAN_LIMITS } from "@/lib/plans/limits";
 import type { PlanState, PlanType } from "@/lib/plans/plan";
+import type { PlanMembers } from "@/lib/plans/seats";
 
 const CARD_CLASS = "rounded-3xl border border-card-border bg-card p-6 sm:p-8";
 
@@ -35,7 +37,14 @@ function Detail({ label, children }: { label: string; children: ReactNode }) {
 // Settings → Plan (docs/subscriptions.md, section 8.1): what the user has, its limits and dates.
 // No payment provider yet, so Upgrade and Renew are "coming soon"; plans are set with
 // scripts/data/set-plan.ts. The Business members card comes with phase 5
-export function PlanSettings({ plan }: { plan: PlanState }) {
+interface PlanSettingsProps {
+  plan: PlanState;
+  // The Business owner's members and pending plan invites (null for any other plan)
+  members: PlanMembers | null;
+  ownsOrganization: boolean;
+}
+
+export function PlanSettings({ plan, members, ownsOrganization }: PlanSettingsProps) {
   const t = useTranslations("plan");
   const format = useFormatter();
 
@@ -73,8 +82,15 @@ export function PlanSettings({ plan }: { plan: PlanState }) {
                     ? t("free.description")
                     : plan.tier === "EXPIRED"
                       ? t("owner.expired")
-                      : t("owner.description")}
+                      : plan.status === "CANCELED" && plan.currentPeriodEnd
+                        ? t("owner.canceled", { date: format.dateTime(plan.currentPeriodEnd, { dateStyle: "long" }) })
+                        : t("owner.description")}
               </p>
+              {plan.source === "SEAT" && (
+                <p className="max-w-xl text-sm text-muted-foreground">
+                  {plan.ownerName ? t("member.ownPlan", { owner: plan.ownerName }) : t("member.ownPlanNoName")}
+                </p>
+              )}
             </div>
             {plan.isPlanOwner && (plan.tier === "EXPIRED" || plan.status === "CANCELED") && (
               <ComingSoonButton className="h-11 gap-2 px-5">
@@ -111,6 +127,30 @@ export function PlanSettings({ plan }: { plan: PlanState }) {
           </div>
         </div>
       </section>
+
+      {plan.isPlanOwner && plan.planType === "BUSINESS" && members && (
+        <>
+          <PlanMembersCard data={members} expired={plan.tier === "EXPIRED"} ownsOrganization={ownsOrganization} />
+          <section aria-labelledby="plan-options-title" className={`${CARD_CLASS} flex flex-col gap-4`}>
+            <h2 id="plan-options-title" className="text-lg font-semibold text-foreground">
+              {t("renewal.title")}
+            </h2>
+            <div className="flex flex-wrap gap-3">
+              <ComingSoonButton className="h-11 gap-2 px-5">
+                <RefreshCwIcon aria-hidden />
+                {t("renewal.renewBusiness")}
+              </ComingSoonButton>
+              <ComingSoonButton className="h-11 px-5">{t("renewal.switchIndividual")}</ComingSoonButton>
+            </div>
+            {/* Switching to Individual needs every member removed and every invite revoked first */}
+            {members.members.length + members.pending.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {t("renewal.seatsInUse", { count: members.members.length + members.pending.length })}
+              </p>
+            )}
+          </section>
+        </>
+      )}
 
       {plan.tier === "FREE" && (
         <section aria-labelledby="upgrade-title" className="flex flex-col gap-4">

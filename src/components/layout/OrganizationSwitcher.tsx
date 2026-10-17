@@ -27,11 +27,14 @@ interface OrganizationSwitcherProps {
   canCreate: boolean;
   // The active organization is not the user's own: they may leave it
   canLeave: boolean;
+  // The active organization is the Business owner's whose plan the user is on (their name): the
+  // leave dialog warns the seat ends too
+  leavesPlanOf: string | null;
 }
 
 // The organizations the user is an active member of. Picking one saves it on the server (cookie) and
 // the page re-renders with its data; the trigger shows a spinner meanwhile
-export function OrganizationSwitcher({ organizations, currentId, canCreate, canLeave }: OrganizationSwitcherProps) {
+export function OrganizationSwitcher({ organizations, currentId, canCreate, canLeave, leavesPlanOf }: OrganizationSwitcherProps) {
   const t = useTranslations("topBar");
   const tErrors = useTranslations("organizations.errors");
   const [isPending, startTransition] = useTransition();
@@ -110,7 +113,7 @@ export function OrganizationSwitcher({ organizations, currentId, canCreate, canL
         open={leaveOpen}
         onOpenChange={setLeaveOpen}
         title={t("leaveTitle", { name: selected.name })}
-        description={t("leaveDescription")}
+        description={leavesPlanOf !== null ? `${t("leaveDescription")} ${t("leavePlanNote", { owner: leavesPlanOf })}` : t("leaveDescription")}
         confirmLabel={t("leaveConfirm")}
         pendingLabel={t("leavePending")}
         isPending={isLeaving}

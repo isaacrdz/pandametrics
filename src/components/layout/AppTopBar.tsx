@@ -21,7 +21,7 @@ interface AppTopBarProps {
 // A container: with the sidebar open the bar is much narrower than the viewport, so the buttons
 // only show their labels when the bar itself has room for them and the heading.
 export function AppTopBar({ heading, actions, hideSwitchersWhenNarrow = false }: AppTopBarProps) {
-  const { userId, organizations, currentOrganizationId, ownsOrganization } = useAppShell();
+  const { userId, organizations, currentOrganizationId, ownsOrganization, plan } = useAppShell();
   const current = organizations.find((organization) => organization.id === currentOrganizationId);
 
   return (
@@ -37,6 +37,8 @@ export function AppTopBar({ heading, actions, hideSwitchersWhenNarrow = false }:
               canCreate={!ownsOrganization}
               // Members can leave; an owner never leaves their own organization
               canLeave={current !== undefined && current.ownerId !== userId}
+              // Leaving the Business owner's organization also leaves their plan
+              leavesPlanOf={plan.source === "SEAT" && current?.ownerId === plan.ownerId ? (plan.ownerName ?? "") : null}
             />
           )}
           <LanguageSwitcher />

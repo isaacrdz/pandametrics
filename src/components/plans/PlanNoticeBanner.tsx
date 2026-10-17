@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { CircleAlertIcon, RefreshCwIcon, XIcon } from "lucide-react";
+import { CircleAlertIcon, InfoIcon, RefreshCwIcon, XIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useAppShell } from "@/components/layout/AppShellProvider";
 import { ComingSoonButton } from "@/components/plans/ComingSoonButton";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // Dismissed for this browser session only: it comes back on the next visit
 const STORAGE_KEY = "panda-metrics:plan-notice-dismissed";
@@ -23,10 +24,13 @@ function subscribe(onChange: () => void) {
   return () => window.removeEventListener("storage", onChange);
 }
 
-// Above every admin page while the user's plan is expired (docs/subscriptions.md, section 8.3).
-// A Business member only sees that the owner's plan expired; the plan owner also gets "Renew plan"
-// (coming soon until there is a payment provider)
-export function PlanExpiredBanner() {
+// Above every admin page (docs/subscriptions.md, sections 8.2 and 8.3):
+//   - the plan expired: a Business member only sees that the owner's plan expired; the plan owner
+//     also gets "Renew plan";
+//   - the user's own Individual plan is canceled but still running (they joined a Business plan and
+//     left it, or turned renewal off): renew it to keep Pro after the end date.
+// "Renew plan" is coming soon until there is a payment provider
+export function PlanNoticeBanner() {
   const { plan } = useAppShell();
   const t = useTranslations("plan.banner");
   const tPlan = useTranslations("plan");
@@ -35,17 +39,20 @@ export function PlanExpiredBanner() {
   const stored = useSyncExternalStore(subscribe, readDismissed, () => null);
   const [dismissedNow, setDismissedNow] = useState(false);
 
-  if (plan.tier !== "EXPIRED" || !plan.currentPeriodEnd || !plan.planType) return null;
+  const canceled = plan.tier === "PRO" && plan.source === "OWN" && plan.planType === "INDIVIDUAL" && plan.status === "CANCELED";
+  if ((plan.tier !== "EXPIRED" && !canceled) || !plan.currentPeriodEnd || !plan.planType) return null;
   // Per subscription and period: renewing and expiring again shows it again
   const noticeKey = `${plan.subscriptionId}:${plan.currentPeriodEnd.toISOString()}`;
   if (dismissedNow || stored === noticeKey) return null;
 
   const date = format.dateTime(plan.currentPeriodEnd, { dateStyle: "long" });
-  const message = plan.isPlanOwner
-    ? t("owner", { type: tPlan(`types.${plan.planType}`), date })
-    : plan.ownerName
-      ? t("member", { owner: plan.ownerName, date })
-      : t("memberNoName", { date });
+  const message = canceled
+    ? t("canceled", { date })
+    : plan.isPlanOwner
+      ? t("owner", { type: tPlan(`types.${plan.planType}`), date })
+      : plan.ownerName
+        ? t("member", { owner: plan.ownerName, date })
+        : t("memberNoName", { date });
 
   function dismiss() {
     try {
@@ -59,9 +66,16 @@ export function PlanExpiredBanner() {
   return (
     <div
       role="status"
-      className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-destructive/20 bg-destructive/10 px-4 py-3 text-sm md:px-8"
+      className={cn(
+        "flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-4 py-3 text-sm md:px-8",
+        canceled ? "border-primary/20 bg-accent" : "border-destructive/20 bg-destructive/10",
+      )}
     >
-      <CircleAlertIcon aria-hidden className="size-4 shrink-0 text-destructive" />
+      {canceled ? (
+        <InfoIcon aria-hidden className="size-4 shrink-0 text-primary" />
+      ) : (
+        <CircleAlertIcon aria-hidden className="size-4 shrink-0 text-destructive" />
+      )}
       <p className="min-w-0 flex-1 font-medium text-foreground">{message}</p>
       <div className="flex items-center gap-2">
         {plan.isPlanOwner && (

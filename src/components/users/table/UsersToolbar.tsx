@@ -15,6 +15,8 @@ interface UsersToolbarProps {
   onNavigate: (next: UserListQuery) => void;
   // While rows are selected, the bulk actions replace the filter
   selectedIds: string[];
+  // Some selected users hold a seat in the owner's Business plan: removing them ends it too
+  selectionHasSeats: boolean;
   onClearSelection: () => void;
 }
 
@@ -25,6 +27,7 @@ export function UsersToolbar({
   commitSearch,
   onNavigate,
   selectedIds,
+  selectionHasSeats,
   onClearSelection,
 }: UsersToolbarProps) {
   const t = useTranslations("users");
@@ -37,7 +40,7 @@ export function UsersToolbar({
       <TableSearch value={search} onChange={onSearchChange} label={t("toolbar.search")} />
 
       {selectedIds.length > 0 ? (
-        <UsersSelectionBar ids={selectedIds} onDone={onClearSelection} />
+        <UsersSelectionBar ids={selectedIds} hasSeats={selectionHasSeats} onDone={onClearSelection} />
       ) : (
         <div className="flex gap-3">
           <FilterMenu

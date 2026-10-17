@@ -2,6 +2,7 @@ import "server-only";
 
 import { cacheTag } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
+import { endSeatsInOrganization } from "@/lib/plans/seats";
 import { hashPassword, verifyPassword } from "@/lib/users/password";
 import type { UserFormValues } from "@/lib/users/schema";
 import { userTag } from "@/lib/users/tags";
@@ -136,19 +137,21 @@ export async function setUserActive(scope: UserScope, id: string, isActive: bool
 // sign in elsewhere, and their surveys keep "created by". Each removal is recorded for the owner's
 // email (pending feature), and invitations the removed users sent here stop counting
 // Returns how many left and who had a pending invitation from them (their caches change too)
-export async function removeUsers(scope: UserScope, ids: string[]): Promise<{ count: number; inviteeIds: string[] }> {
+export async function removeUsers(scope: UserScope, ids: string[]): Promise<{ count: number; subscriptionId: string | null; inviteeIds: string[] }> {
   return prisma.$transaction(async (tx) => {
     const targets = await assertChangeAllowed(tx, scope, ids, "remove");
     const { count } = await tx.membership.deleteMany({
       where: { organizationId: scope.organizationId, userId: { in: targets } },
     });
+    // A seat in the owner's Business plan never outlives the membership
+    const subscriptionId = await endSeatsInOrganization(tx, scope.organizationId, targets);
     await tx.membershipEvent.createMany({
       data: targets.map((userId) => ({ organizationId: scope.organizationId, userId, type: "REMOVED" as const })),
     });
     const sent = { organizationId: scope.organizationId, invitedById: { in: targets }, status: "PENDING" as const };
     const revoked = await tx.invitation.findMany({ where: sent, select: { userId: true } });
     await tx.invitation.updateMany({ where: sent, data: { status: "REVOKED", respondedAt: new Date() } });
-    return { count, inviteeIds: revoked.flatMap((invitation) => (invitation.userId ? [invitation.userId] : [])) };
+    return { count, subscriptionId, inviteeIds: revoked.flatMap((invitation) => (invitation.userId ? [invitation.userId] : [])) };
   });
 }
 

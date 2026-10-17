@@ -1,18 +1,32 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Current Feature: Subscriptions Phase 5 — Business Plan
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- `createPlanInvitation(ownerId, email)` in one transaction: lock Subscription then the owner's Organization; owner's own subscription is `BUSINESS` (`BUSINESS_REQUIRED`) and live (`PRO_REQUIRED`); owner owns an organization (`OWNER_HAS_NO_ORGANIZATION`); phase 4 checks (`USER_NOT_FOUND`, `ALREADY_MEMBER`, `ALREADY_INVITED`, `INVITE_LIMIT`, `MEMBERSHIP_LIMIT`); invitee holds no seat and owns no Business subscription, live or expired (`ALREADY_SUBSCRIBED`); seats + pending plan invites < 3 (`SEAT_LIMIT`); invitation with `subscriptionId` (also takes one of the organization's 3 slots)
+- `acceptInvitation` for plan invites: lock the Subscription too; `ALREADY_SUBSCRIBED` again; an own `INDIVIDUAL` subscription without `cancelIndividual: true` → `INDIVIDUAL_CANCEL_REQUIRED` (with interval and end date for the dialog); creates the membership + `SubscriptionSeat`, sets the Individual subscription `CANCELED` + `canceledAt` (period end unchanged; expired ones too); `getInvitationPreview(userId, id)` tells the client before accepting
+- `removeSeat(ownerId, memberUserId)`: lock Subscription; delete seat (`NOT_FOUND`) + membership in the owner's organization; revoke pending invitations the member sent there; `MembershipEvent REMOVED`; allowed while expired
+- Seat ends with the membership: `leaveOrganization` and `removeUsers` delete the seat when the organization is the seat's Business owner's, in the same transaction; `revokeInvitation` works for plan invites
+- Renewal rules (`src/lib/plans/renewal.ts` `assertCanRenew(userId, planType)`): seat holder → `IN_BUSINESS_PLAN` (any plan); switching to `INDIVIDUAL` with seats or pending plan invites → `SEATS_IN_USE` (Subscription locked); `scripts/data/set-plan.ts` applies it (`--force` to skip)
+- Settings → Plan, Business owner: "Members · x of 3 seats" card (members with avatar, name, email, joined date, Remove with confirmation; pending plan invites with Revoke; invite form disabled when full, expired or without an organization — then "Create your organization first" → `/welcome`; `USER_NOT_FOUND` → email invites coming soon; muted "Invite by email (coming soon)" row); plan options: Renew Business (coming soon), "Switch to Individual" disabled with members or pending invites + hint; Business member: read-only with "To get your own plan, leave {owner}'s Business plan first"
+- Invitee: plan invites labelled "Business plan + {organization}" in `/invitations` and `/welcome`; accept calls the preview and opens the cancellation dialog for an Individual plan (live / expired wording), confirming sends `cancelIndividual: true`
+- `PlanExpiredBanner` → `PlanNoticeBanner` with a "canceled Individual plan still running" variant for users without a seat (renew coming soon), also shown in Settings → Plan; `/users` remove / leave warns "This also removes them from {owner}'s Business plan" for seat holders
+- Phase 4 leftovers: the Invite button in `/users` (and the plan invite form) shows a tooltip explaining the limit when every place is taken (owner + 3, pending invitations included; revoke or remove someone to free one), keeping it focusable (`aria-disabled`); accepting / declining an invitation never shows the email-oriented `VALIDATION` text (its own "This invitation is no longer valid" message for a bad id, the email one only in the invite dialog)
+- Tags: `subscription:{id}`, `user:{member}`, `org:{id}:users`, `org:{id}:invitations`; messages `plan.members.*`, `plan.renewal.*`, `invitations.plan*` and the codes `BUSINESS_REQUIRED`, `OWNER_HAS_NO_ORGANIZATION`, `SEAT_LIMIT`, `ALREADY_SUBSCRIBED`, `INDIVIDUAL_CANCEL_REQUIRED`, `SEATS_IN_USE`, `IN_BUSINESS_PLAN` in en / es; `yarn lint`, `tsc` and `yarn build` pass
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec: `context/features/subscriptions-phase-5-business-plan-spec.md`; research: `docs/subscriptions.md` (sections 6.2, 6.3, 8.1, 8.2, 8.4, 8.5)
+- Seed: Jordan's Business plan already seats Ana and Sofía (2 of 3), and Acme already has 7 members besides Jordan, so a new plan invite from Jordan hits `INVITE_LIMIT` before `SEAT_LIMIT`; to try seats end to end, give Miguel a Business plan with `set-plan.ts` (Leyinork has room)
+- A user already in the owner's organization can't get a seat through a plan invite (`ALREADY_MEMBER`); seats are for new people
+- Business members get Pro from the owner's subscription; their own organization (if any) gets Pro limits through the seat
+- Expired Business plan: members stay, invite form disabled and actions → `PRO_REQUIRED`, Remove still works
+- No payment provider: Renew / Upgrade / Switch stay "coming soon" in the UI; the rules run in `set-plan.ts`
+- Phase 4 leftovers (requested): tooltip on the full Invite button; `VALIDATION` text when accepting an invitation — done first in this phase
+- Restart the dev server on :3000 if a migration is needed (none expected: tables exist since phase 3 / 4)
 
 ## History
 

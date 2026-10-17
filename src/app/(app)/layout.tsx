@@ -2,7 +2,7 @@ import { Suspense, type CSSProperties } from "react";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppContentSkeleton, NavUserSkeleton } from "@/components/layout/AppShellSkeleton";
 import { AppShellProvider } from "@/components/layout/AppShellProvider";
-import { PlanExpiredBanner } from "@/components/plans/PlanExpiredBanner";
+import { PlanNoticeBanner } from "@/components/plans/PlanNoticeBanner";
 import { SidebarUser } from "@/components/layout/SidebarUser";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { PLAN_LIMITS } from "@/lib/plans/limits";
@@ -32,7 +32,7 @@ async function AppContent({ children }: { children: React.ReactNode }) {
         limits: limits ?? PLAN_LIMITS.FREE,
       }}
     >
-      <PlanExpiredBanner />
+      <PlanNoticeBanner />
       <div className="flex-1">{children}</div>
     </AppShellProvider>
   );

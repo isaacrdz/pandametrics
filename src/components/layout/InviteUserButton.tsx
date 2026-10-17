@@ -102,13 +102,36 @@ export function InviteUserButton({ invite }: { invite: InviteState }) {
 
   return (
     <>
-      <Button type="button" onClick={() => setOpen(true)} disabled={full} className={BUTTON_CLASS}>
-        <UserPlusIcon aria-hidden className="size-5" />
-        <span className="hidden @3xl:inline">{t("invite")}</span>
-        <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-semibold">
-          {tInvite("slots", { used, limit })}
-        </span>
-      </Button>
+      {full ? (
+        // Every place is taken: still focusable (aria-disabled), so the tooltip explains the limit
+        // to keyboard and screen reader users too
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              aria-disabled="true"
+              aria-label={`${t("invite")}: ${tInvite("full", { limit })}`}
+              onClick={(event) => event.preventDefault()}
+              className={cn(BUTTON_CLASS, "cursor-not-allowed opacity-60")}
+            >
+              <UserPlusIcon aria-hidden className="size-5" />
+              <span className="hidden @3xl:inline">{t("invite")}</span>
+              <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-semibold">
+                {tInvite("slots", { used, limit })}
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-64">{tInvite("full", { limit })}</TooltipContent>
+        </Tooltip>
+      ) : (
+        <Button type="button" onClick={() => setOpen(true)} className={BUTTON_CLASS}>
+          <UserPlusIcon aria-hidden className="size-5" />
+          <span className="hidden @3xl:inline">{t("invite")}</span>
+          <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-semibold">
+            {tInvite("slots", { used, limit })}
+          </span>
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={close}>
         <DialogContent className="sm:max-w-md">

@@ -24,7 +24,7 @@ export interface PlanRows {
   // The user's own subscription (they pay)
   own: SubscriptionRow | null;
   // A seat in someone else's Business plan
-  seat: { subscription: SubscriptionRow; ownerName: string | null } | null;
+  seat: { subscription: SubscriptionRow; ownerId: string; ownerName: string | null } | null;
 }
 
 export interface PlanState {
@@ -39,7 +39,9 @@ export interface PlanState {
   paidAt: Date | null;
   currentPeriodEnd: Date | null;
   subscriptionId: string | null;
-  // Seats: the Business plan owner's name, for "You are on {owner}'s Business plan"
+  // Seats: the Business plan owner, for "You are on {owner}'s Business plan" and to tell their
+  // organization apart (leaving it ends the seat)
+  ownerId: string | null;
   ownerName: string | null;
 }
 
@@ -53,6 +55,7 @@ export const FREE_PLAN: PlanState = {
   paidAt: null,
   currentPeriodEnd: null,
   subscriptionId: null,
+  ownerId: null,
   ownerName: null,
 };
 
@@ -62,7 +65,12 @@ export function subscriptionIsLive(subscription: Pick<SubscriptionRow, "status" 
   return subscription.status !== "INCOMPLETE" && subscription.currentPeriodEnd.getTime() > now.getTime();
 }
 
-function fromSubscription(subscription: SubscriptionRow, source: "OWN" | "SEAT", now: Date, ownerName: string | null): PlanState {
+function fromSubscription(
+  subscription: SubscriptionRow,
+  source: "OWN" | "SEAT",
+  now: Date,
+  owner: { id: string; name: string | null } | null,
+): PlanState {
   return {
     tier: subscriptionIsLive(subscription, now) ? "PRO" : "EXPIRED",
     planType: subscription.planType,
@@ -73,16 +81,18 @@ function fromSubscription(subscription: SubscriptionRow, source: "OWN" | "SEAT",
     paidAt: subscription.paidAt,
     currentPeriodEnd: subscription.currentPeriodEnd,
     subscriptionId: subscription.id,
-    ownerName,
+    ownerId: owner?.id ?? null,
+    ownerName: owner?.name ?? null,
   };
 }
 
 // A live seat, then a live own subscription. With nothing live, a seat still wins: its member sees
 // the Business plan expired (they cannot renew it), and an own subscription shows the owner's view
 export function resolvePlan({ own, seat }: PlanRows, now: Date): PlanState {
-  if (seat && subscriptionIsLive(seat.subscription, now)) return fromSubscription(seat.subscription, "SEAT", now, seat.ownerName);
+  const owner = seat && { id: seat.ownerId, name: seat.ownerName };
+  if (seat && subscriptionIsLive(seat.subscription, now)) return fromSubscription(seat.subscription, "SEAT", now, owner);
   if (own && subscriptionIsLive(own, now)) return fromSubscription(own, "OWN", now, null);
-  if (seat) return fromSubscription(seat.subscription, "SEAT", now, seat.ownerName);
+  if (seat) return fromSubscription(seat.subscription, "SEAT", now, owner);
   if (own) return fromSubscription(own, "OWN", now, null);
   return FREE_PLAN;
 }
