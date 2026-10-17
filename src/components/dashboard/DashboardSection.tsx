@@ -8,16 +8,15 @@ import { CollectionsToolbar } from "@/components/dashboard/CollectionsToolbar";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { SurveyGrid } from "@/components/dashboard/SurveyGrid";
 import type { SurveyCardData } from "@/lib/dashboard";
-import { DEFAULT_RANGE, type RangeKey } from "@/lib/date-range";
+import type { DashboardRange } from "@/lib/dashboard-range";
 
 interface DashboardSectionProps {
   cards: SurveyCardData[];
   activeSurveyCount: number;
-  query: string;
-  range: RangeKey;
+  range: DashboardRange;
 }
 
-export function DashboardSection({ cards, activeSurveyCount, query, range }: DashboardSectionProps) {
+export function DashboardSection({ cards, activeSurveyCount, range }: DashboardSectionProps) {
   const t = useTranslations("dashboard");
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -51,7 +50,7 @@ export function DashboardSection({ cards, activeSurveyCount, query, range }: Das
           </div>
           <p className="mt-1 text-muted-foreground">{t("surveys.subtitle")}</p>
         </div>
-        <CollectionsToolbar query={query} range={range} />
+        <CollectionsToolbar range={range} />
       </div>
 
       {activeSurveyCount === 0 ? (
@@ -63,8 +62,6 @@ export function DashboardSection({ cards, activeSurveyCount, query, range }: Das
       ) : (
         <SurveyGrid
           cards={cards}
-          query={query}
-          clearSearchHref={range === DEFAULT_RANGE ? "/dashboard" : `/dashboard?range=${range}`}
           activeCount={activeSurveyCount}
           onCardRemoved={focusHeading}
         />

@@ -49,24 +49,36 @@
       "viewAll": "Ver todas"
     },
     "toolbar": {
-      "search": "Buscar encuestas",
       "range": "Rango de fechas"
     },
     "empty": {
       "title": "Todavía no tienes encuestas activas",
       "description": "Activa una encuesta o crea una nueva para ver aquí sus resultados."
     },
-    "noResults": {
-      "title": "No hay encuestas que coincidan",
-      "description": "No encontramos encuestas activas con «{query}» en el nombre o el código.",
-      "clear": "Limpiar búsqueda"
-    },
     "callout": {
       "title": "¿Tienes otra pregunta en mente?",
       "description": "Crea una encuesta y empieza a recibir opiniones.",
       "action": "Crear encuesta"
     },
-    "footer": "Panda Metrics · Tus opiniones, medibles"
+    "footer": "Panda Metrics · Tus opiniones, medibles",
+    "range": {
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "this-month": "Este mes",
+      "last-month": "Mes pasado",
+      "this-year": "Este año",
+      "last-year": "Año pasado",
+      "custom": "Personalizado",
+      "dialog": {
+        "title": "Rango personalizado",
+        "description": "Elige el primer y el último día a incluir.",
+        "from": "Desde",
+        "to": "Hasta",
+        "apply": "Aplicar",
+        "cancel": "Cancelar",
+        "invalid": "La fecha de inicio debe ser igual o anterior a la fecha de fin."
+      }
+    }
   },
   "surveyCard": {
     "linkCopied": "Enlace copiado"

@@ -7,22 +7,20 @@ import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { DashboardTitle } from "@/components/dashboard/DashboardTitle";
 import { getDashboardData } from "@/lib/dashboard";
 import { getAppContext } from "@/server/app-context";
-import { parseRange } from "@/lib/date-range";
+import { parseDashboardRange } from "@/lib/dashboard-range";
 
 // Server Component: fetches data only. Translated text is rendered by Client Components,
 // because the language lives in the browser (localStorage).
 async function DashboardContent({ searchParams }: Pick<PageProps<"/dashboard">, "searchParams">) {
   const params = await searchParams;
-  const range = parseRange(params.range);
-  const query = typeof params.q === "string" ? params.q : "";
+  const range = parseDashboardRange(params);
   const { organization } = await getAppContext();
-  const data = await getDashboardData(organization.id, range, query);
+  const data = await getDashboardData(organization.id, range);
 
   return (
     <DashboardSection
       cards={data.cards}
       activeSurveyCount={data.activeSurveyCount}
-      query={query}
       range={range}
     />
   );

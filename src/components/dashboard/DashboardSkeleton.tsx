@@ -43,10 +43,7 @@ export function DashboardSkeleton() {
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-72 max-w-full" />
         </div>
-        <div className="flex w-full flex-col gap-3 @md/surveys:flex-row @3xl/surveys:w-auto">
-          <Skeleton className="h-11 rounded-full @md/surveys:flex-1 @3xl/surveys:w-60 @3xl/surveys:flex-none" />
-          <Skeleton className="h-11 rounded-full @md/surveys:w-48" />
-        </div>
+        <Skeleton className="h-11 w-full rounded-full @md/surveys:w-48" />
       </div>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <SurveyCardSkeleton />

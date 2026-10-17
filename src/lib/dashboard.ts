@@ -1,7 +1,7 @@
 // Dashboard data and the public survey link. Surveys and metrics come from the database.
 
 import { cacheLife, cacheTag } from "next/cache";
-import { getDateRange, type RangeKey } from "@/lib/date-range";
+import { getDashboardDateRange, type DashboardRange } from "@/lib/dashboard-range";
 import { surveysTag, surveyTag } from "@/lib/surveys/list";
 import { listActiveSurveys } from "@/lib/surveys/service";
 import { getOrganizationMetrics } from "@/server/metrics";
@@ -23,27 +23,16 @@ export function getPublicSurveyUrl(code: string): string {
   return `${baseUrl.replace(/\/$/, "")}/s?code=${code}`;
 }
 
-// Cached by organization, range key and query; survey actions and kiosk answers expire the tags.
-// The range is computed here from its key with the real now, so the cache key stays stable and
-// "hours" keeps "last 7 days" from drifting. The search runs in SQL (accents and case ignored), the
-// active count is always unfiltered
-export async function getDashboardData(
-  organizationId: string,
-  rangeKey: RangeKey,
-  query = "",
-): Promise<DashboardData> {
+// Cached by organization and range (its key, plus the days of a custom span); survey actions and
+// kiosk answers expire the tags. The dates are computed here with the real now, so the cache key
+// stays stable and "hours" keeps "today" from drifting far
+export async function getDashboardData(organizationId: string, dashboardRange: DashboardRange): Promise<DashboardData> {
   "use cache";
   cacheTag(surveysTag(organizationId));
   cacheLife("hours");
 
-  const range = getDateRange(rangeKey, new Date());
-  const trimmed = query.trim();
-  const [active, matching] = await Promise.all([
-    listActiveSurveys(organizationId),
-    trimmed ? listActiveSurveys(organizationId, trimmed) : null,
-  ]);
-
-  const surveys = matching ?? active;
+  const range = getDashboardDateRange(dashboardRange, new Date());
+  const surveys = await listActiveSurveys(organizationId);
   for (const survey of surveys) cacheTag(surveyTag(survey.id));
   const metrics = await getOrganizationMetrics(organizationId, surveys, range);
 
@@ -54,7 +43,7 @@ export async function getDashboardData(
   }));
 
   return {
-    activeSurveyCount: active.length,
+    activeSurveyCount: surveys.length,
     cards,
   };
 }

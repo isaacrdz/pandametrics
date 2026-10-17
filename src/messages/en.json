@@ -49,24 +49,36 @@
       "viewAll": "View all"
     },
     "toolbar": {
-      "search": "Search surveys",
       "range": "Date range"
     },
     "empty": {
       "title": "You don't have active surveys yet",
       "description": "Activate a survey or create a new one to see its results here."
     },
-    "noResults": {
-      "title": "No matching surveys",
-      "description": "We couldn't find active surveys with “{query}” in the name or code.",
-      "clear": "Clear search"
-    },
     "callout": {
       "title": "Have another question in mind?",
       "description": "Create a survey and start collecting feedback.",
       "action": "Create survey"
     },
-    "footer": "Panda Metrics · Your feedback, made measurable"
+    "footer": "Panda Metrics · Your feedback, made measurable",
+    "range": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "this-month": "This month",
+      "last-month": "Last month",
+      "this-year": "This year",
+      "last-year": "Last year",
+      "custom": "Custom",
+      "dialog": {
+        "title": "Custom range",
+        "description": "Choose the first and last day to include.",
+        "from": "From",
+        "to": "To",
+        "apply": "Apply",
+        "cancel": "Cancel",
+        "invalid": "The start date must be on or before the end date."
+      }
+    }
   },
   "surveyCard": {
     "linkCopied": "Link copied"

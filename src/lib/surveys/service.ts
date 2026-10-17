@@ -8,7 +8,6 @@ import { RATING_COLOR, RATING_VALUES } from "@/lib/surveys/constants";
 import type { SurveyFormValues } from "@/lib/surveys/schema";
 import { organizationTier } from "@/server/plans";
 import { prisma } from "@/server/prisma";
-import { containsPattern } from "@/server/search";
 import type { AnswerOption, AnswerType, Question, Survey, SurveyCategory } from "@/types/survey";
 
 // Surveys service on Prisma (Neon). Questions and options are archived, never deleted, once they
@@ -127,21 +126,10 @@ export async function listSurveys(organizationId: string): Promise<Survey[]> {
   return rows.map(toSurvey);
 }
 
-// Active surveys, oldest first (the dashboard card order). The optional query searches name and
-// code ignoring accents and case, in SQL (f_unaccent, migration search_unaccent)
-export async function listActiveSurveys(organizationId: string, query = ""): Promise<Survey[]> {
-  let ids: string[] | undefined;
-  if (query.trim()) {
-    const pattern = containsPattern(query);
-    const matches = await prisma.$queryRaw<{ id: string }[]>`
-      SELECT id FROM "Survey"
-      WHERE "organizationId" = ${organizationId} AND "deletedAt" IS NULL AND "isActive"
-        AND (f_unaccent(lower(name)) LIKE f_unaccent(lower(${pattern})) ESCAPE '\\'
-             OR lower(code) LIKE lower(${pattern}) ESCAPE '\\')`;
-    ids = matches.map((row) => row.id);
-  }
+// Active surveys, oldest first (the dashboard card order)
+export async function listActiveSurveys(organizationId: string): Promise<Survey[]> {
   const rows = await prisma.survey.findMany({
-    where: { ...visibleIn(organizationId), isActive: true, ...(ids ? { id: { in: ids } } : {}) },
+    where: { ...visibleIn(organizationId), isActive: true },
     include: SURVEY_INCLUDE,
     orderBy: { createdAt: "asc" },
   });
